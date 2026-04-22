@@ -300,3 +300,11 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,intellij,visualstudiocode,java,git,eclipse
+
+### Local environment ###
+.env
+.env.local
+.env.*.local
+
+### Docker / Oracle local data ###
+docker/oracle/oradata/

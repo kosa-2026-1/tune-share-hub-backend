@@ -1,0 +1,14 @@
+.git
+.github
+.idea
+.vscode
+.gradle
+build
+target
+out
+*.iml
+*.log
+.env
+.env.local
+.env.*.local
+docker/oracle/oradata
