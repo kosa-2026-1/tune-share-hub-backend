@@ -1,5 +1,6 @@
 package com.example.tune_share_hub_backend.service.playlist;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,7 +62,7 @@ public class PlaylistService {
         return new PlaylistResponseDto(
                 p.getPlaylistId(), p.getTitle(), p.getDescription(),
                 p.getPublicYn(), p.getViewCount(), p.getLikeCount(),
-                p.getCommentCount(), p.getCreatedAt()
+                p.getCommentCount(), p.getCreatedAt(), Collections.emptyList()
         );
     }
 }
