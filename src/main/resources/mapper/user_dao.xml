@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.tune_share_hub_backend.dao.user.UserDao">
+    <insert id="insert" parameterType="User">
+        INSERT INTO USERS (
+            USER_ID,
+            EMAIL,
+            PASSWORD_HASH,
+            NICKNAME,
+            ROLE,
+            CREATED_AT,
+            UPDATED_AT
+        )
+        VALUES (
+                   SEQ_USERS.NEXTVAL,
+                   #{email},
+                   #{passwordHash},
+                   #{nickname},
+                   #{role},
+                   #{createdAt},
+                   #{updatedAt}
+               )
+    </insert>
+
+    <select id="getUserById"
+            parameterType="Long"
+            resultType="User">
+        SELECT
+            USER_ID,
+            EMAIL,
+            PASSWORD_HASH,
+            NICKNAME,
+            ROLE,
+            CREATED_AT,
+            UPDATED_AT,
+            DELETED_AT
+        FROM USERS
+        WHERE USER_ID=#{userId}
+    </select>
+
+    <select id="getUserByEmail"
+            parameterType="String"
+            resultType="User">
+        SELECT
+            USER_ID,
+            EMAIL,
+            PASSWORD_HASH,
+            NICKNAME,
+            ROLE,
+            CREATED_AT,
+            UPDATED_AT,
+            DELETED_AT
+        FROM USERS
+        WHERE EMAIL=#{email}
+    </select>
+</mapper>

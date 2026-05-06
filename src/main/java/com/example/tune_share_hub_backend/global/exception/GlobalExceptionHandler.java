@@ -1,5 +1,7 @@
 package com.example.tune_share_hub_backend.global.exception;
 
+import com.example.tune_share_hub_backend.global.exception.dto.ApiError;
+import com.example.tune_share_hub_backend.global.exception.dto.ValidationError;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;

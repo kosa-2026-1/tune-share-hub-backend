@@ -10,7 +10,7 @@ services:
     container_name: tune-share-hub-app
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@oracle-db:1521/XEPDB1
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@kosa165.iptime.org:50011/XEPDB1
       SPRING_DATASOURCE_USERNAME: ${ORACLE_APP_USER:?Set ORACLE_APP_USER in .env}
       SPRING_DATASOURCE_PASSWORD: ${ORACLE_APP_PASSWORD:?Set ORACLE_APP_PASSWORD in .env}
     ports:
