@@ -13,8 +13,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
 
 import com.example.tune_share_hub_backend.convert.SpotifyTrackConverter;
-import com.example.tune_share_hub_backend.dto.spotify.MusicSearchResponseDto;
-import com.example.tune_share_hub_backend.dto.spotify.SpotifyTrackSearchResponseDto;
+import com.example.tune_share_hub_backend.dto.music.MusicSearchResponseDto;
+import com.example.tune_share_hub_backend.dto.music.SpotifyTrackSearchResponseDto;
 import com.example.tune_share_hub_backend.type.SpotifySearchType;
 
 import lombok.RequiredArgsConstructor;

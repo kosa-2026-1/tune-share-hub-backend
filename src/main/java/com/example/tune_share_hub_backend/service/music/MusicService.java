@@ -1,11 +1,11 @@
-package com.example.tune_share_hub_backend.service.spotify;
+package com.example.tune_share_hub_backend.service.music;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.example.tune_share_hub_backend.client.SpotifyClient;
-import com.example.tune_share_hub_backend.dto.spotify.MusicSearchResponseDto;
+import com.example.tune_share_hub_backend.dto.music.MusicSearchResponseDto;
 
 import lombok.RequiredArgsConstructor;
 

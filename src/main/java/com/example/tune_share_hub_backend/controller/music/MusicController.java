@@ -1,4 +1,4 @@
-package com.example.tune_share_hub_backend.controller.spotify;
+package com.example.tune_share_hub_backend.controller.music;
 
 import java.util.List;
 
@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.tune_share_hub_backend.dto.spotify.MusicSearchResponseDto;
-import com.example.tune_share_hub_backend.service.spotify.MusicService;
+import com.example.tune_share_hub_backend.dto.music.MusicSearchResponseDto;
+import com.example.tune_share_hub_backend.service.music.MusicService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/spotify")
 @RequiredArgsConstructor
-public class SpotifyController {
+public class MusicController {
 
 	private final MusicService musicService;
 

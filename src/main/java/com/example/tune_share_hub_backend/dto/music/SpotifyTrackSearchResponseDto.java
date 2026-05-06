@@ -1,4 +1,4 @@
-package com.example.tune_share_hub_backend.dto.spotify;
+package com.example.tune_share_hub_backend.dto.music;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -3,8 +3,8 @@ package com.example.tune_share_hub_backend.convert;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.tune_share_hub_backend.dto.spotify.MusicSearchResponseDto;
-import com.example.tune_share_hub_backend.dto.spotify.SpotifyTrackSearchResponseDto;
+import com.example.tune_share_hub_backend.dto.music.MusicSearchResponseDto;
+import com.example.tune_share_hub_backend.dto.music.SpotifyTrackSearchResponseDto;
 
 public class SpotifyTrackConverter {
 
