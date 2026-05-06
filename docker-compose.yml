@@ -8,38 +8,12 @@ services:
       args:
         JAVA_VERSION: ${JAVA_VERSION:-21}
     container_name: tune-share-hub-app
-    depends_on:
-      oracle-db:
-        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
       SPRING_DATASOURCE_URL: jdbc:oracle:thin:@oracle-db:1521/XEPDB1
       SPRING_DATASOURCE_USERNAME: ${ORACLE_APP_USER:?Set ORACLE_APP_USER in .env}
       SPRING_DATASOURCE_PASSWORD: ${ORACLE_APP_PASSWORD:?Set ORACLE_APP_PASSWORD in .env}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-none}
     ports:
       - "${APP_PORT:-8080}:8080"
     restart: unless-stopped
 
-  oracle-db:
-    image: gvenzl/oracle-xe:21-slim
-    container_name: tune-share-hub-oracle
-    environment:
-      ORACLE_PASSWORD: ${ORACLE_PASSWORD:?Set ORACLE_PASSWORD in .env}
-      APP_USER: ${ORACLE_APP_USER:?Set ORACLE_APP_USER in .env}
-      APP_USER_PASSWORD: ${ORACLE_APP_PASSWORD:?Set ORACLE_APP_PASSWORD in .env}
-    ports:
-      - "${ORACLE_PORT:-1521}:1521"
-    volumes:
-      - oracle-data:/opt/oracle/oradata
-      - ./docker/oracle/init:/container-entrypoint-initdb.d:ro
-    healthcheck:
-      test: ["CMD", "healthcheck.sh"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-      start_period: 40s
-    restart: unless-stopped
-
-volumes:
-  oracle-data:
