@@ -1,14 +1,15 @@
 package com.example.tune_share_hub_backend.entity;
 
 import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 
 public class Playlist {
     private Long playlistId;

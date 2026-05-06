@@ -3,9 +3,14 @@ package com.example.tune_share_hub_backend.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Data
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor 
+
 public class PlaylistRequestDto {
    
     @NotBlank(message = "제목은 필수입니다.")

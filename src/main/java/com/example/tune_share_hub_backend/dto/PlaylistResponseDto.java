@@ -1,11 +1,14 @@
 package com.example.tune_share_hub_backend.dto;
 
 import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
-import lombok.Data;
-@Data
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 @AllArgsConstructor
+@Getter
+@NoArgsConstructor
+
 
 public class PlaylistResponseDto {
 
