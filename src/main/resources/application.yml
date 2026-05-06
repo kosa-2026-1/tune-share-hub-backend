@@ -12,3 +12,11 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
+
+mybatis:
+  config-location: classpath:mybatis/config/mybatis_config.xml
+  mapper-locations: classpath:mybatis/mapper/*.xml
+
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY:}
