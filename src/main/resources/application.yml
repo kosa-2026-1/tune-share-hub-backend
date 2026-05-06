@@ -12,3 +12,11 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY:tune-share-hub-secret-key-for-local-development}
+
