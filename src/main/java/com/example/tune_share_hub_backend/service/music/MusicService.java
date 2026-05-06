@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.tune_share_hub_backend.client.SpotifyClient;
+import com.example.tune_share_hub_backend.client.YoutubeClient;
 import com.example.tune_share_hub_backend.dto.music.MusicSearchResponseDto;
 
 import lombok.RequiredArgsConstructor;
@@ -14,10 +15,14 @@ import lombok.RequiredArgsConstructor;
 public class MusicService {
 
 	private final SpotifyClient spotifyClient;
+	private final YoutubeClient youtubeClient;
 
 	public List<MusicSearchResponseDto> searchMusic(String keyword) {
 		validateKeyword(keyword);
-		return spotifyClient.searchTracks(keyword);
+		List<MusicSearchResponseDto> musicSearchResponseDtos =  spotifyClient.searchTracks(keyword);
+		youtubeClient.addVideoUrl(musicSearchResponseDtos);
+
+		return musicSearchResponseDtos;
 	}
 
 	private void validateKeyword(String keyword) {

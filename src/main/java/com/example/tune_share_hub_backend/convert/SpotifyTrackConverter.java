@@ -6,10 +6,10 @@ import java.util.List;
 import com.example.tune_share_hub_backend.dto.music.MusicSearchResponseDto;
 import com.example.tune_share_hub_backend.dto.music.SpotifyTrackSearchResponseDto;
 
-public class SpotifyTrackConverter {
+import lombok.NoArgsConstructor;
 
-	private SpotifyTrackConverter() {
-	}
+@NoArgsConstructor
+public class SpotifyTrackConverter {
 
 	public static List<MusicSearchResponseDto> toMusicSearchResponseDtos(
 		SpotifyTrackSearchResponseDto response

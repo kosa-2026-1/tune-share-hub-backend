@@ -2,6 +2,7 @@ package com.example.tune_share_hub_backend.dto.music;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @AllArgsConstructor
@@ -12,7 +13,8 @@ public class MusicSearchResponseDto {
 	private String albumName;
 	private String albumImageUrl;
 	private String spotifyUrl;
-	private String previewUrl;
+	@Setter
+	private String youtubeUrl;
 	private Integer durationMs;
 
 }

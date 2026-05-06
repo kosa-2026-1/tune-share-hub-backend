@@ -42,12 +42,14 @@ public class SpotifyClient {
 
 		SpotifyTrackSearchResponseDto response = restClientBuilder.build()
 			.get()
-			.uri(searchUrl + "?q={keyword}&type={type}&market={market}&limit={limit}",
+			.uri(searchUrl + "?q={keyword}&type={type}&market={market}&limit={limit}&locale={locale}",
 				keyword,
 				SpotifySearchType.TRACK.getValue(),
 				"KR",
-				10)
+				5,
+				"ko-KR")
 			.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+			.header(HttpHeaders.ACCEPT_LANGUAGE, "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
 			.retrieve()
 			.body(SpotifyTrackSearchResponseDto.class);
 
