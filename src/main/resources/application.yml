@@ -7,6 +7,10 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: oracle.jdbc.OracleDriver
 
+mybatis:
+  config-location: classpath:mybatis/config/mybatis_config.xml
+  mapper-locations: classpath:mybatis/mapper/*.xml
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
