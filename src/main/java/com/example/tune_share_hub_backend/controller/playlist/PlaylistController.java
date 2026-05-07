@@ -2,6 +2,7 @@ package com.example.tune_share_hub_backend.controller.playlist;
 
 import com.example.tune_share_hub_backend.convert.PlaylistTrackConvert;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackCreateRequestDto;
+import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
@@ -150,6 +151,36 @@ public class PlaylistController {
         return ResponseEntity.ok(Map.of(
             "success", true,
             "message", "트랙이 플레이리스트에서 제거되었습니다."
+        ));
+    }
+
+    @Operation(
+            summary = "플레이리스트 트랙 순서 변경",
+            description = "프론트에서 드래그앤드랍 후 전달한 트랙 목록의 배열 순서대로 POSITION_NO를 1부터 다시 저장합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "트랙 순서 변경 성공"),
+            @ApiResponse(responseCode = "400", description = "요청한 트랙 순서 목록이 올바르지 않습니다."),
+            @ApiResponse(responseCode = "403", description = "본인 소유가 아닌 플레이리스트의 트랙 순서는 변경할 수 없습니다."),
+            @ApiResponse(responseCode = "404", description = "플레이리스트 또는 트랙을 찾을 수 없습니다.")
+    })
+    @PatchMapping("/playlists/{id}/tracks/reorder")
+    public ResponseEntity<?> reorderPlaylistTracks(
+            @Parameter(description = "트랙 순서를 변경할 플레이리스트 ID", example = "1", required = true)
+            @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "드래그앤드랍 후 새 순서대로 정렬된 플레이리스트 트랙 목록",
+                    required = true,
+                    content = @Content(
+                            array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackReorderRequestDto.class))
+                    )
+            )
+            @RequestBody List<PlaylistTrackReorderRequestDto> requestListDto
+    ) {
+        playlistService.reorderTrack(id, getCurrentUserId(), requestListDto);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "트랙 순서가 변경되었습니다."
         ));
     }
 

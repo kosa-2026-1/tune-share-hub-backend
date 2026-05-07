@@ -2,6 +2,7 @@ package com.example.tune_share_hub_backend.service.playlist;
 
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
+import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.entity.Playlist;
@@ -15,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -200,10 +203,10 @@ public class PlaylistService {
                 throw new CustomException(ErrorCode.PLAYLIST_TRACK_NOT_FOUND);
             }
 
-            reorderPlaylistTracks(id);
+            compactPlaylistTrackPositions(id);
     }
 
-    private void reorderPlaylistTracks(Long playlistId) {
+    private void compactPlaylistTrackPositions(Long playlistId) {
         List<PlaylistTrack> playlistTracks = playlistTrackDao.findByPlaylistId(playlistId);
 
         for (int i = 0; i < playlistTracks.size(); i++) {
@@ -213,6 +216,69 @@ public class PlaylistService {
             if (playlistTrack.getPositionNo() == null || playlistTrack.getPositionNo() != positionNo) {
                 playlistTrackDao.updatePlaylistTrackPosition(playlistTrack.getPlaylistTrackId(), positionNo);
             }
+        }
+    }
+
+    @Transactional
+    public void reorderTrack(Long id, Long currentUserId, List<PlaylistTrackReorderRequestDto> requestListDto) {
+        Playlist playlist = playlistMapper.findById(id);
+
+        if (playlist == null) {
+            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
+        }
+        if (!playlist.getUserId().equals(currentUserId)) {
+            throw new CustomException(ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
+        }
+
+        if (requestListDto == null || requestListDto.isEmpty() || requestListDto.contains(null)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        List<PlaylistTrack> existingTracks = playlistTrackDao.findByPlaylistId(id);
+        if (existingTracks.size() != requestListDto.size()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        Set<Long> uniqueTrackIds = requestListDto.stream()
+            .map(PlaylistTrackReorderRequestDto::getPlaylistTrackId)
+            .collect(Collectors.toSet());
+        if (uniqueTrackIds.size() != requestListDto.size()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        Set<Long> existingTrackIds = existingTracks.stream()
+            .map(PlaylistTrack::getPlaylistTrackId)
+            .collect(Collectors.toSet());
+
+        for (PlaylistTrackReorderRequestDto requestDto : requestListDto) {
+            if (requestDto.getPlaylistTrackId() == null) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+            }
+
+            if (!existingTrackIds.contains(requestDto.getPlaylistTrackId())) {
+                throw new CustomException(ErrorCode.PLAYLIST_TRACK_NOT_FOUND);
+            }
+        }
+
+        int maxPositionNo = existingTracks.stream()
+            .map(PlaylistTrack::getPositionNo)
+            .filter(positionNo -> positionNo != null)
+            .max(Integer::compareTo)
+            .orElse(0);
+        int temporaryPositionStart = maxPositionNo + requestListDto.size() + 1;
+
+        for (int i = 0; i < requestListDto.size(); i++) {
+            playlistTrackDao.updatePlaylistTrackPosition(
+                requestListDto.get(i).getPlaylistTrackId(),
+                temporaryPositionStart + i
+            );
+        }
+
+        for (int i = 0; i < requestListDto.size(); i++) {
+            playlistTrackDao.updatePlaylistTrackPosition(
+                requestListDto.get(i).getPlaylistTrackId(),
+                i + 1
+            );
         }
     }
 }
