@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <settings>
+        <!-- null 값 JDBC 타입 지정 (Oracle null 에러 방지) -->
+        <setting name="jdbcTypeForNull" value="NULL"/>
+
+        <!-- 데이터베이스 snake_case → 자바 camelCase 자동 매핑 -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+
+    <typeAliases>
+        <!-- 개별 등록 방식 -->
+        <typeAlias alias="User" type="com.example.tune_share_hub_backend.entity.user.User"/>
+
+        <!-- 엔티티 패키지 전체 자동 alias 등록 -->
+        <!-- <package name="com.example.tune_share_hub_backend.entity"/>-->
+    </typeAliases>
+</configuration>

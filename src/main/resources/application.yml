@@ -16,3 +16,23 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
+
+mybatis:
+  config-location: classpath:config/mybatis_config.xml
+  mapper-locations: classpath:mapper/*.xml
+
+jwt:
+  access-expiration: ${JWT_ACCESS_EXPIRATION:3600000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:1209600000}
+  secret:
+    key: ${JWT_SECRET_KEY:YourJWTSecretKey}
+
+spotify:
+  client-id: ${SPOTIFY_CLIENT_ID}
+  client-secret: ${SPOTIFY_CLIENT_SECRET}
+  token-url: https://accounts.spotify.com/api/token
+  search-url: https://api.spotify.com/v1/search
+
+youtube:
+  api-key: ${YOUTUBE_API_KEY}
+  search-url: https://www.googleapis.com/youtube/v3/search
