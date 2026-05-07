@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao">
+
+    <insert id="insertPlaylistTrack">
+        INSERT INTO PLAYLIST_TRACKS (
+            PLAYLIST_TRACK_ID,
+            PLAYLIST_ID,
+            SPOTIFY_TRACK_ID,
+            TITLE,
+            ARTIST_NAME,
+            ALBUM_NAME,
+            ALBUM_IMAGE_URL,
+            SPOTIFY_URL,
+            YOUTUBE_URL,
+            DURATION_MS,
+            POSITION_NO,
+            CREATED_AT
+        ) VALUES (
+            SEQ_PLAYLIST_TRACKS.NEXTVAL,
+            #{track.playlistId},
+            #{track.spotifyTrackId},
+            #{track.title},
+            #{track.artistName},
+            #{track.albumName},
+            #{track.albumImageUrl},
+            #{track.spotifyUrl},
+            #{track.youtubeUrl},
+            #{track.durationMs},
+            #{track.positionNo},
+            SYSTIMESTAMP
+        )
+    </insert>
+
+    <select id="findByPlaylistId" parameterType="long" resultType="com.example.tune_share_hub_backend.entity.PlaylistTrack">
+        SELECT *
+        FROM PLAYLIST_TRACKS
+        WHERE PLAYLIST_ID = #{playlistId}
+        ORDER BY POSITION_NO ASC
+    </select>
+
+</mapper>

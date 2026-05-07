@@ -1,14 +1,16 @@
 package com.example.tune_share_hub_backend.service.playlist;
 
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
+import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.entity.Playlist;
+import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 public class PlaylistService {
 
     private final PlaylistMapperDao playlistMapper;
+    private final PlaylistTrackDao playlistTrackDao;
 
     @Transactional
     public void updatePlaylist(Long playlistId, Long userId, PlaylistRequestDto request) {
@@ -118,5 +121,54 @@ public class PlaylistService {
                 p.getPublicYn(), p.getViewCount(), p.getLikeCount(),
                 p.getCommentCount(), p.getCreatedAt(), Collections.emptyList()
         );
+    }
+
+    @Transactional
+    public List<PlaylistTrack> addTrackToPlaylist(
+        Long id,
+        Long currentUserId,
+        List<PlaylistTrack> playlistTracksList
+    ) {
+        Playlist playlist = playlistMapper.findById(id);
+
+        if (playlist == null) {
+            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
+        }
+
+        if (!playlist.getUserId().equals(currentUserId)) {
+            throw new CustomException(ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
+        }
+
+        if (playlistTracksList == null || playlistTracksList.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        List<PlaylistTrack> playlistTracks = playlistTrackDao.findByPlaylistId(id);
+
+        int nextPositionNo = getNextPositionNo(playlistTracks);
+
+        for (PlaylistTrack playlistTrack : playlistTracksList) {
+            playlistTrack.setPlaylistId(id);
+            playlistTrack.setPositionNo(nextPositionNo);
+            nextPositionNo++;
+        }
+
+        for (PlaylistTrack playlistTrack : playlistTracksList) {
+            playlistTrackDao.insertPlaylistTrack(playlistTrack);
+        }
+
+        return playlistTrackDao.findByPlaylistId(id);
+    }
+
+    private int getNextPositionNo(List<PlaylistTrack> playlistTracks) {
+        if (playlistTracks == null || playlistTracks.isEmpty()) {
+            return 1;
+        }
+
+        return playlistTracks.stream()
+            .map(PlaylistTrack::getPositionNo)
+            .filter(positionNo -> positionNo != null)
+            .max(Integer::compareTo)
+            .orElse(0) + 1;
     }
 }
