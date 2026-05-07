@@ -33,6 +33,7 @@
         FROM REFRESH_TOKENS
         WHERE TOKEN_VALUE = #{refreshToken}
           AND REVOKED_YN = 'N'
+          AND USER_ID = #{userId}
           AND EXPIRES_AT > SYSTIMESTAMP
     </select>
 

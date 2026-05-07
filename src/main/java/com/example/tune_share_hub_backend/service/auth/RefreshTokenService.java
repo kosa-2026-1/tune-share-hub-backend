@@ -72,4 +72,8 @@ public class RefreshTokenService {
 
         log.info("Successfully revoked {} refresh token(s) for userId: {}", revokedCount, userId);
     }
+
+    public boolean existsRefresh(String refreshToken, Long userId) {
+        return refreshTokenDao.existsRefresh(refreshToken, userId) > 0;
+    }
 }

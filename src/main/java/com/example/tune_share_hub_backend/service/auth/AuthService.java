@@ -60,8 +60,14 @@ public class AuthService {
         // 토큰 유효성 체크
         validateRefreshToken(refreshToken);
 
-        // 사용자 조회
+        // 토큰 존재 여부 확인
         Long userId = jwtProvider.getUserId(refreshToken);
+        if (!refreshTokenService.existsRefresh(refreshToken, userId)) {
+            log.warn("Attempted to reissue with a revoked or non-existent token: {}", userId);
+            throw new CustomException(ErrorCode.EXPIRED_REFRESH_TOKEN);
+        }
+
+        // 사용자 조회
         User user = userDao.getUserById(userId);
         UserResponseDto userResponseDto = UserResponseDto.from(user);
 
