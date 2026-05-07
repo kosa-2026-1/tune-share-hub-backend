@@ -36,6 +36,16 @@ jobs:
       - name: Build
         run: ./gradlew build --no-daemon
         env:
+          APP_PORT: ${{ secrets.APP_PORT }}
+          JAVA_VERSION: ${{ secrets.JAVA_VERSION }}
+          SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
+          SPRING_JPA_HIBERNATE_DDL_AUTO: ${{ secrets.SPRING_JPA_HIBERNATE_DDL_AUTO }}
+
+          ORACLE_PORT: ${{ secrets.ORACLE_PORT }}
+          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD }}
+          ORACLE_APP_USER: ${{ secrets.ORACLE_APP_USER }}
+          ORACLE_APP_PASSWORD: ${{ secrets.ORACLE_APP_PASSWORD }}
+
           SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
           SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
