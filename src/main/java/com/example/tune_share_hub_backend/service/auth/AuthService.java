@@ -58,7 +58,7 @@ public class AuthService {
     @Transactional
     public LoginResponseDto reissue(String refreshToken){
         // 토큰 유효성 체크
-        validateToken(refreshToken);
+        validateRefreshToken(refreshToken);
 
         // 사용자 조회
         Long userId = jwtProvider.getUserId(refreshToken);
@@ -86,10 +86,11 @@ public class AuthService {
     }
 
     //토큰 유효성 체크
-    private void validateToken(String refreshToken) {
-        if(refreshToken == null || !jwtProvider.validateToken(refreshToken) ||
-            !jwtProvider.getTokenCategory(refreshToken).equals(TOKEN_TYPE_REFRESH)){
-            log.warn("Invalid refresh token for user: {}", jwtProvider.getEmail(refreshToken));
+    private void validateRefreshToken(String refreshToken) {
+        jwtProvider.validateToken(refreshToken);
+
+        if (!jwtProvider.isRefreshToken(refreshToken)) {
+            log.warn("Not a refresh token category");
             throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
     }
