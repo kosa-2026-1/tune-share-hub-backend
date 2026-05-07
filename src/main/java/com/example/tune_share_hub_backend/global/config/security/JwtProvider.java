@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Slf4j
@@ -121,6 +123,15 @@ public class JwtProvider {
             throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
         }
         return role;
+    }
+
+    public LocalDateTime getExpirationDateTime(String token) {
+
+        Date expiration = getClaims(token).getExpiration();
+
+        return expiration.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
     }
 
     public boolean isAccessToken(String token) {
