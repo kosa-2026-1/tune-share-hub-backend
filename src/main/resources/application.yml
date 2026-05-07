@@ -13,6 +13,16 @@ springdoc:
   api-docs:
     path: /v3/api-docs
 
+mybatis:
+  config-location: classpath:config/mybatis_config.xml
+  mapper-locations: classpath:mapper/*.xml
+
+jwt:
+  access-expiration: ${JWT_ACCESS_EXPIRATION:3600000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:1209600000}
+  secret:
+    key: ${JWT_SECRET_KEY:YourJWTSecretKey}
+
 spotify:
   client-id: ${SPOTIFY_CLIENT_ID}
   client-secret: ${SPOTIFY_CLIENT_SECRET}
