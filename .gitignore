@@ -92,6 +92,9 @@ local.properties
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
+.idea/dataSources.xml
+.idea/data_source_mapping.xml
+.idea/modules.xml
 
 # AWS User-specific
 .idea/**/aws.xml
@@ -339,5 +342,8 @@ gradle-app.setting
 ### Gradle Patch ###
 # Java heap dump
 *.hprof
+
+.idea/
+*.iml
 
 # End of https://www.toptal.com/developers/gitignore/api/gradle

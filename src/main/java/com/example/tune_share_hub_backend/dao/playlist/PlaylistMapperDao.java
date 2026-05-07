@@ -1,17 +1,26 @@
 package com.example.tune_share_hub_backend.dao.playlist;
 
-import com.example.tune_share_hub_backend.dto.playlist.PlaylistUpdateRequestDto;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
+import com.example.tune_share_hub_backend.entity.Playlist;
+
 @Mapper
-public interface PlaylistDao {
-    // 1-1. 플레이리스트 기본 정보를 수정한다. 성공 시 1, 조건에 맞는 플레이리스트가 없으면 0을 반환한다.
+
+public interface PlaylistMapperDao {
+    void insert(Playlist playlist);
+
+    List<Playlist> findByUserId(Long userId);
+
+    Playlist findById(Long playlistId);
+
     int updatePlaylist(@Param("playlistId") Long playlistId,
                        @Param("userId") Long userId,
-                       @Param("request") PlaylistUpdateRequestDto request);
+                       @Param("request") PlaylistRequestDto request);
 
-    // 1-3. 공개 여부만 수정한다. 성공 시 1, 조건에 맞는 플레이리스트가 없으면 0을 반환한다.
     int updatePlaylistVisibility(@Param("playlistId") Long playlistId,
                                  @Param("userId") Long userId,
                                  @Param("publicYn") String publicYn);
