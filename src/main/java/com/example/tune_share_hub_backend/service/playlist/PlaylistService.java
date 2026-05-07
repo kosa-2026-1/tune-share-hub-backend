@@ -171,4 +171,48 @@ public class PlaylistService {
             .max(Integer::compareTo)
             .orElse(0) + 1;
     }
+
+    @Transactional
+    public void removeTrackFromPlaylist(Long id, Long currentUserId, Long trackId) {
+            if (trackId == null || trackId <= 0) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+            }
+
+            Playlist playlist = playlistMapper.findById(id);
+
+            if (playlist == null) {
+                throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
+            }
+            if (!playlist.getUserId().equals(currentUserId)) {
+                throw new CustomException(ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
+            }
+
+            List<PlaylistTrack> playlistTracks = playlistTrackDao.findByPlaylistId(id);
+            boolean trackExists = playlistTracks.stream()
+                .anyMatch(track -> track.getPlaylistTrackId().equals(trackId));
+
+            if (!trackExists) {
+                throw new CustomException(ErrorCode.PLAYLIST_TRACK_NOT_FOUND);
+            }
+
+            int deletedCount = playlistTrackDao.deletePlaylistTrack(trackId);
+            if (deletedCount == 0) {
+                throw new CustomException(ErrorCode.PLAYLIST_TRACK_NOT_FOUND);
+            }
+
+            reorderPlaylistTracks(id);
+    }
+
+    private void reorderPlaylistTracks(Long playlistId) {
+        List<PlaylistTrack> playlistTracks = playlistTrackDao.findByPlaylistId(playlistId);
+
+        for (int i = 0; i < playlistTracks.size(); i++) {
+            PlaylistTrack playlistTrack = playlistTracks.get(i);
+            int positionNo = i + 1;
+
+            if (playlistTrack.getPositionNo() == null || playlistTrack.getPositionNo() != positionNo) {
+                playlistTrackDao.updatePlaylistTrackPosition(playlistTrack.getPlaylistTrackId(), positionNo);
+            }
+        }
+    }
 }

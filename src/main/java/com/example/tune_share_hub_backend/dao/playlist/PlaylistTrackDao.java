@@ -11,4 +11,6 @@ import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 public interface PlaylistTrackDao {
 	void insertPlaylistTrack(@Param("track") PlaylistTrack track);
 	List<PlaylistTrack> findByPlaylistId(@Param("playlistId") Long playlistId);
+	int deletePlaylistTrack(@Param("trackId") Long trackId);
+	int updatePlaylistTrackPosition(@Param("trackId") Long trackId, @Param("positionNo") int positionNo);
 }

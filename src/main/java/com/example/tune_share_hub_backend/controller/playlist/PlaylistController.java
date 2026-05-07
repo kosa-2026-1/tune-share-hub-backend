@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -125,6 +126,30 @@ public class PlaylistController {
                 "success", true,
                 "message", "트랙이 플레이리스트에 추가되었습니다.",
                 "data", PlaylistTrackConvert.toResponseDtoList(newPlaylistTracksList)
+        ));
+    }
+
+    @Operation(
+            summary = "플레이리스트 트랙 삭제",
+            description = "로그인한 사용자가 본인 소유 플레이리스트에서 특정 트랙을 제거합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "트랙 삭제 성공"),
+            @ApiResponse(responseCode = "400", description = "요청한 트랙 ID 형식이 올바르지 않습니다."),
+            @ApiResponse(responseCode = "403", description = "본인 소유가 아닌 플레이리스트의 트랙은 삭제할 수 없습니다."),
+            @ApiResponse(responseCode = "404", description = "플레이리스트 또는 트랙을 찾을 수 없습니다.")
+    })
+    @DeleteMapping("/playlists/{id}/tracks/{trackId}")
+    public ResponseEntity<?> removeTrackFromPlaylist(
+            @Parameter(description = "트랙을 삭제할 플레이리스트 ID", example = "1", required = true)
+            @PathVariable Long id,
+            @Parameter(description = "삭제할 플레이리스트 트랙 ID", example = "10", required = true)
+            @PathVariable Long trackId
+    ) {
+        playlistService.removeTrackFromPlaylist(id, getCurrentUserId(), trackId);
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "message", "트랙이 플레이리스트에서 제거되었습니다."
         ));
     }
 

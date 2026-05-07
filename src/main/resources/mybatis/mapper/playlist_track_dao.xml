@@ -40,4 +40,14 @@
         ORDER BY POSITION_NO ASC
     </select>
 
+    <delete id="deletePlaylistTrack" parameterType="long">
+        DELETE FROM PLAYLIST_TRACKS
+        WHERE PLAYLIST_TRACK_ID = #{trackId}
+    </delete>
+
+    <update id="updatePlaylistTrackPosition">
+        UPDATE PLAYLIST_TRACKS
+        SET POSITION_NO = #{positionNo}
+        WHERE PLAYLIST_TRACK_ID = #{trackId}
+    </update>
 </mapper>
