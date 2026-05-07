@@ -19,16 +19,17 @@
     </resultMap>
 
     <!-- MVP-4: 생성 -->
-<insert id="insert" parameterType="com.example.tune_share_hub_backend.entity.Playlist">
-    INSERT INTO PLAYLISTS (
-        PLAYLIST_ID, USER_ID, TITLE, DESCRIPTION,
-        COVER_IMAGE_URL, PUBLIC_YN
-    ) VALUES (
-        (SELECT NVL(MAX(PLAYLIST_ID), 0) + 1 FROM PLAYLISTS),
-        #{userId}, #{title}, #{description},
-        #{coverImageUrl}, #{publicYn}
-    )
-</insert>
+    <insert id="insert" parameterType="com.example.tune_share_hub_backend.entity.Playlist">
+        INSERT INTO PLAYLISTS (
+            PLAYLIST_ID, USER_ID, TITLE, DESCRIPTION,
+            COVER_IMAGE_URL, PUBLIC_YN
+        ) VALUES (
+            (SELECT NVL(MAX(PLAYLIST_ID), 0) + 1 FROM PLAYLISTS),
+            #{userId}, #{title}, #{description},
+            #{coverImageUrl}, #{publicYn}
+        )
+    </insert>
+
     <!-- MVP-5: 내 플레이리스트 목록 -->
     <select id="findByUserId" parameterType="long" resultMap="PlaylistResultMap">
         SELECT * FROM PLAYLISTS
@@ -43,7 +44,6 @@
         WHERE PLAYLIST_ID = #{playlistId}
           AND DELETED_AT IS NULL
     </select>
-
 
     <update id="updatePlaylist">
         UPDATE PLAYLISTS
@@ -60,6 +60,15 @@
     <update id="updatePlaylistVisibility">
         UPDATE PLAYLISTS
         SET PUBLIC_YN = #{publicYn},
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND USER_ID = #{userId}
+          AND DELETED_AT IS NULL
+    </update>
+
+    <update id="deletePlaylist">
+        UPDATE PLAYLISTS
+        SET DELETED_AT = SYSTIMESTAMP,
             UPDATED_AT = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
           AND USER_ID = #{userId}

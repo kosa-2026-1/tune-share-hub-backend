@@ -8,7 +8,6 @@ import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,11 +49,22 @@ public class PlaylistService {
         playlist.setTitle(req.getTitle());
         playlist.setDescription(req.getDescription());
         playlist.setCoverImageUrl(req.getCoverImageUrl());
-        playlist.setPublicYn(req.getPublicYn());
+        playlist.setPublicYn(req.getPublicYn() == null ? "Y" : req.getPublicYn());
 
         playlistMapper.insert(playlist);
 
         return toResponse(playlist);
+    }
+
+    @Transactional
+    public void deletePlaylist(Long playlistId, Long userId) {
+        validatePlaylistId(playlistId);
+
+        int deletedCount = playlistMapper.deletePlaylist(playlistId, userId);
+
+        if (deletedCount == 0) {
+            throw new CustomException(ErrorCode.PLAYLIST_DELETE_FORBIDDEN);
+        }
     }
 
     public List<PlaylistResponseDto> getMyPlaylists(Long userId) {

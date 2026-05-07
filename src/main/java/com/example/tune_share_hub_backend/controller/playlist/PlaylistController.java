@@ -1,13 +1,10 @@
 package com.example.tune_share_hub_backend.controller.playlist;
 
-import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
-import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
-import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
-import com.example.tune_share_hub_backend.service.playlist.PlaylistService;
-import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,8 +14,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Map;
+import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
+import com.example.tune_share_hub_backend.service.playlist.PlaylistService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api")
@@ -28,7 +31,8 @@ public class PlaylistController {
     private final PlaylistService playlistService;
 
     private Long getCurrentUserId() {
-        return 1L; // 임시 하드코딩(user에 1, test로 넣어놓음.)
+        // TODO: JWT 연결 후 로그인 사용자 ID로 교체
+        return 1L;
     }
 
     @Operation(summary = "플레이리스트 수정", description = "로그인한 사용자가 본인 소유 플레이리스트를 수정합니다.")
@@ -59,6 +63,14 @@ public class PlaylistController {
                 "data", result,
                 "message", "플레이리스트 생성 성공"
         ));
+    }
+
+    @DeleteMapping("/playlists/{id}")
+    public ResponseEntity<ApiResponseDto<Void>> deletePlaylist(
+            @PathVariable("id") Long playlistId
+    ) {
+        playlistService.deletePlaylist(playlistId, getCurrentUserId());
+        return ResponseEntity.ok(ApiResponseDto.success(null, "플레이리스트가 삭제되었습니다."));
     }
 
     @GetMapping("/users/me/playlists")
