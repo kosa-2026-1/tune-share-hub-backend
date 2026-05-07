@@ -9,8 +9,9 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins(// CORS 허용 대상 프론트 주소
-                        "http://localhost:3000"
+                .allowedOrigins(
+                        "http://localhost:3000",// 프론트
+                        "http://localhost:8080" // Swagger
                 )
                 .allowedMethods("*")// 허용할 HTTP 메서드
                 .allowedHeaders("*")// 요청 헤더 전체 허용
