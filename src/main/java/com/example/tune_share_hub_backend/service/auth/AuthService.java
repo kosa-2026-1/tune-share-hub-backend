@@ -20,40 +20,29 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class AuthService {
+    private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
 
     private final UserDao userDao;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
-    private static final String TOKEN_TYPE_ACCESS = "access";
-    private static final String TOKEN_TYPE_REFRESH = "refresh";
-    private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
     private final CookieUtil cookieUtil;
 
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
 
     @Transactional
-    public LoginResponseDto login(LoginRequestDto loginRequestDto){
-        User user = userDao.getUserByEmail(loginRequestDto.getEmail());
-        //1. 아이디 확인
-        if(user==null){
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
-
-        //2. 비밀번호 확인
-        if(!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPasswordHash())){
-            throw new CustomException(ErrorCode.INVALID_PASSWORD);
-        }
+    public LoginResponseDto login(LoginRequestDto loginRequestDto) {
+        // 사용자 조회 및 검증
+        User user = findAndValidateUser(loginRequestDto);
+        
+        // 토큰 생성
+        UserResponseDto userResponseDto = UserResponseDto.from(user);
+        String accessToken = jwtProvider.createAccessToken(userResponseDto);
+        String refreshToken = jwtProvider.createRefreshToken(userResponseDto);
 
         log.info("User {} logged in successfully", user.getEmail());
 
-        UserResponseDto userResponseDto = UserResponseDto.from(user);
-        String accessToken = jwtProvider.createJwt(TOKEN_TYPE_ACCESS, userResponseDto);
-        String refreshToken = jwtProvider.createJwt(TOKEN_TYPE_REFRESH, userResponseDto);
-
-        //3. 토큰 생성
         return LoginResponseDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -61,7 +50,24 @@ public class AuthService {
                 .build();
     }
 
-    public Cookie createRefreshTokenCookie(String refresh) {
-        return cookieUtil.createCookie(REFRESH_TOKEN_COOKIE_NAME, refresh, refreshExpiration);
+    // 사용자 존재 여부 및 비밀번호 검증
+    private User findAndValidateUser(LoginRequestDto loginRequestDto) {
+        User user = userDao.getUserByEmail(loginRequestDto.getEmail());
+
+        if (user == null) {
+            log.warn("Login attempt for non-existent user: {}", loginRequestDto.getEmail());
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        if (!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPasswordHash())) {
+            log.warn("Failed login attempt for user: {} - invalid password", loginRequestDto.getEmail());
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        return user;
+    }
+
+    public Cookie createRefreshTokenCookie(String refreshToken) {
+        return cookieUtil.createCookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, refreshExpiration);
     }
 }
