@@ -3,3 +3,19 @@ spring:
     exclude:
       - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
       - org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration
+
+spotify:
+  client-id: test-client-id
+  client-secret: test-client-secret
+  token-url: https://example.com/spotify/token
+  search-url: https://example.com/spotify/search
+
+youtube:
+  api-key: test-youtube-api-key
+  search-url: https://example.com/youtube/search
+
+jwt:
+  access-expiration: 3600000
+  refresh-expiration: 1209600000
+  secret:
+    key: test-jwt-secret-key-for-context-loads-only

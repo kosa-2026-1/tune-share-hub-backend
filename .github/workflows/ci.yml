@@ -38,7 +38,7 @@ jobs:
         env:
           APP_PORT: ${{ secrets.APP_PORT }}
           JAVA_VERSION: ${{ secrets.JAVA_VERSION }}
-          SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
+          SPRING_PROFILES_ACTIVE: test
           SPRING_JPA_HIBERNATE_DDL_AUTO: ${{ secrets.SPRING_JPA_HIBERNATE_DDL_AUTO }}
 
           ORACLE_PORT: ${{ secrets.ORACLE_PORT }}
