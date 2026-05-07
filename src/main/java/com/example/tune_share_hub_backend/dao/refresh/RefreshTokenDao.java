@@ -6,6 +6,6 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface RefreshTokenDao {
     public void insert(Refresh refresh);
+    public int deleteByUserIdAndTokenValue(Long userId, String refreshToken);
     public int existsRefresh(String refreshToken);
-
 }

@@ -58,30 +58,32 @@ public class AuthService {
     @Transactional
     public LoginResponseDto reissue(String refreshToken){
         // 토큰 유효성 체크
-        String email = jwtProvider.getEmail(refreshToken);
-        validateToken(email, refreshToken);
+        validateToken(refreshToken);
 
         // 사용자 조회
-        User user = userDao.getUserByEmail(email);
+        Long userId = jwtProvider.getUserId(refreshToken);
+        User user = userDao.getUserById(userId);
         UserResponseDto userResponseDto = UserResponseDto.from(user);
 
         // 토큰 재발급
-        String accessToken = jwtProvider.createAccessToken(userResponseDto);
+        String newAccessToken = jwtProvider.createAccessToken(userResponseDto);
         String newRefreshToken = jwtProvider.createRefreshToken(userResponseDto);
 
         // rotation
+        refreshTokenService.rotateToken(userId, refreshToken, newRefreshToken);
 
         return LoginResponseDto.builder()
-                .accessToken(accessToken)
+                .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
+                .userResponseDto(userResponseDto)
                 .build();
     }
 
     //토큰 유효성 체크
-    private void validateToken(String email, String refreshToken) {
+    private void validateToken(String refreshToken) {
         if(refreshToken == null || !jwtProvider.validateToken(refreshToken) ||
             !jwtProvider.getTokenCategory(refreshToken).equals(TOKEN_TYPE_REFRESH)){
-            log.warn("Invalid refresh token for user: {}", email);
+            log.warn("Invalid refresh token for user: {}", jwtProvider.getEmail(refreshToken));
             throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
     }

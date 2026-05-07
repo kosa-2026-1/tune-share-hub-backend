@@ -28,7 +28,7 @@ public class AuthController {
     private final AuthService authService;
     private final CookieUtil cookieUtil;
 
-    @Operation(summary = "로그인", description = "사용자가 이메일과 비밀번호를 입력합니다.")
+    @Operation(summary = "로그인", description = "사용자가 이메일과 비밀번호를 입력하여 로그인합니다. 성공 시 Access Token과 Refresh Token이 발급됩니다.")
     @PostMapping("/login")
     public ResponseEntity<UserResponseDto> login(
             @Valid  @RequestBody LoginRequestDto request,
@@ -39,17 +39,18 @@ public class AuthController {
         return ResponseEntity.ok(loginResponse.getUserResponseDto());
     }
 
-//    @PostMapping("/reissue")
-//    public ResponseEntity<?> reissue(
-//            HttpServletRequest request,
-//            HttpServletResponse response
-//    ){
-//        String refresh = cookieUtil.getCookieValue(request, REFRESH_TOKEN_COOKIE_NAME);
-//        LoginRequestDto loginRequestDto = authService.reissue(refresh);
-//        setTokenResponse(response, loginRequestDto);
-//        log.info("Reissue attempt for email: {}", loginRequestDto.getEmail());
-//        return ResponseEntity.ok().build();
-//    }
+    @Operation(summary = "토큰 재발급", description = "Access Token이 만료되었을 때, Refresh Token을 사용하여 새로운 Access Token을 발급받습니다.")
+    @PostMapping("/reissue")
+    public ResponseEntity<?> reissue(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ){
+        String refresh = cookieUtil.getCookieValue(request, REFRESH_TOKEN_COOKIE_NAME);
+        LoginResponseDto loginResponseDto = authService.reissue(refresh);
+        setTokenResponse(response, loginResponseDto);
+        log.info("Reissue attempt for email: {}", loginResponseDto.getUserResponseDto().getEmail());
+        return ResponseEntity.noContent().build();
+    }
 
     private void setTokenResponse(HttpServletResponse response, LoginResponseDto loginResponse){
         response.setHeader(AUTHORIZATION_HEADER, BEARER_PREFIX + loginResponse.getAccessToken());
