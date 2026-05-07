@@ -3,26 +3,28 @@
 
 <mapper namespace="com.example.tune_share_hub_backend.dao.refresh.RefreshTokenDao">
     <insert id="insert" parameterType="Refresh">
-        INSERT INTO TUNE.REFRESH_TOKENS (
+        INSERT INTO REFRESH_TOKENS (
             TOKEN_ID,
             USER_ID,
             TOKEN_VALUE,
             EXPIRES_AT,
-            REVOKED_YN
+            REVOKED_YN,
+            CREATED_AT
         )
         VALUES (
                    SEQ_REFRESH_TOKENS.NEXTVAL,
                    #{userId},
                    #{tokenValue},
                    #{expiresAt},
-                   'N'
+                   'N',
+                   #{createdAt}
                )
     </insert>
 
     <!-- 토큰 재발급 시 기존 토큰 삭제 -->
     <delete id="deleteByUserIdAndTokenValue">
         DELETE FROM REFRESH_TOKENS
-        WHERE USER_ID = #{userId} AND TOKEN_VALUE = #{refreshToken}
+        WHERE USER_ID = #{userId} AND TOKEN_VALUE = #{refreshToken} AND REVOKED_YN = 'N'
     </delete>
 
     <!-- 존재 여부 -->
