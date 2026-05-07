@@ -8,12 +8,13 @@ import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,6 +57,20 @@ public class PlaylistService {
 
         return toResponse(playlist);
     }
+
+    public Map<String, Object> getPublicPlaylists(int page, int size) {
+    int offset = (page - 1) * size;
+    List<PlaylistResponseDto> list = playlistMapper.findPublicPlaylists(offset, size)
+            .stream().map(this::toResponse).collect(Collectors.toList());
+    int total = playlistMapper.countPublicPlaylists();
+
+    Map<String, Object> result = new HashMap<>();
+    result.put("content", list);
+    result.put("totalCount", total);
+    result.put("currentPage", page);
+    result.put("totalPages", (int) Math.ceil((double) total / size));
+    return result;
+}
 
     public List<PlaylistResponseDto> getMyPlaylists(Long userId) {
         return playlistMapper.findByUserId(userId)
@@ -113,10 +128,10 @@ public class PlaylistService {
     }
 
     private PlaylistResponseDto toResponse(Playlist p) {
-        return new PlaylistResponseDto(
-                p.getPlaylistId(), p.getTitle(), p.getDescription(),
-                p.getPublicYn(), p.getViewCount(), p.getLikeCount(),
-                p.getCommentCount(), p.getCreatedAt(), Collections.emptyList()
-        );
-    }
+    return new PlaylistResponseDto(
+            p.getPlaylistId(), p.getTitle(), p.getDescription(),
+            p.getPublicYn(), p.getViewCount(), p.getLikeCount(),
+            p.getCoverImageUrl(), p.getCommentCount(), p.getCreatedAt(), 
+            Collections.emptyList());
+}
 }

@@ -19,6 +19,7 @@ public class PlaylistResponseDto {
     private String publicYn;
     private int viewCount;
     private int likeCount;
+    private String coverImageUrl; 
     private int commentCount;
     private LocalDateTime createdAt;
     private List<Object> tracks;
