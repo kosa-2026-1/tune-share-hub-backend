@@ -22,11 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthService {
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
+    private static final String TOKEN_TYPE_REFRESH = "refresh";
 
     private final UserDao userDao;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final CookieUtil cookieUtil;
+    private final RefreshTokenService refreshTokenService;
 
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
@@ -43,12 +45,47 @@ public class AuthService {
 
         log.info("User {} logged in successfully", user.getEmail());
 
+        // refresh token DB저장
+        refreshTokenService.saveRefreshToken(user.getUserId(), refreshToken);
+
         return LoginResponseDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .userResponseDto(userResponseDto)
                 .build();
     }
+
+    @Transactional
+    public LoginResponseDto reissue(String refreshToken){
+        // 토큰 유효성 체크
+        String email = jwtProvider.getEmail(refreshToken);
+        validateToken(email, refreshToken);
+
+        // 사용자 조회
+        User user = userDao.getUserByEmail(email);
+        UserResponseDto userResponseDto = UserResponseDto.from(user);
+
+        // 토큰 재발급
+        String accessToken = jwtProvider.createAccessToken(userResponseDto);
+        String newRefreshToken = jwtProvider.createRefreshToken(userResponseDto);
+
+        // rotation
+
+        return LoginResponseDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(newRefreshToken)
+                .build();
+    }
+
+    //토큰 유효성 체크
+    private void validateToken(String email, String refreshToken) {
+        if(refreshToken == null || !jwtProvider.validateToken(refreshToken) ||
+            !jwtProvider.getTokenCategory(refreshToken).equals(TOKEN_TYPE_REFRESH)){
+            log.warn("Invalid refresh token for user: {}", email);
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+    }
+
 
     // 사용자 존재 여부 및 비밀번호 검증
     private User findAndValidateUser(LoginRequestDto loginRequestDto) {
