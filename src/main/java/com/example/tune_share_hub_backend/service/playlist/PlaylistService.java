@@ -3,18 +3,18 @@ package com.example.tune_share_hub_backend.service.playlist;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistVisibilityUpdateRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistUpdateRequestDto;
 import com.example.tune_share_hub_backend.exception.ApiException;
-import com.example.tune_share_hub_backend.mapper.playlist.PlaylistMapper;
+import com.example.tune_share_hub_backend.dao.playlist.PlaylistDao;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PlaylistService {
-    // MyBatis XML에 정의된 SQL을 호출하는 Mapper이다.
-    private final PlaylistMapper playlistMapper;
+    // MyBatis XML에 정의된 SQL을 호출하는 DAO이다.
+    private final PlaylistDao playlistDao;
 
-    public PlaylistService(PlaylistMapper playlistMapper) {
-        this.playlistMapper = playlistMapper;
+    public PlaylistService(PlaylistDao playlistDao) {
+        this.playlistDao = playlistDao;
     }
 
     @Transactional
@@ -24,7 +24,7 @@ public class PlaylistService {
         validateRequest(request);
 
         // UPDATE 조건에 playlistId와 userId가 함께 들어가므로, 본인 소유 플레이리스트만 수정된다.
-        int updatedCount = playlistMapper.updatePlaylist(playlistId, userId, request);
+        int updatedCount = playlistDao.updatePlaylist(playlistId, userId, request);
         if (updatedCount == 0) {
             // 수정된 행이 없으면 존재하지 않거나, 삭제되었거나, 다른 사용자의 플레이리스트로 판단한다.
             throw new ApiException(
@@ -42,7 +42,7 @@ public class PlaylistService {
         validateVisibilityRequest(request);
 
         // 공개 여부만 바꾸는 전용 API이지만, 본인 소유 검증 조건은 플레이리스트 수정과 동일하다.
-        int updatedCount = playlistMapper.updatePlaylistVisibility(playlistId, userId, request.getPublicYn());
+        int updatedCount = playlistDao.updatePlaylistVisibility(playlistId, userId, request.getPublicYn());
         if (updatedCount == 0) {
             // 수정된 행이 없으면 존재하지 않거나, 삭제되었거나, 다른 사용자의 플레이리스트로 판단한다.
             throw new ApiException(
