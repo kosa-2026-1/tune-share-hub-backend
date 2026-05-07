@@ -20,7 +20,18 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(atci)
-                .addPathPatterns("/**");
+                .addPathPatterns("/api/**")
+                .excludePathPatterns(
+                        "/api/auth/login",
+
+                        // swagger
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**",
+
+                        // 에러
+                        "/error"
+                );
     }
 
     @Bean
