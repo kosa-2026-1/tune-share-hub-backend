@@ -139,17 +139,15 @@ public class JwtProvider {
         }
     }
 
-    public void validateToken(String token) {
+    public Boolean validateToken(String token) {
         try {
-            Claims claims = getClaims(token);
-            if (isExpired(claims)) {
-                throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);
-            }
-        } catch (CustomException e) {
-            throw e;
+            Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token);
+            return true;
         } catch (JwtException | IllegalArgumentException e) {
-            log.debug("Token validation failed: {}", e.getMessage());
-            throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+            return false;
         }
     }
 
