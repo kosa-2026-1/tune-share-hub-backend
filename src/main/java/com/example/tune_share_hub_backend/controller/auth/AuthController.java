@@ -3,6 +3,8 @@ package com.example.tune_share_hub_backend.controller.auth;
 import com.example.tune_share_hub_backend.dto.auth.LoginRequestDto;
 import com.example.tune_share_hub_backend.dto.auth.LoginResponseDto;
 import com.example.tune_share_hub_backend.dto.user.UserResponseDto;
+import com.example.tune_share_hub_backend.global.interceptor.AccessTokenCheck;
+import com.example.tune_share_hub_backend.global.interceptor.LoginUserId;
 import com.example.tune_share_hub_backend.global.util.CookieUtil;
 import com.example.tune_share_hub_backend.service.auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,6 +52,23 @@ public class AuthController {
         setTokenResponse(response, loginResponseDto);
         log.info("Reissue attempt for email: {}", loginResponseDto.getUserResponseDto().getEmail());
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "로그아웃", description = "사용자가 로그아웃할 때, Access Token과 Refresh Token을 모두 무효화합니다.")
+    @PostMapping("/logout")
+    @AccessTokenCheck
+    public ResponseEntity<String> logout(
+            @LoginUserId Long userId,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ){
+        String refresh = cookieUtil.getCookieValue(request, REFRESH_TOKEN_COOKIE_NAME);
+        try{
+            authService.logout(refresh, userId);
+        }finally {
+            cookieUtil.deleteCookie(response, REFRESH_TOKEN_COOKIE_NAME);
+        }
+        return ResponseEntity.ok("로그아웃 성공");
     }
 
     private void setTokenResponse(HttpServletResponse response, LoginResponseDto loginResponse){

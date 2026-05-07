@@ -60,4 +60,16 @@ public class RefreshTokenService {
             throw new CustomException(ErrorCode.INTERNAL_ERROR);
         }
     }
+
+    @Transactional
+    public void revokeToken(Long userId, String refreshTokenValue) {
+        int revokedCount = refreshTokenDao.revokeTokensByUserIdAndTokenValue(userId, refreshTokenValue);
+
+        if(revokedCount == 0) {
+            log.warn("Refresh token reuse detected or invalid token for userId: {}", userId);
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        log.info("Successfully revoked {} refresh token(s) for userId: {}", revokedCount, userId);
+    }
 }

@@ -79,6 +79,12 @@ public class AuthService {
                 .build();
     }
 
+    public void logout(String refreshToken, Long userId) {
+        if(refreshToken == null || refreshToken.isBlank()) return;
+
+        refreshTokenService.revokeToken(userId, refreshToken);
+    }
+
     //토큰 유효성 체크
     private void validateToken(String refreshToken) {
         if(refreshToken == null || !jwtProvider.validateToken(refreshToken) ||

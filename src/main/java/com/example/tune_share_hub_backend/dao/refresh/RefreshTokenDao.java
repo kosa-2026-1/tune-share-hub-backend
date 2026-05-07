@@ -8,4 +8,5 @@ public interface RefreshTokenDao {
     public void insert(Refresh refresh);
     public int deleteByUserIdAndTokenValue(Long userId, String refreshToken);
     public int existsRefresh(String refreshToken);
+    public int revokeTokensByUserIdAndTokenValue(Long userId, String refreshToken);
 }
