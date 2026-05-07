@@ -1,5 +1,6 @@
 package com.example.tune_share_hub_backend.dto.playlist;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.validation.constraints.NotBlank;
@@ -21,11 +22,13 @@ public class PlaylistRequestDto {
     @JsonProperty("description")
     private String description;
 
+    @JsonAlias("coverImageUrl")
     @JsonProperty("cover_image_url")
     private String coverImageUrl;
 
+    @JsonAlias("publicYn")
     @JsonProperty("public_yn")
-    private String publicYn = "Y";
+    private String publicYn;
 }
 
 
