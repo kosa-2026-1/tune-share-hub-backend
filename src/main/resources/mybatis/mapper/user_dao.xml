@@ -33,8 +33,7 @@
             NICKNAME,
             ROLE,
             CREATED_AT,
-            UPDATED_AT,
-            DELETED_AT
+            UPDATED_AT
         FROM USERS
         WHERE USER_ID=#{userId}
     </select>
@@ -49,8 +48,7 @@
             NICKNAME,
             ROLE,
             CREATED_AT,
-            UPDATED_AT,
-            DELETED_AT
+            UPDATED_AT
         FROM USERS
         WHERE EMAIL=#{email}
     </select>
