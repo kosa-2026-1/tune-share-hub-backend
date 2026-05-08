@@ -15,7 +15,6 @@
         <result property="commentCount"  column="COMMENT_COUNT"/>
         <result property="createdAt"     column="CREATED_AT"/>
         <result property="updatedAt"     column="UPDATED_AT"/>
-        <result property="deletedAt"     column="DELETED_AT"/>
     </resultMap>
 
    <!-- MVP-4: 생성 -->
@@ -31,11 +30,11 @@
         #{coverImageUrl}, #{publicYn}
     )
 </insert>
+
     <!-- MVP-5: 내 플레이리스트 목록 -->
     <select id="findByUserId" parameterType="long" resultMap="PlaylistResultMap">
         SELECT * FROM PLAYLISTS
         WHERE USER_ID = #{userId}
-          AND DELETED_AT IS NULL
         ORDER BY CREATED_AT DESC
     </select>
 
@@ -43,9 +42,7 @@
     <select id="findById" parameterType="long" resultMap="PlaylistResultMap">
         SELECT * FROM PLAYLISTS
         WHERE PLAYLIST_ID = #{playlistId}
-          AND DELETED_AT IS NULL
     </select>
-
 
     <update id="updatePlaylist">
         UPDATE PLAYLISTS
@@ -56,7 +53,6 @@
             UPDATED_AT = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
           AND USER_ID = #{userId}
-          AND DELETED_AT IS NULL
     </update>
 
     <update id="updatePlaylistVisibility">
@@ -65,8 +61,13 @@
             UPDATED_AT = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
           AND USER_ID = #{userId}
-          AND DELETED_AT IS NULL
     </update>
+
+    <delete id="deletePlaylist">
+    DELETE FROM PLAYLISTS
+    WHERE PLAYLIST_ID = #{playlistId}
+    AND USER_ID = #{userId}
+</delete>
 
    
 <select id="findPublicPlaylists" resultMap="PlaylistResultMap">
@@ -74,7 +75,6 @@
         SELECT ROWNUM AS RN, P.* FROM (
             SELECT * FROM PLAYLISTS
             WHERE PUBLIC_YN = 'Y'
-              AND DELETED_AT IS NULL
             ORDER BY CREATED_AT DESC
         ) P
         WHERE ROWNUM &lt;= #{offset} + #{size}
@@ -86,7 +86,6 @@
 <select id="countPublicPlaylists" resultType="int">
     SELECT COUNT(*) FROM PLAYLISTS
     WHERE PUBLIC_YN = 'Y'
-      AND DELETED_AT IS NULL
 </select>
 
 </mapper>

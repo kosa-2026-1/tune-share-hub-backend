@@ -4,6 +4,8 @@ import com.example.tune_share_hub_backend.convert.PlaylistTrackConvert;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackCreateRequestDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
+
+
 import com.example.tune_share_hub_backend.global.config.security.JwtProvider;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
@@ -27,6 +29,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,9 +44,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -81,6 +84,16 @@ public class PlaylistController {
             HttpServletRequest httpRequest) {
         PlaylistResponseDto result = playlistService.create(userId, req);
         return ResponseEntity.ok(ApiResponseDto.success(result, "플레이리스트 생성 성공"));
+    }
+
+    @Operation(summary = "플레이리스트 삭제", description = "로그인한 사용자가 본인 소유 플레이리스트를 삭제합니다.")
+    @AccessTokenCheck
+    @DeleteMapping("/playlists/{id}")
+    public ResponseEntity<ApiResponseDto<Void>> deletePlaylist(
+            @PathVariable("id") Long playlistId,
+            @LoginUserId Long userId) {
+        playlistService.deletePlaylist(playlistId, userId);
+        return ResponseEntity.ok(ApiResponseDto.success(null, "플레이리스트가 삭제되었습니다."));
     }
 
     @Operation(summary = "공개 플레이리스트 목록 조회", description = "공개된 플레이리스트를 페이지 단위로 조회합니다.")
