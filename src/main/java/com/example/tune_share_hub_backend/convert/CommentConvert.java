@@ -29,9 +29,11 @@ public class CommentConvert {
 				.toList();
 	}
 
+
 	public static Comment toEntity(CommentRequestDto commentRequestDto) {
 		return Comment.builder()
 				.content(commentRequestDto.getContent())
 				.build();
 	}
 }
+

@@ -40,3 +40,4 @@
         WHERE COMMENT_ID = #{commentId}
     </delete>
 </mapper>
+
