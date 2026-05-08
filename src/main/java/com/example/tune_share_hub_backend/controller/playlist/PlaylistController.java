@@ -207,4 +207,24 @@ public class PlaylistController {
                 "message", "댓글이 추가되었습니다."
         ));
     }
+
+    @PutMapping("playlists/{id}/comments/{commentId}")
+    @AccessTokenCheck
+    public ResponseEntity<?> updateCommentToPlaylist(
+            @PathVariable Long id,
+            @PathVariable Long commentId,
+            @RequestBody CommentRequestDto requestDto,
+            @LoginUserId Long userId )
+    {
+        if (requestDto == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        Comment comment = CommentConvert.toEntity(requestDto);
+        playlistService.updateComment(id, commentId, userId, comment);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "댓글이 수정되었습니다."
+        ));
+    }
 }

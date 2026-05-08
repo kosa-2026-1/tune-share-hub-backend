@@ -320,4 +320,22 @@ public class PlaylistService {
         playlistMapper.increaseCommentCount(id);
 
     }
+
+    public void updateComment(Long id, Long commentId, Long userId, Comment comment) {
+        if (comment == null || comment.getContent() == null || comment.getContent().trim().isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        Comment existingComment = commentDao.findById(commentId);
+        if (existingComment == null || !existingComment.getPlaylistId().equals(id)) {
+            throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
+        }
+
+        if (!existingComment.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
+        }
+
+        existingComment.setContent(comment.getContent());
+        commentDao.updateComment(existingComment);
+    }
 }
