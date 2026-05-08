@@ -18,4 +18,4 @@ jwt:
   access-expiration: 3600000
   refresh-expiration: 1209600000
   secret:
-    key: TestJWTSecretKeyForContextLoad1234567890
+    key: test-jwt-secret-key-for-context-loads-only
