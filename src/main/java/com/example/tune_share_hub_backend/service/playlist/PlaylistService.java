@@ -59,12 +59,13 @@ public class PlaylistService {
         playlist.setTitle(req.getTitle());
         playlist.setDescription(req.getDescription());
         playlist.setCoverImageUrl(req.getCoverImageUrl());
-        playlist.setPublicYn(req.getPublicYn());
+        playlist.setPublicYn(req.getPublicYn() == null ? "Y" : req.getPublicYn());
 
         playlistMapper.insert(playlist);
 
         return toResponse(playlist);
     }
+
 
     public Map<String, Object> getPublicPlaylists(int page, int size) {
     int offset = (page - 1) * size;
@@ -79,6 +80,18 @@ public class PlaylistService {
     result.put("totalPages", (int) Math.ceil((double) total / size));
     return result;
 }
+
+    @Transactional
+    public void deletePlaylist(Long playlistId, Long userId) {
+        validatePlaylistId(playlistId);
+
+        int deletedCount = playlistMapper.deletePlaylist(playlistId, userId);
+
+        if (deletedCount == 0) {
+            throw new CustomException(ErrorCode.PLAYLIST_DELETE_FORBIDDEN);
+        }
+    }
+
 
     public List<PlaylistResponseDto> getMyPlaylists(Long userId) {
         return playlistMapper.findByUserId(userId)
