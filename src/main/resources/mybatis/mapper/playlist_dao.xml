@@ -15,26 +15,26 @@
         <result property="commentCount"  column="COMMENT_COUNT"/>
         <result property="createdAt"     column="CREATED_AT"/>
         <result property="updatedAt"     column="UPDATED_AT"/>
-        <result property="deletedAt"     column="DELETED_AT"/>
     </resultMap>
 
-    <!-- MVP-4: 생성 -->
-    <insert id="insert" parameterType="com.example.tune_share_hub_backend.entity.Playlist">
-        INSERT INTO PLAYLISTS (
-            PLAYLIST_ID, USER_ID, TITLE, DESCRIPTION,
-            COVER_IMAGE_URL, PUBLIC_YN
-        ) VALUES (
-            (SELECT NVL(MAX(PLAYLIST_ID), 0) + 1 FROM PLAYLISTS),
-            #{userId}, #{title}, #{description},
-            #{coverImageUrl}, #{publicYn}
-        )
-    </insert>
+   <!-- MVP-4: 생성 -->
+<insert id="insert" parameterType="com.example.tune_share_hub_backend.entity.Playlist">
+    <selectKey keyProperty="playlistId" resultType="long" order="BEFORE">
+        SELECT SEQ_PLAYLISTS.NEXTVAL FROM DUAL
+    </selectKey>
+    INSERT INTO PLAYLISTS (
+        PLAYLIST_ID, USER_ID, TITLE, DESCRIPTION,
+        COVER_IMAGE_URL, PUBLIC_YN
+    ) VALUES (
+        #{playlistId}, #{userId}, #{title}, #{description},
+        #{coverImageUrl}, #{publicYn}
+    )
+</insert>
 
     <!-- MVP-5: 내 플레이리스트 목록 -->
     <select id="findByUserId" parameterType="long" resultMap="PlaylistResultMap">
         SELECT * FROM PLAYLISTS
         WHERE USER_ID = #{userId}
-          AND DELETED_AT IS NULL
         ORDER BY CREATED_AT DESC
     </select>
 
@@ -42,7 +42,6 @@
     <select id="findById" parameterType="long" resultMap="PlaylistResultMap">
         SELECT * FROM PLAYLISTS
         WHERE PLAYLIST_ID = #{playlistId}
-          AND DELETED_AT IS NULL
     </select>
 
     <update id="updatePlaylist">
@@ -54,7 +53,6 @@
             UPDATED_AT = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
           AND USER_ID = #{userId}
-          AND DELETED_AT IS NULL
     </update>
 
     <update id="updatePlaylistVisibility">
@@ -63,16 +61,31 @@
             UPDATED_AT = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
           AND USER_ID = #{userId}
-          AND DELETED_AT IS NULL
     </update>
 
+   
+<select id="findPublicPlaylists" resultMap="PlaylistResultMap">
+    SELECT * FROM (
+        SELECT ROWNUM AS RN, P.* FROM (
+            SELECT * FROM PLAYLISTS
+            WHERE PUBLIC_YN = 'Y'
+            ORDER BY CREATED_AT DESC
+        ) P
+        WHERE ROWNUM &lt;= #{offset} + #{size}
+    )
+    WHERE RN > #{offset}
+</select>
+
+
+<select id="countPublicPlaylists" resultType="int">
+    SELECT COUNT(*) FROM PLAYLISTS
+    WHERE PUBLIC_YN = 'Y'
+</select>
     <update id="deletePlaylist">
         UPDATE PLAYLISTS
-        SET DELETED_AT = SYSTIMESTAMP,
-            UPDATED_AT = SYSTIMESTAMP
+        SET UPDATED_AT = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
           AND USER_ID = #{userId}
-          AND DELETED_AT IS NULL
     </update>
 
 </mapper>
