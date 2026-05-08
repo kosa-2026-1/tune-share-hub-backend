@@ -2,5 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.tune_share_hub_backend.dao.playlist.CommentDao">
-    
+    <insert id="insertComment" parameterType="com.example.tune_share_hub_backend.entity.Comment">
+        INSERT INTO COMMENTS (
+            COMMENT_ID, PLAYLIST_ID, USER_ID, CONTENT
+        ) VALUES (
+            COMMENTS_SEQ.NEXTVAL,
+            #{comment.playlistId},
+            #{comment.userId},
+            #{comment.content}
+        )
+    </insert>
 </mapper>

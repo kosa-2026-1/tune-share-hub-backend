@@ -24,4 +24,6 @@ public interface PlaylistMapperDao {
     int updatePlaylistVisibility(@Param("playlistId") Long playlistId,
                                  @Param("userId") Long userId,
                                  @Param("publicYn") String publicYn);
+
+    int increaseCommentCount(@Param("playlistId") Long playlistId);
 }

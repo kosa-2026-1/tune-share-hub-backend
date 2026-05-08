@@ -3,6 +3,7 @@ package com.example.tune_share_hub_backend.convert;
 import java.util.List;
 
 import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
+import com.example.tune_share_hub_backend.dto.playlist.CommentRequestDto;
 import com.example.tune_share_hub_backend.entity.Comment;
 
 import lombok.NoArgsConstructor;
@@ -27,5 +28,10 @@ public class CommentConvert {
 				.map(CommentConvert::toCommentResponseDto)
 				.toList();
 	}
-}
 
+	public static Comment toEntity(CommentRequestDto commentRequestDto) {
+		return Comment.builder()
+				.content(commentRequestDto.getContent())
+				.build();
+	}
+}

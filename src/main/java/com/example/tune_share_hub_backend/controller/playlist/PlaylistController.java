@@ -1,14 +1,19 @@
 package com.example.tune_share_hub_backend.controller.playlist;
 
+import com.example.tune_share_hub_backend.convert.CommentConvert;
 import com.example.tune_share_hub_backend.convert.PlaylistTrackConvert;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackCreateRequestDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
+import com.example.tune_share_hub_backend.dto.playlist.CommentRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
+import com.example.tune_share_hub_backend.entity.Comment;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
+import com.example.tune_share_hub_backend.global.interceptor.AccessTokenCheck;
+import com.example.tune_share_hub_backend.global.interceptor.LoginUserId;
 import com.example.tune_share_hub_backend.service.playlist.PlaylistService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -184,4 +189,22 @@ public class PlaylistController {
         ));
     }
 
+    @PostMapping("playlists/{id}/comments")
+    @AccessTokenCheck
+    public ResponseEntity<?> createCommentToPlaylist(
+            @PathVariable Long id,
+            @RequestBody CommentRequestDto requestDto,
+            @LoginUserId Long userId
+    ) {
+        if (requestDto == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        Comment comment = CommentConvert.toEntity(requestDto);
+        playlistService.createComment(id, userId, comment);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "댓글이 추가되었습니다."
+        ));
+    }
 }

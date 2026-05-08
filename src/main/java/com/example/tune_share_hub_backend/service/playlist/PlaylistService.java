@@ -1,12 +1,16 @@
 package com.example.tune_share_hub_backend.service.playlist;
 
+import com.example.tune_share_hub_backend.dao.playlist.CommentDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
+import com.example.tune_share_hub_backend.dao.user.UserDao;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
+import com.example.tune_share_hub_backend.entity.Comment;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
+import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 
@@ -17,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,6 +31,8 @@ public class PlaylistService {
 
     private final PlaylistMapperDao playlistMapper;
     private final PlaylistTrackDao playlistTrackDao;
+    private final CommentDao commentDao;
+    private final UserDao userDao;
 
     @Transactional
     public void updatePlaylist(Long playlistId, Long userId, PlaylistRequestDto request) {
@@ -285,5 +290,34 @@ public class PlaylistService {
                 .build());
         }
         playlistTrackDao.updatePlaylistTrackPositions(finalPositions);
+    }
+
+    @Transactional
+    public void createComment(Long id, Long userId, Comment comment) {
+        if (comment == null || comment.getContent() == null || comment.getContent().trim().isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        Playlist playlist = playlistMapper.findById(id);
+        if (playlist == null) {
+            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
+        }
+
+        if ("N".equals(playlist.getPublicYn()) && !playlist.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
+        }
+
+        User user = userDao.getUserById(userId);
+        if (user == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        comment.setPlaylistId(id);
+        comment.setUserId(userId);
+        comment.setUserNickname(user.getNickname());
+
+        commentDao.insertComment(comment);
+        playlistMapper.increaseCommentCount(id);
+
     }
 }
