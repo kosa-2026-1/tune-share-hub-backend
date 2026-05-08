@@ -26,4 +26,6 @@ public interface PlaylistMapperDao {
                                  @Param("publicYn") String publicYn);
 
     int increaseCommentCount(@Param("playlistId") Long playlistId);
+
+    void decreaseCommentCount(@Param("playlistId") Long playlistId);
 }

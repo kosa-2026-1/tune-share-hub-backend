@@ -189,11 +189,28 @@ public class PlaylistController {
         ));
     }
 
+    @Operation(
+            summary = "플레이리스트 댓글 작성",
+            description = "로그인한 사용자가 플레이리스트에 댓글을 작성합니다. 비공개 플레이리스트에는 소유자만 댓글을 작성할 수 있습니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "댓글 작성 성공"),
+            @ApiResponse(responseCode = "400", description = "요청 본문이 비어 있거나 댓글 내용이 올바르지 않습니다."),
+            @ApiResponse(responseCode = "401", description = "액세스 토큰이 유효하지 않습니다."),
+            @ApiResponse(responseCode = "404", description = "플레이리스트 또는 사용자를 찾을 수 없습니다.")
+    })
     @PostMapping("playlists/{id}/comments")
     @AccessTokenCheck
     public ResponseEntity<?> createCommentToPlaylist(
+            @Parameter(description = "댓글을 작성할 플레이리스트 ID", example = "1", required = true)
             @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "작성할 댓글 내용",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = CommentRequestDto.class))
+            )
             @RequestBody CommentRequestDto requestDto,
+            @Parameter(hidden = true)
             @LoginUserId Long userId
     ) {
         if (requestDto == null) {
@@ -208,12 +225,30 @@ public class PlaylistController {
         ));
     }
 
+    @Operation(
+            summary = "플레이리스트 댓글 수정",
+            description = "로그인한 사용자가 본인이 작성한 플레이리스트 댓글 내용을 수정합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "댓글 수정 성공"),
+            @ApiResponse(responseCode = "400", description = "요청 본문이 비어 있거나 댓글 내용이 올바르지 않습니다."),
+            @ApiResponse(responseCode = "401", description = "액세스 토큰이 유효하지 않습니다."),
+            @ApiResponse(responseCode = "404", description = "댓글을 찾을 수 없습니다.")
+    })
     @PutMapping("playlists/{id}/comments/{commentId}")
     @AccessTokenCheck
     public ResponseEntity<?> updateCommentToPlaylist(
+            @Parameter(description = "댓글이 속한 플레이리스트 ID", example = "1", required = true)
             @PathVariable Long id,
+            @Parameter(description = "수정할 댓글 ID", example = "10", required = true)
             @PathVariable Long commentId,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "수정할 댓글 내용",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = CommentRequestDto.class))
+            )
             @RequestBody CommentRequestDto requestDto,
+            @Parameter(hidden = true)
             @LoginUserId Long userId )
     {
         if (requestDto == null) {
@@ -225,6 +260,32 @@ public class PlaylistController {
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "댓글이 수정되었습니다."
+        ));
+    }
+
+    @Operation(
+            summary = "플레이리스트 댓글 삭제",
+            description = "로그인한 사용자가 본인이 작성한 플레이리스트 댓글을 삭제합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "댓글 삭제 성공"),
+            @ApiResponse(responseCode = "401", description = "액세스 토큰이 유효하지 않습니다."),
+            @ApiResponse(responseCode = "404", description = "댓글을 찾을 수 없습니다.")
+    })
+    @DeleteMapping("playlists/{id}/comments/{commentId}")
+    @AccessTokenCheck
+    public ResponseEntity<?> deleteCommentToPlaylist(
+            @Parameter(description = "댓글이 속한 플레이리스트 ID", example = "1", required = true)
+            @PathVariable Long id,
+            @Parameter(description = "삭제할 댓글 ID", example = "10", required = true)
+            @PathVariable Long commentId,
+            @Parameter(hidden = true)
+            @LoginUserId Long userId )
+    {
+        playlistService.deleteComment(id, commentId, userId);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "댓글이 삭제되었습니다."
         ));
     }
 }

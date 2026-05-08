@@ -74,4 +74,12 @@
           AND DELETED_AT IS NULL
     </update>
 
+    <update id="decreaseCommentCount" parameterType="long">
+        UPDATE PLAYLISTS
+        SET COMMENT_COUNT = GREATEST(NVL(COMMENT_COUNT, 0) - 1, 0),
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND DELETED_AT IS NULL
+    </update>
+
 </mapper>

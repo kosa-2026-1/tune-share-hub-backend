@@ -338,4 +338,19 @@ public class PlaylistService {
         existingComment.setContent(comment.getContent());
         commentDao.updateComment(existingComment);
     }
+
+    @Transactional
+    public void deleteComment(Long id, Long commentId, Long userId) {
+        Comment existingComment = commentDao.findById(commentId);
+        if (existingComment == null || !existingComment.getPlaylistId().equals(id)) {
+            throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
+        }
+
+        if (!existingComment.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
+        }
+
+        commentDao.deleteComment(commentId);
+        playlistMapper.decreaseCommentCount(id);
+    }
 }

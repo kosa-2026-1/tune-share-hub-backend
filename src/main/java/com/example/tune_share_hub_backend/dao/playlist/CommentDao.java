@@ -12,4 +12,6 @@ public interface CommentDao {
 	Comment findById(@Param("commentId") Long commentId);
 
 	void updateComment(@Param("comment") Comment existingComment);
+
+	void deleteComment(@Param("commentId") Long commentId);
 }
