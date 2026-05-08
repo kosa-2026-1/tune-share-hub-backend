@@ -1,6 +1,10 @@
 package com.example.tune_share_hub_backend.dto.playlist;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
+import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 @NoArgsConstructor
-public class PlaylistResponseDto {
+public class PlaylistDetailResponseDto {
 
     private Long playlistId;
     private String title;
@@ -22,4 +26,7 @@ public class PlaylistResponseDto {
     private String coverImageUrl;
     private int commentCount;
     private LocalDateTime createdAt;
+
+    private List<PlaylistTrack> tracks;
+    private List<CommentResponseDto> comments;
 }

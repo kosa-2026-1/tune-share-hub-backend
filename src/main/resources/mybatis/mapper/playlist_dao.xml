@@ -88,4 +88,11 @@
     WHERE PUBLIC_YN = 'Y'
 </select>
 
+
+<select id="findCommentsByPlaylistId" parameterType="long" resultType="com.example.tune_share_hub_backend.entity.Comment">
+    SELECT * FROM COMMENTS
+    WHERE PLAYLIST_ID = #{playlistId}
+    ORDER BY CREATED_AT ASC
+</select>
+
 </mapper>

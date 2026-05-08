@@ -8,8 +8,6 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-
-
 @Component
 public class LoginUserIdArgumentResolver implements HandlerMethodArgumentResolver {
     @Override
@@ -26,6 +24,7 @@ public class LoginUserIdArgumentResolver implements HandlerMethodArgumentResolve
                 return userId;
             }
         }
-        throw new IllegalStateException("No userId found in request attributes");
+        // throw new IllegalStateException("No userId found in request attributes");
+        return null;
     }
 }
