@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Slf4j
@@ -77,17 +79,7 @@ public class JwtProvider {
 
     public Long getUserId(String token) {
         validateToken(token);
-        
-        try {
-            String subject = getClaims(token).getSubject();
-            if (subject == null || subject.trim().isEmpty()) {
-                throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
-            }
-            return Long.parseLong(subject);
-        } catch (NumberFormatException e) {
-            log.warn("Invalid user ID format in token: {}", e.getMessage());
-            throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
-        }
+        return Long.parseLong(getClaims(token).getSubject());
     }
 
     public String getEmail(String token) {
@@ -123,6 +115,15 @@ public class JwtProvider {
         return role;
     }
 
+    public LocalDateTime getExpirationDateTime(String token) {
+
+        Date expiration = getClaims(token).getExpiration();
+
+        return expiration.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+    }
+
     public boolean isAccessToken(String token) {
         try {
             return TOKEN_TYPE_ACCESS.equals(getTokenCategory(token));
@@ -141,14 +142,13 @@ public class JwtProvider {
 
     public void validateToken(String token) {
         try {
-            Claims claims = getClaims(token);
-            if (isExpired(claims)) {
-                throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);
-            }
-        } catch (CustomException e) {
-            throw e;
+            Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token);
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);
         } catch (JwtException | IllegalArgumentException e) {
-            log.debug("Token validation failed: {}", e.getMessage());
             throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
         }
     }
@@ -179,8 +179,10 @@ public class JwtProvider {
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            // 만료된 토큰의 정보가 필요한 경우를 위해 예외 분리
+            throw new CustomException(ErrorCode.EXPIRED_ACCESS_TOKEN);
         } catch (JwtException e) {
-            log.debug("JWT parsing failed: {}", e.getMessage());
             throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
         }
     }
