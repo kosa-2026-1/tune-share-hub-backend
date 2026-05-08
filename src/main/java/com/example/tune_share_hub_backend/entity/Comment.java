@@ -16,6 +16,7 @@ public class Comment {
 	private Long commentId;
 	private Long playlistId;
 	private Long userId;
+	private String userNickname;
 	private String content;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;

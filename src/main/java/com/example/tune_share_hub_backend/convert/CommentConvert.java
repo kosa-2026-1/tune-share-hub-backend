@@ -12,6 +12,7 @@ public class CommentConvert {
 				.commentId(comment.getCommentId())
 				.playlistId(comment.getPlaylistId())
 				.userId(comment.getUserId())
+				.userNickname(comment.getUserNickname())
 				.content(comment.getContent())
 				.createdAt(comment.getCreatedAt().toString()) // LocalDateTime을 String으로 변환
 				.updatedAt(comment.getUpdatedAt().toString()) // LocalDateTime을 String으로 변환

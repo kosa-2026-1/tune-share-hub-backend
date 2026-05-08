@@ -13,6 +13,7 @@ public class CommentResponseDto {
 	private Long commentId;
 	private Long playlistId;
 	private Long userId;
+	private String userNickname;
 	private String content;
 	private String createdAt;
 	private String updatedAt;
