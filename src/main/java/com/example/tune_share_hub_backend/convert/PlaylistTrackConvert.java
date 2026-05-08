@@ -27,7 +27,7 @@ public class PlaylistTrackConvert {
 			.albumImageUrl(request.getAlbumImageUrl())
 			.spotifyUrl(request.getSpotifyUrl())
 			.youtubeUrl(request.getYoutubeUrl())
-			.durationMs(0L)
+			.durationMs(request.getDurationMs())
 			.positionNo(positionNo)
 			.build();
 	}
@@ -60,6 +60,7 @@ public class PlaylistTrackConvert {
 			.albumImageUrl(playlistTrack.getAlbumImageUrl())
 			.spotifyUrl(playlistTrack.getSpotifyUrl())
 			.youtubeUrl(playlistTrack.getYoutubeUrl())
+			.durationMs(playlistTrack.getDurationMs())
 			.positionNo(playlistTrack.getPositionNo())
 			.build();
 	}

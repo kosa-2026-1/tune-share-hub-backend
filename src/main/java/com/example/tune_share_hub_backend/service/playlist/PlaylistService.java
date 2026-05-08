@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -156,9 +157,7 @@ public class PlaylistService {
             nextPositionNo++;
         }
 
-        for (PlaylistTrack playlistTrack : playlistTracksList) {
-            playlistTrackDao.insertPlaylistTrack(playlistTrack);
-        }
+        playlistTrackDao.insertPlaylistTracks(playlistTracksList);
 
         return playlistTrackDao.findByPlaylistId(id);
     }
@@ -190,11 +189,7 @@ public class PlaylistService {
                 throw new CustomException(ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
             }
 
-            List<PlaylistTrack> playlistTracks = playlistTrackDao.findByPlaylistId(id);
-            boolean trackExists = playlistTracks.stream()
-                .anyMatch(track -> track.getPlaylistTrackId().equals(trackId));
-
-            if (!trackExists) {
+            if (playlistTrackDao.existsByPlaylistIdAndTrackId(id, trackId) == 0) {
                 throw new CustomException(ErrorCode.PLAYLIST_TRACK_NOT_FOUND);
             }
 
@@ -208,14 +203,20 @@ public class PlaylistService {
 
     private void compactPlaylistTrackPositions(Long playlistId) {
         List<PlaylistTrack> playlistTracks = playlistTrackDao.findByPlaylistId(playlistId);
+        List<PlaylistTrack> tracksToUpdate = new ArrayList<>();
 
         for (int i = 0; i < playlistTracks.size(); i++) {
             PlaylistTrack playlistTrack = playlistTracks.get(i);
             int positionNo = i + 1;
 
             if (playlistTrack.getPositionNo() == null || playlistTrack.getPositionNo() != positionNo) {
-                playlistTrackDao.updatePlaylistTrackPosition(playlistTrack.getPlaylistTrackId(), positionNo);
+                playlistTrack.setPositionNo(positionNo);
+                tracksToUpdate.add(playlistTrack);
             }
+        }
+
+        if (!tracksToUpdate.isEmpty()) {
+            playlistTrackDao.updatePlaylistTrackPositions(tracksToUpdate);
         }
     }
 
@@ -267,18 +268,22 @@ public class PlaylistService {
             .orElse(0);
         int temporaryPositionStart = maxPositionNo + requestListDto.size() + 1;
 
+        List<PlaylistTrack> temporaryPositions = new ArrayList<>();
         for (int i = 0; i < requestListDto.size(); i++) {
-            playlistTrackDao.updatePlaylistTrackPosition(
-                requestListDto.get(i).getPlaylistTrackId(),
-                temporaryPositionStart + i
-            );
+            temporaryPositions.add(PlaylistTrack.builder()
+                .playlistTrackId(requestListDto.get(i).getPlaylistTrackId())
+                .positionNo(temporaryPositionStart + i)
+                .build());
         }
+        playlistTrackDao.updatePlaylistTrackPositions(temporaryPositions);
 
+        List<PlaylistTrack> finalPositions = new ArrayList<>();
         for (int i = 0; i < requestListDto.size(); i++) {
-            playlistTrackDao.updatePlaylistTrackPosition(
-                requestListDto.get(i).getPlaylistTrackId(),
-                i + 1
-            );
+            finalPositions.add(PlaylistTrack.builder()
+                .playlistTrackId(requestListDto.get(i).getPlaylistTrackId())
+                .positionNo(i + 1)
+                .build());
         }
+        playlistTrackDao.updatePlaylistTrackPositions(finalPositions);
     }
 }
