@@ -9,8 +9,8 @@ import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.entity.Playlist;
 
 @Mapper
-
 public interface PlaylistMapperDao {
+
     void insert(Playlist playlist);
 
     List<Playlist> findByUserId(Long userId);
@@ -18,8 +18,8 @@ public interface PlaylistMapperDao {
     Playlist findById(Long playlistId);
 
     int updatePlaylist(@Param("playlistId") Long playlistId,
-                       @Param("userId") Long userId,
-                       @Param("request") PlaylistRequestDto request);
+            @Param("userId") Long userId,
+            @Param("request") PlaylistRequestDto request);
 
     int updatePlaylistVisibility(@Param("playlistId") Long playlistId,
                                  @Param("userId") Long userId,
@@ -28,4 +28,11 @@ public interface PlaylistMapperDao {
     int increaseCommentCount(@Param("playlistId") Long playlistId);
 
     void decreaseCommentCount(@Param("playlistId") Long playlistId);
+
+    List<Playlist> findPublicPlaylists(@Param("offset") int offset, @Param("size") int size);
+
+    int countPublicPlaylists();
+
+    int deletePlaylist(@Param("playlistId") Long playlistId,
+            @Param("userId") Long userId);
 }

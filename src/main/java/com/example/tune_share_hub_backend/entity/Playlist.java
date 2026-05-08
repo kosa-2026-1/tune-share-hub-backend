@@ -23,5 +23,5 @@ public class Playlist {
     private int commentCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private LocalDateTime deletedAt;
+
 }
