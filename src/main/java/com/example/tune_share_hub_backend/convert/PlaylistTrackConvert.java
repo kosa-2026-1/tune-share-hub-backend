@@ -8,10 +8,10 @@ import com.example.tune_share_hub_backend.dto.music.PlaylistTrackCreateRequestDt
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackResponseDto;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 
-public class PlaylistTrackConvert {
+import lombok.NoArgsConstructor;
 
-	private PlaylistTrackConvert() {
-	}
+@NoArgsConstructor
+public class PlaylistTrackConvert {
 
 	public static PlaylistTrack toEntity(
 		PlaylistTrackCreateRequestDto request,
