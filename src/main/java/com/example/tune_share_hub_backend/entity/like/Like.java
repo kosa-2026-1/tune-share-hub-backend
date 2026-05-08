@@ -16,5 +16,5 @@ public class Like {
     private Long playlistId;
     private Long userId;
     private LocalDateTime createdAt;
-    private Boolean status;
+    private String status;
 }
