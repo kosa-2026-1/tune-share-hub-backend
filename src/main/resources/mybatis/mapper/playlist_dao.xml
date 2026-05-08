@@ -63,6 +63,20 @@
           AND USER_ID = #{userId}
     </update>
 
+    <update id="increaseCommentCount" parameterType="long">
+        UPDATE PLAYLISTS
+        SET COMMENT_COUNT = NVL(COMMENT_COUNT, 0) + 1,
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+    </update>
+
+    <update id="decreaseCommentCount" parameterType="long">
+        UPDATE PLAYLISTS
+        SET COMMENT_COUNT = GREATEST(NVL(COMMENT_COUNT, 0) - 1, 0),
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+    </update>
+    
     <delete id="deletePlaylist">
     DELETE FROM PLAYLISTS
     WHERE PLAYLIST_ID = #{playlistId}
@@ -87,5 +101,6 @@
     SELECT COUNT(*) FROM PLAYLISTS
     WHERE PUBLIC_YN = 'Y'
 </select>
+
 
 </mapper>
