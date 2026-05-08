@@ -2,39 +2,33 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.tune_share_hub_backend.dao.like.LikeDao">
-    <insert id="insert" parameterType="Like">
-        INSERT INTO PLAYLIST_LIKES (
-            LIKE_ID,
-            PLAYLIST_ID,
-            USER_ID,
-            CREATED_AT,
-            STATUS
-        )
-        VALUES (
-                   SEQ_PLAYLIST_LIKES.NEXTVAL,
-                   #{playlistId},
-                   #{userId},
-                   #{createdAt},
-                   'Y'
-               )
+    <insert id="insertLike">
+        INSERT INTO PLAYLIST_LIKES (LIKE_ID, USER_ID, PLAYLIST_ID, STATUS, CREATED_AT)
+        VALUES (SEQ_PLAYLIST_LIKES.NEXTVAL, #{userId}, #{playlistId}, #{status}, SYSDATE)
     </insert>
 
     <update id="incrementLikeCount" parameterType="Long">
         UPDATE PLAYLISTS
-        SET LIKE_COUNT = LIKE_COUNT + 1
-        WHERE PLAYLIST_ID = #{playlistId}
-    </update>
-    
-    <update id="decrementLikeCount" parameterType="Long">
-        UPDATE PLAYLISTS
-        SET LIKE_COUNT = LIKE_COUNT - 1
+        SET LIKE_COUNT = LIKE_COUNT + 1, UPDATED_AT = SYSDATE
         WHERE PLAYLIST_ID = #{playlistId}
     </update>
 
-    <update id="updateStatus">
+    <select id="getLikeByUserIdAndPlaylistId" parameterType="Like" resultType="Like">
+        SELECT *
+        FROM PLAYLIST_LIKES
+        WHERE PLAYLIST_ID = #{playlistId} AND USER_ID = #{userId}
+    </select>
+    
+    <update id="decrementLikeCount" parameterType="Long">
+        UPDATE PLAYLISTS
+        SET LIKE_COUNT = LIKE_COUNT - 1, UPDATED_AT = SYSDATE
+        WHERE PLAYLIST_ID = #{playlistId}
+    </update>
+
+    <update id="updateLikeStatus">
         UPDATE PLAYLIST_LIKES
         SET STATUS = #{status}
-        WHERE LIKE_ID = #{likeId}
+        WHERE USER_ID = #{userId} AND PLAYLIST_ID = #{playlistId}
     </update>
 
     <select id="getLikedPlaylistsByUserId" parameterType="Long" resultType="Playlist">
@@ -44,6 +38,5 @@
         WHERE L.USER_ID = #{userId}
           AND L.STATUS = 'Y'
     </select>
-
 
 </mapper>

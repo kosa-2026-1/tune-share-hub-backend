@@ -1,22 +1,24 @@
 package com.example.tune_share_hub_backend.service.playlist;
 
+import com.example.tune_share_hub_backend.dao.like.LikeDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
+import com.example.tune_share_hub_backend.dao.user.UserDao;
+import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
-import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
+import com.example.tune_share_hub_backend.entity.like.Like;
+import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,6 +29,8 @@ public class PlaylistService {
 
     private final PlaylistMapperDao playlistMapper;
     private final PlaylistTrackDao playlistTrackDao;
+    private final LikeDao likeDao;
+    private final UserDao userDao;
 
     @Transactional
     public void updatePlaylist(Long playlistId, Long userId, PlaylistRequestDto request) {
@@ -280,5 +284,71 @@ public class PlaylistService {
                 i + 1
             );
         }
+    }
+
+    @Transactional
+    public LikeResponseDto like(Long playlistId, Long userId) {
+        // 1. 사용자 및 플레이리스트 유효성 검사
+        User user = userDao.getUserById(userId);
+        if (user == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        Playlist playlist = playlistMapper.findById(playlistId);
+        if (playlist == null) {
+            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
+        }
+
+        // 2. 현재 좋아요 상태 조회
+        Like existingLike = likeDao.getLikeByUserIdAndPlaylistId(playlistId, userId);
+
+        String newStatus;
+        boolean shouldIncrementLikeCount;
+
+        // 3. 상태 결정 및 DB 반영 (INSERT 또는 UPDATE 분리)
+        if (existingLike == null) {
+            // 이력이 아예 없다면 새로 INSERT
+            newStatus = "Y";
+            shouldIncrementLikeCount = true;
+            likeDao.insertLike(playlistId, userId, newStatus);
+        } else {
+            // 기존 이력이 있다면 상태 UPDATE
+            String currentStatus = existingLike.getStatus();
+            if ("Y".equals(currentStatus)) {
+                newStatus = "N";
+                shouldIncrementLikeCount = false;
+            } else {
+                newStatus = "Y";
+                shouldIncrementLikeCount = true;
+            }
+            likeDao.updateLikeStatus(playlistId, userId, newStatus);
+        }
+
+        // 4. 플레이리스트의 좋아요 카운트 업데이트
+        if (shouldIncrementLikeCount) {
+            likeDao.incrementLikeCount(playlistId);
+        } else {
+            likeDao.decrementLikeCount(playlistId);
+        }
+
+        // 5. 최종 좋아요 상태를 다시 조회하여 반환
+        Like like = likeDao.getLikeByUserIdAndPlaylistId(playlistId, userId);
+        if (like == null) {
+            throw new CustomException(ErrorCode.INTERNAL_ERROR);
+        }
+
+        return LikeResponseDto.from(like);
+    }
+
+    @Transactional
+    public List<PlaylistResponseDto> getLikedPlaylists(Long userId){
+        // 사용자 유효성 검사
+        User user = userDao.getUserById(userId);
+        if (user == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+        return likeDao.getLikedPlaylistsByUserId(userId)
+                .stream()
+                .map(PlaylistResponseDto::from).toList();
     }
 }

@@ -1,14 +1,17 @@
 package com.example.tune_share_hub_backend.controller.playlist;
 
 import com.example.tune_share_hub_backend.convert.PlaylistTrackConvert;
+import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
+import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackCreateRequestDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
-import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
-import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
+import com.example.tune_share_hub_backend.global.interceptor.AccessTokenCheck;
+import com.example.tune_share_hub_backend.global.interceptor.LoginUserId;
 import com.example.tune_share_hub_backend.service.playlist.PlaylistService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,15 +23,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -183,5 +178,18 @@ public class PlaylistController {
                 "message", "트랙 순서가 변경되었습니다."
         ));
     }
+
+    @Operation(summary = "플레이리스트 좋아요/취소", description = "로그인한 사용자가 플레이리스트에 좋아요를 누르거나 취소합니다.")
+    @PostMapping("/playlists/{id}/likes")
+    @AccessTokenCheck
+    public ResponseEntity<LikeResponseDto> like(
+            @PathVariable Long id,
+            @LoginUserId Long userId) {
+        LikeResponseDto likeResponseDto = playlistService.like(id, userId);
+
+        return ResponseEntity.ok(likeResponseDto);
+    }
+
+
 
 }

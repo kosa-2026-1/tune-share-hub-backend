@@ -8,10 +8,11 @@ import java.util.List;
 
 @Mapper
 public interface LikeDao {
-    public int insert(Like like);
-    public int incrementLikeCount(Long playlistId);
-    public int decrementLikeCount(Long playlistId);
-    public int updateStatus(Long likeId, String status);
-    public List<Playlist> getLikedPlaylistsByUserId(Long userId);
+    int incrementLikeCount(Long playlistId);
+    int decrementLikeCount(Long playlistId);
+    List<Playlist> getLikedPlaylistsByUserId(Long userId);
+    Like getLikeByUserIdAndPlaylistId(Long playlistId, Long userId);
+    int insertLike(Long playlistId, Long userId, String status);
+    int updateLikeStatus(Long playlistId,Long userId, String status);
 }
 
