@@ -18,9 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,12 +58,39 @@ public class PlaylistService {
         playlist.setTitle(req.getTitle());
         playlist.setDescription(req.getDescription());
         playlist.setCoverImageUrl(req.getCoverImageUrl());
-        playlist.setPublicYn(req.getPublicYn());
+        playlist.setPublicYn(req.getPublicYn() == null ? "Y" : req.getPublicYn());
 
         playlistMapper.insert(playlist);
 
         return toResponse(playlist);
     }
+
+
+    public Map<String, Object> getPublicPlaylists(int page, int size) {
+    int offset = (page - 1) * size;
+    List<PlaylistResponseDto> list = playlistMapper.findPublicPlaylists(offset, size)
+            .stream().map(this::toResponse).collect(Collectors.toList());
+    int total = playlistMapper.countPublicPlaylists();
+
+    Map<String, Object> result = new HashMap<>();
+    result.put("content", list);
+    result.put("totalCount", total);
+    result.put("currentPage", page);
+    result.put("totalPages", (int) Math.ceil((double) total / size));
+    return result;
+}
+
+    @Transactional
+    public void deletePlaylist(Long playlistId, Long userId) {
+        validatePlaylistId(playlistId);
+
+        int deletedCount = playlistMapper.deletePlaylist(playlistId, userId);
+
+        if (deletedCount == 0) {
+            throw new CustomException(ErrorCode.PLAYLIST_DELETE_FORBIDDEN);
+        }
+    }
+
 
     public List<PlaylistResponseDto> getMyPlaylists(Long userId) {
         return playlistMapper.findByUserId(userId)
@@ -123,12 +148,15 @@ public class PlaylistService {
     }
 
     private PlaylistResponseDto toResponse(Playlist p) {
-        return new PlaylistResponseDto(
-                p.getPlaylistId(), p.getTitle(), p.getDescription(),
-                p.getPublicYn(), p.getViewCount(), p.getLikeCount(),
-                p.getCommentCount(), p.getCreatedAt(), Collections.emptyList()
-        );
-    }
+
+    return new PlaylistResponseDto(
+            p.getPlaylistId(), p.getTitle(), p.getDescription(),
+            p.getPublicYn(), p.getViewCount(), p.getLikeCount(),
+            p.getCoverImageUrl(), p.getCommentCount(), p.getCreatedAt(), 
+            Collections.emptyList());
+};
+       
+    
 
     @Transactional
     public List<PlaylistTrack> addTrackToPlaylist(
@@ -160,9 +188,7 @@ public class PlaylistService {
             nextPositionNo++;
         }
 
-        for (PlaylistTrack playlistTrack : playlistTracksList) {
-            playlistTrackDao.insertPlaylistTrack(playlistTrack);
-        }
+        playlistTrackDao.insertPlaylistTracks(playlistTracksList);
 
         return playlistTrackDao.findByPlaylistId(id);
     }
@@ -194,11 +220,7 @@ public class PlaylistService {
                 throw new CustomException(ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
             }
 
-            List<PlaylistTrack> playlistTracks = playlistTrackDao.findByPlaylistId(id);
-            boolean trackExists = playlistTracks.stream()
-                .anyMatch(track -> track.getPlaylistTrackId().equals(trackId));
-
-            if (!trackExists) {
+            if (playlistTrackDao.existsByPlaylistIdAndTrackId(id, trackId) == 0) {
                 throw new CustomException(ErrorCode.PLAYLIST_TRACK_NOT_FOUND);
             }
 
@@ -212,14 +234,20 @@ public class PlaylistService {
 
     private void compactPlaylistTrackPositions(Long playlistId) {
         List<PlaylistTrack> playlistTracks = playlistTrackDao.findByPlaylistId(playlistId);
+        List<PlaylistTrack> tracksToUpdate = new ArrayList<>();
 
         for (int i = 0; i < playlistTracks.size(); i++) {
             PlaylistTrack playlistTrack = playlistTracks.get(i);
             int positionNo = i + 1;
 
             if (playlistTrack.getPositionNo() == null || playlistTrack.getPositionNo() != positionNo) {
-                playlistTrackDao.updatePlaylistTrackPosition(playlistTrack.getPlaylistTrackId(), positionNo);
+                playlistTrack.setPositionNo(positionNo);
+                tracksToUpdate.add(playlistTrack);
             }
+        }
+
+        if (!tracksToUpdate.isEmpty()) {
+            playlistTrackDao.updatePlaylistTrackPositions(tracksToUpdate);
         }
     }
 
@@ -271,19 +299,23 @@ public class PlaylistService {
             .orElse(0);
         int temporaryPositionStart = maxPositionNo + requestListDto.size() + 1;
 
+        List<PlaylistTrack> temporaryPositions = new ArrayList<>();
         for (int i = 0; i < requestListDto.size(); i++) {
-            playlistTrackDao.updatePlaylistTrackPosition(
-                requestListDto.get(i).getPlaylistTrackId(),
-                temporaryPositionStart + i
-            );
+            temporaryPositions.add(PlaylistTrack.builder()
+                .playlistTrackId(requestListDto.get(i).getPlaylistTrackId())
+                .positionNo(temporaryPositionStart + i)
+                .build());
         }
+        playlistTrackDao.updatePlaylistTrackPositions(temporaryPositions);
 
+        List<PlaylistTrack> finalPositions = new ArrayList<>();
         for (int i = 0; i < requestListDto.size(); i++) {
-            playlistTrackDao.updatePlaylistTrackPosition(
-                requestListDto.get(i).getPlaylistTrackId(),
-                i + 1
-            );
+            finalPositions.add(PlaylistTrack.builder()
+                .playlistTrackId(requestListDto.get(i).getPlaylistTrackId())
+                .positionNo(i + 1)
+                .build());
         }
+        playlistTrackDao.updatePlaylistTrackPositions(finalPositions);
     }
 
     @Transactional

@@ -15,5 +15,6 @@ public class PlaylistTrackResponseDto {
 	private String albumImageUrl;
 	private String spotifyUrl;
 	private String youtubeUrl;
+	private Long durationMs;
 	private int positionNo;
 }

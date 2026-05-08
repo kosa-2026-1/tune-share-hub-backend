@@ -1,8 +1,9 @@
 package com.example.tune_share_hub_backend.global.exception;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public enum ErrorCode {
     INVALID_PUBLIC_YN(HttpStatus.BAD_REQUEST, "공개 여부는 Y 또는 N만 가능합니다."),
     INVALID_PLAYLIST_TITLE(HttpStatus.BAD_REQUEST, "플레이리스트 제목은 필수입니다."),
     PLAYLIST_TRACK_NOT_FOUND(HttpStatus.NOT_FOUND, "플레이리스트에 노래를 찾을 수 없습니다." ),
+    PLAYLIST_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "플레이리스트를 삭제할 권한이 없습니다."),
 
     //Like
     LIKE_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 좋아요가 존재합니다."),
