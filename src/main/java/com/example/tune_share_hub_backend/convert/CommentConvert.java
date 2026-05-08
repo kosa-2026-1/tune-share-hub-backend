@@ -5,6 +5,9 @@ import java.util.List;
 import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
 import com.example.tune_share_hub_backend.entity.Comment;
 
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
 public class CommentConvert {
 
 	public static CommentResponseDto toCommentResponseDto(Comment comment) {
