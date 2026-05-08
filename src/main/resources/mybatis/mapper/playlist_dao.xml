@@ -18,14 +18,16 @@
         <result property="deletedAt"     column="DELETED_AT"/>
     </resultMap>
 
-    <!-- MVP-4: 생성 -->
+   <!-- MVP-4: 생성 -->
 <insert id="insert" parameterType="com.example.tune_share_hub_backend.entity.Playlist">
+    <selectKey keyProperty="playlistId" resultType="long" order="BEFORE">
+        SELECT SEQ_PLAYLISTS.NEXTVAL FROM DUAL
+    </selectKey>
     INSERT INTO PLAYLISTS (
         PLAYLIST_ID, USER_ID, TITLE, DESCRIPTION,
         COVER_IMAGE_URL, PUBLIC_YN
     ) VALUES (
-        (SELECT NVL(MAX(PLAYLIST_ID), 0) + 1 FROM PLAYLISTS),
-        #{userId}, #{title}, #{description},
+        #{playlistId}, #{userId}, #{title}, #{description},
         #{coverImageUrl}, #{publicYn}
     )
 </insert>
@@ -65,5 +67,26 @@
           AND USER_ID = #{userId}
           AND DELETED_AT IS NULL
     </update>
+
+   
+<select id="findPublicPlaylists" resultMap="PlaylistResultMap">
+    SELECT * FROM (
+        SELECT ROWNUM AS RN, P.* FROM (
+            SELECT * FROM PLAYLISTS
+            WHERE PUBLIC_YN = 'Y'
+              AND DELETED_AT IS NULL
+            ORDER BY CREATED_AT DESC
+        ) P
+        WHERE ROWNUM &lt;= #{offset} + #{size}
+    )
+    WHERE RN > #{offset}
+</select>
+
+
+<select id="countPublicPlaylists" resultType="int">
+    SELECT COUNT(*) FROM PLAYLISTS
+    WHERE PUBLIC_YN = 'Y'
+      AND DELETED_AT IS NULL
+</select>
 
 </mapper>

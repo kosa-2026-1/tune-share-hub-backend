@@ -24,4 +24,8 @@ public interface PlaylistMapperDao {
     int updatePlaylistVisibility(@Param("playlistId") Long playlistId,
                                  @Param("userId") Long userId,
                                  @Param("publicYn") String publicYn);
+
+    List<Playlist> findPublicPlaylists(@Param("offset") int offset, @Param("size") int size);
+    int countPublicPlaylists();
 }
+
