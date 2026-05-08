@@ -63,6 +63,12 @@
           AND USER_ID = #{userId}
     </update>
 
+    <delete id="deletePlaylist">
+    DELETE FROM PLAYLISTS
+    WHERE PLAYLIST_ID = #{playlistId}
+    AND USER_ID = #{userId}
+</delete>
+
    
 <select id="findPublicPlaylists" resultMap="PlaylistResultMap">
     SELECT * FROM (
@@ -80,33 +86,6 @@
 <select id="countPublicPlaylists" resultType="int">
     SELECT COUNT(*) FROM PLAYLISTS
     WHERE PUBLIC_YN = 'Y'
-</select>
-    <update id="deletePlaylist">
-        UPDATE PLAYLISTS
-        SET UPDATED_AT = SYSTIMESTAMP
-        WHERE PLAYLIST_ID = #{playlistId}
-          AND USER_ID = #{userId}
-    </update>
-
-   
-<select id="findPublicPlaylists" resultMap="PlaylistResultMap">
-    SELECT * FROM (
-        SELECT ROWNUM AS RN, P.* FROM (
-            SELECT * FROM PLAYLISTS
-            WHERE PUBLIC_YN = 'Y'
-              AND DELETED_AT IS NULL
-            ORDER BY CREATED_AT DESC
-        ) P
-        WHERE ROWNUM &lt;= #{offset} + #{size}
-    )
-    WHERE RN > #{offset}
-</select>
-
-
-<select id="countPublicPlaylists" resultType="int">
-    SELECT COUNT(*) FROM PLAYLISTS
-    WHERE PUBLIC_YN = 'Y'
-      AND DELETED_AT IS NULL
 </select>
 
 </mapper>
