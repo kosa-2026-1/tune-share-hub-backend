@@ -45,4 +45,11 @@
             REVOKED_AT = SYSTIMESTAMP
         WHERE USER_ID = #{userId} AND TOKEN_VALUE = #{refreshToken}
     </update>
+
+    <delete id="deleteExpiredOrRevokedTokens">
+        DELETE
+        FROM REFRESH_TOKENS
+        WHERE REVOKED_YN = 'Y'
+           OR EXPIRES_AT &lt; SYSTIMESTAMP
+    </delete>
 </mapper>
