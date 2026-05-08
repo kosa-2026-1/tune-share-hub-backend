@@ -5,9 +5,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface UserDao {
-    public int insert(User user);
-//    public int update(User user);
-//    public int delete(Long id);
-    public User getUserByEmail(String email);
-    public User getUserById(Long id);
+    int insert(User user);
+//    int update(User user);
+//    int delete(Long id);
+    User getUserByEmail(String email);
+    User getUserById(Long id);
 }
