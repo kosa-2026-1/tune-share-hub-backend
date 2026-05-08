@@ -15,6 +15,7 @@ public class PlaylistTrackCreateRequestDto {
 	private String albumName;
 	private String albumImageUrl;
 	private String spotifyUrl;
+	private Long durationMs;
 	@Setter
 	private String youtubeUrl;
 
