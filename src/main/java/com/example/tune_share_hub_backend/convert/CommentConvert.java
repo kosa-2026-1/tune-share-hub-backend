@@ -17,8 +17,8 @@ public class CommentConvert {
 				.userId(comment.getUserId())
 				.userNickname(comment.getUserNickname())
 				.content(comment.getContent())
-				.createdAt(comment.getCreatedAt().toString()) // LocalDateTime을 String으로 변환
-				.updatedAt(comment.getUpdatedAt().toString()) // LocalDateTime을 String으로 변환
+				.createdAt(comment.getCreatedAt() != null ? comment.getCreatedAt().toString() : null)
+				.updatedAt(comment.getUpdatedAt() != null ? comment.getUpdatedAt().toString() : null)
 				.build();
 	}
 
