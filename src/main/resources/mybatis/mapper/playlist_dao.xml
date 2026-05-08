@@ -68,7 +68,6 @@
         SET COMMENT_COUNT = NVL(COMMENT_COUNT, 0) + 1,
             UPDATED_AT = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
-          AND DELETED_AT IS NULL
     </update>
 
     <update id="decreaseCommentCount" parameterType="long">
@@ -76,7 +75,6 @@
         SET COMMENT_COUNT = GREATEST(NVL(COMMENT_COUNT, 0) - 1, 0),
             UPDATED_AT = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
-          AND DELETED_AT IS NULL
     </update>
     
     <delete id="deletePlaylist">

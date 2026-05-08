@@ -334,7 +334,7 @@ public class PlaylistService {
             throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
         }
 
-        if ("N".equals(playlist.getPublicYn()) && !playlist.getUserId().equals(userId)) {
+        if ("N".equals(playlist.getPublicYn())) {
             throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
         }
 
