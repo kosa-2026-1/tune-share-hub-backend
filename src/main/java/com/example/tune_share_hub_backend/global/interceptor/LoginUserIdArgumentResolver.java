@@ -24,7 +24,7 @@ public class LoginUserIdArgumentResolver implements HandlerMethodArgumentResolve
                 return userId;
             }
         }
-        // throw new IllegalStateException("No userId found in request attributes");
-        return null;
+        throw new IllegalStateException("No userId found in request attributes");
+
     }
 }
