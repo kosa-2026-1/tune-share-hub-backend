@@ -34,7 +34,12 @@ public enum ErrorCode {
 
     // Comment
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다." ),
-    PLAYLIST_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "플레이리스트를 삭제할 권한이 없습니다.");
+    PLAYLIST_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "플레이리스트를 삭제할 권한이 없습니다."),
+
+    // SearchHistory
+    SEARCH_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "검색 기록이 존재하지 않습니다."),
+    SEARCH_HISTORY_INVALID_KEYWORD(HttpStatus.BAD_REQUEST, "검색어는 필수입니다.");
+
 
     private final HttpStatus status;
     private final String message;
