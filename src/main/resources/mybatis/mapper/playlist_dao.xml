@@ -84,6 +84,32 @@
         WHERE RN > #{offset}
     </select>
 
+    <update id="decreaseCommentCount" parameterType="long">
+        UPDATE PLAYLISTS
+        SET COMMENT_COUNT = GREATEST(NVL(COMMENT_COUNT, 0) - 1, 0),
+            UPDATED_AT    = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+    </update>
+
+    <delete id="deletePlaylist">
+        DELETE
+        FROM PLAYLISTS
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND USER_ID = #{userId}
+    </delete>
+
+
+    <select id="findPublicPlaylists" resultMap="PlaylistResultMap">
+        SELECT *
+        FROM (SELECT ROWNUM AS RN, P.*
+              FROM (SELECT *
+                    FROM PLAYLISTS
+                    WHERE PUBLIC_YN = 'Y'
+                    ORDER BY CREATED_AT DESC) P
+              WHERE ROWNUM &lt;= #{offset} + #{size})
+        WHERE RN > #{offset}
+    </select>
+
 
     <select id="countPublicPlaylists" resultType="int">
         SELECT COUNT(*)

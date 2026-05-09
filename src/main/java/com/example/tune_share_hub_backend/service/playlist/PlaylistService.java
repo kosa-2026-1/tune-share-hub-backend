@@ -4,13 +4,16 @@ import com.example.tune_share_hub_backend.convert.CommentConvert;
 import com.example.tune_share_hub_backend.dao.playlist.CommentDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
+import com.example.tune_share_hub_backend.dao.user.UserDao;
 import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
+import com.example.tune_share_hub_backend.entity.Comment;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
+import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 @Service
 @RequiredArgsConstructor
 public class PlaylistService {
@@ -27,6 +31,7 @@ public class PlaylistService {
     private final PlaylistMapperDao playlistMapper;
     private final PlaylistTrackDao playlistTrackDao;
     private final CommentDao commentDao;
+    private final UserDao userDao;
 
     @Transactional
     public void updatePlaylist(Long playlistId, Long userId, PlaylistRequestDto request) {
@@ -337,8 +342,70 @@ public class PlaylistService {
         playlistTrackDao.updatePlaylistTrackPositions(finalPositions);
     }
 
+    @Transactional
+    public void createComment(Long id, Long userId, Comment comment) {
+        if (comment == null || comment.getContent() == null || comment.getContent().trim().isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        Playlist playlist = playlistMapper.findById(id);
+        if (playlist == null) {
+            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
+        }
+
+        if ("N".equals(playlist.getPublicYn()) && !playlist.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
+        }
+
+        User user = userDao.getUserById(userId);
+        if (user == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        comment.setPlaylistId(id);
+        comment.setUserId(userId);
+        comment.setUserNickname(user.getNickname());
+
+        commentDao.insertComment(comment);
+        playlistMapper.increaseCommentCount(id);
+
+    }
+
+    public void updateComment(Long id, Long commentId, Long userId, Comment comment) {
+        if (comment == null || comment.getContent() == null || comment.getContent().trim().isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        Comment existingComment = commentDao.findById(commentId);
+        if (existingComment == null || !existingComment.getPlaylistId().equals(id)) {
+            throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
+        }
+
+        if (!existingComment.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
+        }
+
+        existingComment.setContent(comment.getContent());
+        commentDao.updateComment(existingComment);
+    }
+
     public void increaseViewCount(Long playlistId) {
         playlistMapper.increaseViewCount(playlistId);
+    }
+
+    @Transactional
+    public void deleteComment(Long id, Long commentId, Long userId) {
+        Comment existingComment = commentDao.findById(commentId);
+        if (existingComment == null || !existingComment.getPlaylistId().equals(id)) {
+            throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
+        }
+
+        if (!existingComment.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
+        }
+
+        commentDao.deleteComment(commentId);
+        playlistMapper.decreaseCommentCount(id);
     }
 
 }
