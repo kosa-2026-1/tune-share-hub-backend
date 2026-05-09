@@ -28,7 +28,7 @@ spotify:
   client-secret: ${SPOTIFY_CLIENT_SECRET}
   token-url: https://accounts.spotify.com/api/token
   search-url: https://api.spotify.com/v1/search
-  track-url: https://api:spotify:com/v1/tracks
+  track-url: https://api.spotify.com/v1/tracks
 
 youtube:
   api-key: ${YOUTUBE_API_KEY}
