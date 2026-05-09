@@ -1,10 +1,12 @@
 package com.example.tune_share_hub_backend;
 
 import com.example.tune_share_hub_backend.dao.like.LikeDao;
+import com.example.tune_share_hub_backend.dao.playlist.CommentDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
 import com.example.tune_share_hub_backend.dao.refresh.RefreshTokenDao;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -26,8 +28,11 @@ class TuneShareHubBackendApplicationTests {
 	@MockitoBean
 	private RefreshTokenDao refreshTokenDao;
 
-    @MockitoBean
-    private LikeDao likeDao;
+  @MockitoBean
+  private LikeDao likeDao;
+  
+	@MockitoBean
+	private CommentDao commentDao;
 
 	@Test
 	void contextLoads() {
