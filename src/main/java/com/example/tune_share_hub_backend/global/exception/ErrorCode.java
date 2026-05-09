@@ -32,6 +32,7 @@ public enum ErrorCode {
     INVALID_PLAYLIST_TITLE(HttpStatus.BAD_REQUEST, "플레이리스트 제목은 필수입니다."),
     PLAYLIST_TRACK_NOT_FOUND(HttpStatus.NOT_FOUND, "플레이리스트에 노래를 찾을 수 없습니다." ),
     PLAYLIST_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "플레이리스트를 삭제할 권한이 없습니다."),
+    PRIVATE_PLAYLIST_CANNOT_BE_LIKED(HttpStatus.FORBIDDEN, "비공개 플레이리스트는 좋아요 할 수 없습니다."),
 
     //Like
     LIKE_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 좋아요가 존재합니다."),

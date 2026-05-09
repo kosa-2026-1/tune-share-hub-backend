@@ -331,6 +331,10 @@ public class PlaylistService {
             throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
         }
 
+        if ("N".equals(playlist.getPublicYn())) {
+            throw new CustomException(ErrorCode.PRIVATE_PLAYLIST_CANNOT_BE_LIKED);
+        }
+
         // 2. 현재 좋아요 상태 조회
         Like existingLike = likeDao.getLikeByUserIdAndPlaylistId(playlistId, userId);
 
