@@ -3,6 +3,8 @@ package com.example.tune_share_hub_backend.service.user;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
 import com.example.tune_share_hub_backend.dto.user.UserResponseDto;
 import com.example.tune_share_hub_backend.entity.user.User;
+import com.example.tune_share_hub_backend.global.exception.CustomException;
+import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,9 @@ public class UserService {
 
     @Transactional
     public UserResponseDto getUserInfo(Long userId) {
+        if (userId == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
         User user = userDao.getUserById(userId);
         return UserResponseDto.builder()
                 .userId(user.getUserId())

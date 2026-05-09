@@ -6,8 +6,9 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface RefreshTokenDao {
-    public void insert(Refresh refresh);
-    public int deleteByUserIdAndTokenValue(@Param("userId") Long userId, @Param("refreshToken") String refreshToken);
-    public int existsRefresh(@Param("refreshToken") String refreshToken, @Param("userId") Long userId);
-    public int revokeTokensByUserIdAndTokenValue(@Param("userId") Long userId, @Param("refreshToken") String refreshToken);
+    void insert(Refresh refresh);
+    int deleteByUserIdAndTokenValue(Long userId, String refreshToken);
+    int existsRefresh(String refreshToken, Long userId);
+    int revokeTokensByUserIdAndTokenValue(Long userId, String refreshToken);
+    int deleteExpiredOrRevokedTokens();
 }
