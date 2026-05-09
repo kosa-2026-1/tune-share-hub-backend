@@ -13,7 +13,7 @@
         WHERE PLAYLIST_ID = #{playlistId}
     </update>
 
-    <select id="getLikeByUserIdAndPlaylistId" parameterType="Like" resultType="Like">
+    <select id="getLikeByUserIdAndPlaylistId" resultType="Like">
         SELECT *
         FROM PLAYLIST_LIKES
         WHERE PLAYLIST_ID = #{playlistId} AND USER_ID = #{userId}
