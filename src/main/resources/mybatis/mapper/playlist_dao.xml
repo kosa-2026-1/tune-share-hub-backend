@@ -4,95 +4,107 @@
 <mapper namespace="com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao">
 
     <resultMap id="PlaylistResultMap" type="com.example.tune_share_hub_backend.entity.Playlist">
-        <id     property="playlistId"    column="PLAYLIST_ID"/>
-        <result property="userId"        column="USER_ID"/>
-        <result property="title"         column="TITLE"/>
-        <result property="description"   column="DESCRIPTION"/>
+        <id property="playlistId" column="PLAYLIST_ID"/>
+        <result property="userId" column="USER_ID"/>
+        <result property="title" column="TITLE"/>
+        <result property="description" column="DESCRIPTION"/>
         <result property="coverImageUrl" column="COVER_IMAGE_URL"/>
-        <result property="publicYn"      column="PUBLIC_YN"/>
-        <result property="viewCount"     column="VIEW_COUNT"/>
-        <result property="likeCount"     column="LIKE_COUNT"/>
-        <result property="commentCount"  column="COMMENT_COUNT"/>
-        <result property="createdAt"     column="CREATED_AT"/>
-        <result property="updatedAt"     column="UPDATED_AT"/>
+        <result property="publicYn" column="PUBLIC_YN"/>
+        <result property="viewCount" column="VIEW_COUNT"/>
+        <result property="likeCount" column="LIKE_COUNT"/>
+        <result property="commentCount" column="COMMENT_COUNT"/>
+        <result property="createdAt" column="CREATED_AT"/>
+        <result property="updatedAt" column="UPDATED_AT"/>
     </resultMap>
 
-   <!-- MVP-4: 생성 -->
-<insert id="insert" parameterType="com.example.tune_share_hub_backend.entity.Playlist">
-    <selectKey keyProperty="playlistId" resultType="long" order="BEFORE">
-        SELECT SEQ_PLAYLISTS.NEXTVAL FROM DUAL
-    </selectKey>
-    INSERT INTO PLAYLISTS (
+    <!-- MVP-4: 생성 -->
+    <insert id="insert" parameterType="com.example.tune_share_hub_backend.entity.Playlist">
+        <selectKey keyProperty="playlistId" resultType="long" order="BEFORE">
+            SELECT SEQ_PLAYLISTS.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO PLAYLISTS (
         PLAYLIST_ID, USER_ID, TITLE, DESCRIPTION,
         COVER_IMAGE_URL, PUBLIC_YN
-    ) VALUES (
+        ) VALUES (
         #{playlistId}, #{userId}, #{title}, #{description},
         #{coverImageUrl}, #{publicYn}
-    )
-</insert>
+        )
+    </insert>
 
     <!-- MVP-5: 내 플레이리스트 목록 -->
     <select id="findByUserId" parameterType="long" resultMap="PlaylistResultMap">
-        SELECT * FROM PLAYLISTS
+        SELECT *
+        FROM PLAYLISTS
         WHERE USER_ID = #{userId}
         ORDER BY CREATED_AT DESC
     </select>
 
     <!-- MVP-6: 상세 조회 -->
     <select id="findById" parameterType="long" resultMap="PlaylistResultMap">
-        SELECT * FROM PLAYLISTS
+        SELECT *
+        FROM PLAYLISTS
         WHERE PLAYLIST_ID = #{playlistId}
     </select>
 
     <update id="updatePlaylist">
         UPDATE PLAYLISTS
-        SET TITLE = #{request.title},
-            DESCRIPTION = #{request.description},
+        SET TITLE           = #{request.title},
+            DESCRIPTION     = #{request.description},
             COVER_IMAGE_URL = #{request.coverImageUrl},
-            PUBLIC_YN = #{request.publicYn},
-            UPDATED_AT = SYSTIMESTAMP
+            PUBLIC_YN       = #{request.publicYn},
+            UPDATED_AT      = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
           AND USER_ID = #{userId}
     </update>
 
     <update id="updatePlaylistVisibility">
         UPDATE PLAYLISTS
-        SET PUBLIC_YN = #{publicYn},
+        SET PUBLIC_YN  = #{publicYn},
             UPDATED_AT = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
           AND USER_ID = #{userId}
     </update>
 
     <delete id="deletePlaylist">
-    DELETE FROM PLAYLISTS
-    WHERE PLAYLIST_ID = #{playlistId}
-    AND USER_ID = #{userId}
-</delete>
-
-   
-<select id="findPublicPlaylists" resultMap="PlaylistResultMap">
-    SELECT * FROM (
-        SELECT ROWNUM AS RN, P.* FROM (
-            SELECT * FROM PLAYLISTS
-            WHERE PUBLIC_YN = 'Y'
-            ORDER BY CREATED_AT DESC
-        ) P
-        WHERE ROWNUM &lt;= #{offset} + #{size}
-    )
-    WHERE RN > #{offset}
-</select>
+        DELETE
+        FROM PLAYLISTS
+        WHERE PLAYLIST_ID = #{playlistId}
+          AND USER_ID = #{userId}
+    </delete>
 
 
-<select id="countPublicPlaylists" resultType="int">
-    SELECT COUNT(*) FROM PLAYLISTS
-    WHERE PUBLIC_YN = 'Y'
-</select>
+    <select id="findPublicPlaylists" resultMap="PlaylistResultMap">
+        SELECT *
+        FROM (SELECT ROWNUM AS RN, P.*
+              FROM (SELECT *
+                    FROM PLAYLISTS
+                    WHERE PUBLIC_YN = 'Y'
+                    ORDER BY CREATED_AT DESC) P
+              WHERE ROWNUM &lt;= #{offset} + #{size})
+        WHERE RN > #{offset}
+    </select>
 
 
-<select id="findCommentsByPlaylistId" parameterType="long" resultType="com.example.tune_share_hub_backend.entity.Comment">
-    SELECT * FROM COMMENTS
-    WHERE PLAYLIST_ID = #{playlistId}
-    ORDER BY CREATED_AT ASC
-</select>
+    <select id="countPublicPlaylists" resultType="int">
+        SELECT COUNT(*)
+        FROM PLAYLISTS
+        WHERE PUBLIC_YN = 'Y'
+    </select>
+
+
+    <select id="findCommentsByPlaylistId" parameterType="long"
+            resultType="com.example.tune_share_hub_backend.entity.Comment">
+        SELECT *
+        FROM COMMENTS
+        WHERE PLAYLIST_ID = #{playlistId}
+        ORDER BY CREATED_AT ASC
+    </select>
+
+    <update id="increaseViewCount" parameterType="long">
+        UPDATE PLAYLISTS
+        SET VIEW_COUNT = NVL(VIEW_COUNT, 0) + 1,
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+    </update>
 
 </mapper>

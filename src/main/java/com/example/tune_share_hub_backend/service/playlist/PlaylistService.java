@@ -6,27 +6,18 @@ import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
 import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
-import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
-
-import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -105,41 +96,42 @@ public class PlaylistService {
     }
 
     public PlaylistDetailResponseDto getPlaylist(Long playlistId, Long loginUserId) {
-    Playlist playlist = playlistMapper.findById(playlistId);
+        Playlist playlist = playlistMapper.findById(playlistId);
 
-    if (playlist == null) {
-        throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
-    }
-
-    if ("N".equals(playlist.getPublicYn())) {
-        if (loginUserId == null || !loginUserId.equals(playlist.getUserId())) {
-            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
+        if (playlist == null) {
+            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
         }
+
+        if ("N".equals(playlist.getPublicYn())) {
+            if (loginUserId == null || !loginUserId.equals(playlist.getUserId())) {
+                throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
+            }
+        }
+
+        List<PlaylistTrack> tracks = playlistTrackDao.findByPlaylistId(playlistId);
+        List<CommentResponseDto> comments = CommentConvert.toCommentResponseDtoList(
+                commentDao.findByPlaylistId(playlistId));
+
+        return toDetailResponse(playlist, tracks, comments);
     }
-
-    List<PlaylistTrack> tracks = playlistTrackDao.findByPlaylistId(playlistId);
-    List<CommentResponseDto> comments = CommentConvert.toCommentResponseDtoList(
-        commentDao.findByPlaylistId(playlistId));
-
-    return toDetailResponse(playlist, tracks, comments);
-}
 
     private PlaylistDetailResponseDto toDetailResponse(Playlist p, List<PlaylistTrack> tracks,
-        List<CommentResponseDto> comments) {
-    return PlaylistDetailResponseDto.builder()
-            .playlistId(p.getPlaylistId())
-            .title(p.getTitle())
-            .description(p.getDescription())
-            .publicYn(p.getPublicYn())
-            .viewCount(p.getViewCount())
-            .likeCount(p.getLikeCount())
-            .coverImageUrl(p.getCoverImageUrl())
-            .commentCount(p.getCommentCount())
-            .createdAt(p.getCreatedAt())
-            .tracks(tracks)
-            .comments(comments)
-            .build();
-}
+                                                       List<CommentResponseDto> comments) {
+        return PlaylistDetailResponseDto.builder()
+                .playlistId(p.getPlaylistId())
+                .title(p.getTitle())
+                .description(p.getDescription())
+                .publicYn(p.getPublicYn())
+                .viewCount(p.getViewCount())
+                .likeCount(p.getLikeCount())
+                .coverImageUrl(p.getCoverImageUrl())
+                .commentCount(p.getCommentCount())
+                .createdAt(p.getCreatedAt())
+                .tracks(tracks)
+                .comments(comments)
+                .build();
+    }
+
     private void validatePlaylistId(Long playlistId) {
         if (playlistId == null || playlistId <= 0) {
             throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
@@ -343,6 +335,10 @@ public class PlaylistService {
                     .build());
         }
         playlistTrackDao.updatePlaylistTrackPositions(finalPositions);
+    }
+
+    public void increaseViewCount(Long playlistId) {
+        playlistMapper.increaseViewCount(playlistId);
     }
 
 }

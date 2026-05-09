@@ -103,6 +103,7 @@ public class PlaylistController {
             @PathVariable Long id,
             HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
+        playlistService.increaseViewCount(id);
         PlaylistDetailResponseDto result = playlistService.getPlaylist(id, userId);
         return ResponseEntity.ok(ApiResponseDto.success(result, "조회 성공"));
     }
