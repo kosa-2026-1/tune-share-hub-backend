@@ -1,59 +1,60 @@
 package com.example.tune_share_hub_backend.convert;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.example.tune_share_hub_backend.dto.music.MusicSearchResponseDto;
 import com.example.tune_share_hub_backend.dto.music.SpotifyTrackSearchResponseDto;
-
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor
 public class SpotifyTrackConverter {
 
-	public static List<MusicSearchResponseDto> toMusicSearchResponseDtos(
-		SpotifyTrackSearchResponseDto response
-	) {
-		List<MusicSearchResponseDto> result = new ArrayList<>();
+    public static List<MusicSearchResponseDto> toMusicSearchResponseDtos(
+            SpotifyTrackSearchResponseDto response
+    ) {
+        List<MusicSearchResponseDto> result = new ArrayList<>();
 
-		if (response == null || response.getTracks() == null) {
-			return result;
-		}
+        if (response == null || response.getTracks() == null) {
+            return result;
+        }
 
-		List<SpotifyTrackSearchResponseDto.TrackItem> items =
-			response.getTracks().getItems();
+        List<SpotifyTrackSearchResponseDto.TrackItem> items =
+                response.getTracks().getItems();
 
-		if (items == null || items.isEmpty()) {
-			return result;
-		}
+        if (items == null || items.isEmpty()) {
+            return result;
+        }
 
-		for (SpotifyTrackSearchResponseDto.TrackItem item : items) {
-			result.add(toMusicSearchResponseDto(item));
-		}
+        for (SpotifyTrackSearchResponseDto.TrackItem item : items) {
+            result.add(toMusicSearchResponseDto(item));
+        }
 
-		return result;
-	}
+        return result;
+    }
 
-	private static MusicSearchResponseDto toMusicSearchResponseDto(
-		SpotifyTrackSearchResponseDto.TrackItem item
-	) {
-		String albumName = "";
-		String albumImageUrl = "";
+    public static MusicSearchResponseDto toMusicSearchResponseDto(
+            SpotifyTrackSearchResponseDto.TrackItem item
+    ) {
+        String albumName = "";
+        String albumImageUrl = "";
 
-		if (item.getAlbum() != null) {
-			albumName = item.getAlbum().getName();
-			albumImageUrl = item.getAlbum().getFirstImageUrl();
-		}
+        if (item.getAlbum() != null) {
+            albumName = item.getAlbum().getName();
+            albumImageUrl = item.getAlbum().getFirstImageUrl();
+        }
 
-		return new MusicSearchResponseDto(
-			item.getId(),
-			item.getName(),
-			item.getFirstArtistName(),
-			albumName,
-			albumImageUrl,
-			item.getSpotifyUrl(),
-			item.getPreviewUrl(),
-			item.getDurationMs()
-		);
-	}
+        return new MusicSearchResponseDto(
+                item.getId(),
+                item.getName(),
+                item.getFirstArtistName(),
+                albumName,
+                albumImageUrl,
+                item.getSpotifyUrl(),
+                item.getPreviewUrl(),
+                item.getDurationMs()
+        );
+    }
+
+
 }
