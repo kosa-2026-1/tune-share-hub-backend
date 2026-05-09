@@ -1,5 +1,7 @@
 package com.example.tune_share_hub_backend.global.interceptor;
 
+import com.example.tune_share_hub_backend.global.exception.CustomException;
+import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
@@ -16,7 +18,9 @@ public class LoginUserIdArgumentResolver implements HandlerMethodArgumentResolve
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         // LoginUserId 어노테이션이 붙었는지 확인하고 Long 타입인지 확인
-        return parameter.hasParameterAnnotation(LoginUserId.class) && parameter.getParameterType().equals(Long.class);
+        return parameter.hasParameterAnnotation(LoginUserId.class)
+                && (parameter.getParameterType().equals(Long.class)
+                || parameter.getParameterType().equals(long.class));
     }
 
     // 위 검사를 통과했다면 실제 파라미터에 주입할 값을 반환
@@ -33,6 +37,7 @@ public class LoginUserIdArgumentResolver implements HandlerMethodArgumentResolve
                 return userId;
             }
         }
-        return null;
+
+        throw new CustomException(ErrorCode.AUTH_CONTEXT_NOT_FOUND);
     }
 }
