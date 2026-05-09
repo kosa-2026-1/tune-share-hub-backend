@@ -9,10 +9,12 @@ spotify:
   client-secret: test-client-secret
   token-url: https://example.com/spotify/token
   search-url: https://example.com/spotify/search
+  track-url: https://api.spotify.com/v1/tracks
 
 youtube:
   api-key: test-youtube-api-key
   search-url: https://example.com/youtube/search
+
 
 jwt:
   access-expiration: 3600000
