@@ -380,63 +380,43 @@ public class PlaylistService {
         commentDao.deleteComment(commentId);
         playlistMapper.decreaseCommentCount(id);
     }
-  
+
     @Transactional
     public LikeResponseDto like(Long playlistId, Long userId) {
-        // 1. 사용자 및 플레이리스트 유효성 검사
-        User user = userDao.getUserById(userId);
-        if (user == null) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
-
+        // 플레이리스트 유효성 검사
         Playlist playlist = playlistMapper.findById(playlistId);
-        if (playlist == null) {
-            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
-        }
+        if (playlist == null) throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
+        if ("N".equals(playlist.getPublicYn())) throw new CustomException(ErrorCode.PRIVATE_PLAYLIST_CANNOT_BE_LIKED);
 
-        if ("N".equals(playlist.getPublicYn())) {
-            throw new CustomException(ErrorCode.PRIVATE_PLAYLIST_CANNOT_BE_LIKED);
-        }
-
-        // 2. 현재 좋아요 상태 조회
+        // 상태 조회 및 결정
         Like existingLike = likeDao.getLikeByUserIdAndPlaylistId(playlistId, userId);
 
-        String newStatus;
-        boolean shouldIncrementLikeCount;
+        // 이력이 없거나 현재 상태가 'N'이면 -> 좋아요('Y') / 아니면 -> 취소('N')
+        boolean isActionLike = (existingLike == null || "N".equals(existingLike.getStatus()));
+        String newStatus = isActionLike ? "Y" : "N";
 
-        // 3. 상태 결정 및 DB 반영 (INSERT 또는 UPDATE 분리)
+        // DB 반영 (Insert or Update)
         if (existingLike == null) {
-            // 이력이 아예 없다면 새로 INSERT
-            newStatus = "Y";
-            shouldIncrementLikeCount = true;
             likeDao.insertLike(playlistId, userId, newStatus);
         } else {
-            // 기존 이력이 있다면 상태 UPDATE
-            String currentStatus = existingLike.getStatus();
-            if ("Y".equals(currentStatus)) {
-                newStatus = "N";
-                shouldIncrementLikeCount = false;
-            } else {
-                newStatus = "Y";
-                shouldIncrementLikeCount = true;
-            }
             likeDao.updateLikeStatus(playlistId, userId, newStatus);
         }
 
-        // 4. 플레이리스트의 좋아요 카운트 업데이트
-        if (shouldIncrementLikeCount) {
+        // 플레이리스트 카운트 업데이트
+        if (isActionLike) {
             likeDao.incrementLikeCount(playlistId);
         } else {
             likeDao.decrementLikeCount(playlistId);
         }
 
-        // 5. 최종 좋아요 상태를 다시 조회하여 반환
-        Like like = likeDao.getLikeByUserIdAndPlaylistId(playlistId, userId);
-        if (like == null) {
-            throw new CustomException(ErrorCode.INTERNAL_ERROR);
-        }
+        Playlist updatedPlaylist = playlistMapper.findById(playlistId);
 
-        return LikeResponseDto.from(like);
+        return LikeResponseDto.builder()
+                .playlistId(playlistId)
+                .userId(userId)
+                .status(newStatus)
+                .totalLikeCount(updatedPlaylist.getLikeCount())
+                .build();
     }
 
     @Transactional
