@@ -5,8 +5,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface RefreshTokenDao {
-    public void insert(Refresh refresh);
-    public int deleteByUserIdAndTokenValue(Long userId, String refreshToken);
-    public int existsRefresh(String refreshToken, Long userId);
-    public int revokeTokensByUserIdAndTokenValue(Long userId, String refreshToken);
+    void insert(Refresh refresh);
+    int deleteByUserIdAndTokenValue(Long userId, String refreshToken);
+    int existsRefresh(String refreshToken, Long userId);
+    int revokeTokensByUserIdAndTokenValue(Long userId, String refreshToken);
+    int deleteExpiredOrRevokedTokens();
 }

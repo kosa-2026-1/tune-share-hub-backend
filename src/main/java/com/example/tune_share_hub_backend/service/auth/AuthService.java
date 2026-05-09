@@ -86,7 +86,8 @@ public class AuthService {
     }
 
     public void logout(String refreshToken, Long userId) {
-        if(refreshToken == null || refreshToken.isBlank()) return;
+
+        if(refreshToken == null || refreshToken.isBlank() || userId == null) return;
 
         refreshTokenService.revokeToken(userId, refreshToken);
     }
