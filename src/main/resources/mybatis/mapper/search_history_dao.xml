@@ -17,17 +17,6 @@
             )
     </insert>
 
-    <select id="selectLatestByUserId" resultType="SearchHistory">
-        SELECT HISTORY_ID,
-               USER_ID,
-               KEYWORD,
-               CREATED_AT
-        FROM SEARCH_HISTORIES
-        WHERE USER_ID = #{userId}
-        ORDER BY CREATED_AT DESC
-            FETCH FIRST 1 ROWS ONLY
-    </select>
-
     <delete id="deleteExcessHistory">
         DELETE FROM SEARCH_HISTORIES
         WHERE HISTORY_ID IN (
@@ -36,7 +25,7 @@
                                        FROM SEARCH_HISTORIES
                                        WHERE USER_ID = #{userId}
                                    )
-            WHERE RN > 2
+            WHERE RN > 10
         )
     </delete>
 
@@ -45,4 +34,13 @@
         WHERE USER_ID = #{userId}
         AND KEYWORD = #{keyword}
     </delete>
+
+    <select id="findAllByUserId" resultType="SearchHistory">
+            SELECT HISTORY_ID,
+               USER_ID,
+               KEYWORD,
+               CREATED_AT
+        FROM SEARCH_HISTORIES
+        WHERE USER_ID = #{userId}
+    </select>
 </mapper>

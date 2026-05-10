@@ -1,6 +1,5 @@
 package com.example.tune_share_hub_backend.controller.searchhistory;
 
-import com.example.tune_share_hub_backend.dto.auth.LoginRequestDto;
 import com.example.tune_share_hub_backend.dto.searchhistory.SearchHistoryRequestDto;
 import com.example.tune_share_hub_backend.dto.searchhistory.SearchHistoryResponseDto;
 import com.example.tune_share_hub_backend.global.interceptor.AccessTokenCheck;
@@ -11,10 +10,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -26,10 +24,28 @@ public class SearchHistoryController {
     @Operation(summary = "검색어 히스토리 저장", description = "검색어 히스토리를 저장합니다.")
     @PostMapping("/history")
     @AccessTokenCheck
-    public ResponseEntity<SearchHistoryResponseDto> saveHistory(
+    public ResponseEntity<String> saveHistory(
             @LoginUserId Long userId,
             @Valid @RequestBody SearchHistoryRequestDto request){
-        SearchHistoryResponseDto searchHistoryResponseDto = searchHistoryService.saveHistory(userId, request);
-        return ResponseEntity.ok(searchHistoryResponseDto);
+        searchHistoryService.saveHistory(userId, request);
+        return ResponseEntity.ok("검색어 히스토리가 저장되었습니다.");
+    }
+
+    @Operation(summary = "검색어 히스토리 조회", description = "검색어 히스토리를 조회합니다.")
+    @GetMapping("/history")
+    @AccessTokenCheck
+    public ResponseEntity<List<SearchHistoryResponseDto>> getHistory(@LoginUserId Long userId) {
+        List<SearchHistoryResponseDto> searchHistoryResponseDtoList = searchHistoryService.getHistory(userId);
+        return ResponseEntity.ok(searchHistoryResponseDtoList);
+    }
+
+    @Operation(summary = "검색어 히스토리 삭제", description = "검색어 히스토리를 삭제합니다.")
+    @DeleteMapping("/history")
+    @AccessTokenCheck
+    public ResponseEntity<String> deleteHistory(
+            @LoginUserId Long userId,
+            @Valid @RequestBody SearchHistoryRequestDto request) {
+        searchHistoryService.deleteHistory(userId, request);
+        return ResponseEntity.ok("검색어 히스토리가 삭제되었습니다.");
     }
 }

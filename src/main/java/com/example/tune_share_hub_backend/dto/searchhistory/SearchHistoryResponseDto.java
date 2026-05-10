@@ -11,6 +11,17 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class SearchHistoryResponseDto {
+    private Long historyId;
     private Long userId;
     private String keyword;
+    private LocalDateTime createdAt;
+
+    public static SearchHistoryResponseDto from(SearchHistory searchHistory) {
+        return SearchHistoryResponseDto.builder()
+                .historyId(searchHistory.getHistoryId())
+                .userId(searchHistory.getUserId())
+                .keyword(searchHistory.getKeyword())
+                .createdAt(searchHistory.getCreatedAt())
+                .build();
+    }
 }

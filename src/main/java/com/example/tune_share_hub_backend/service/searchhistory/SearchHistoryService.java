@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -19,7 +21,7 @@ public class SearchHistoryService {
     private final SearchHistoryDao searchHistoryDao;
 
     @Transactional
-    public SearchHistoryResponseDto saveHistory(Long userId, SearchHistoryRequestDto request) {
+    public void saveHistory(Long userId, SearchHistoryRequestDto request) {
         String keyword = request.getKeyword();
 
         if (keyword == null || keyword.trim().isBlank()) {
@@ -37,10 +39,26 @@ public class SearchHistoryService {
 
         // 검색 기록 10개 초과 시 삭제
         searchHistoryDao.deleteExcessHistory(userId);
+    }
 
-        return SearchHistoryResponseDto.builder()
-                .userId(userId)
-                .keyword(keyword)
-                .build();
+    public List<SearchHistoryResponseDto> getHistory(Long userId) {
+        List<SearchHistory> searchHistoryList = searchHistoryDao.findAllByUserId(userId);
+        return searchHistoryList.stream()
+                .map(SearchHistoryResponseDto::from)
+                .toList();
+    }
+
+    @Transactional
+    public void deleteHistory(Long userId, SearchHistoryRequestDto request) {
+        String keyword = request.getKeyword();
+
+        if (keyword == null || keyword.trim().isBlank()) {
+            throw new CustomException(ErrorCode.SEARCH_HISTORY_INVALID_KEYWORD);
+        }
+
+        keyword = keyword.trim();
+
+        // 검색 기록 삭제
+        searchHistoryDao.deleteByUserIdAndKeyword(userId, keyword);
     }
 }
