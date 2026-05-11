@@ -17,12 +17,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
-    private static final String TOKEN_TYPE_REFRESH = "refresh";
 
     private final UserDao userDao;
     private final PasswordEncoder passwordEncoder;
@@ -43,10 +44,15 @@ public class AuthService {
         String accessToken = jwtProvider.createAccessToken(userResponseDto);
         String refreshToken = jwtProvider.createRefreshToken(userResponseDto);
 
+        LocalDateTime expiresAt = jwtProvider.getExpirationDateTime(refreshToken);
+
         log.info("User {} logged in successfully", user.getEmail());
 
-        // refresh token DB저장
-        refreshTokenService.saveRefreshToken(user.getUserId(), refreshToken);
+        refreshTokenService.saveRefreshToken(
+                user.getUserId(),
+                refreshToken,
+                expiresAt
+        );
 
         return LoginResponseDto.builder()
                 .accessToken(accessToken)
@@ -60,12 +66,9 @@ public class AuthService {
         // 토큰 유효성 체크
         validateRefreshToken(refreshToken);
 
-        // 토큰 존재 여부 확인
         Long userId = jwtProvider.getUserId(refreshToken);
-        if (!refreshTokenService.existsRefresh(refreshToken, userId)) {
-            log.warn("Attempted to reissue with a revoked or non-existent token: {}", userId);
-            throw new CustomException(ErrorCode.EXPIRED_REFRESH_TOKEN);
-        }
+
+        refreshTokenService.validateRefreshTokenExists(refreshToken, userId);
 
         // 사용자 조회
         User user = userDao.getUserById(userId);
@@ -75,8 +78,14 @@ public class AuthService {
         String newAccessToken = jwtProvider.createAccessToken(userResponseDto);
         String newRefreshToken = jwtProvider.createRefreshToken(userResponseDto);
 
-        // rotation
-        refreshTokenService.rotateToken(userId, refreshToken, newRefreshToken);
+        LocalDateTime expiresAt = jwtProvider.getExpirationDateTime(newRefreshToken);
+
+        refreshTokenService.rotateToken(
+                userId,
+                refreshToken,
+                newRefreshToken,
+                expiresAt
+        );
 
         return LoginResponseDto.builder()
                 .accessToken(newAccessToken)
@@ -85,11 +94,16 @@ public class AuthService {
                 .build();
     }
 
+    @Transactional
     public void logout(String refreshToken, Long userId) {
 
-        if(refreshToken == null || refreshToken.isBlank() || userId == null) return;
+        if (refreshToken == null || refreshToken.isBlank() || userId == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
 
         refreshTokenService.revokeToken(userId, refreshToken);
+
+        log.info("User {} logged out", userId);
     }
 
     //토큰 유효성 체크

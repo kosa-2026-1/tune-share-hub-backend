@@ -3,6 +3,8 @@ package com.example.tune_share_hub_backend.controller.playlist;
 import com.example.tune_share_hub_backend.convert.CommentConvert;
 import com.example.tune_share_hub_backend.convert.PlaylistTrackConvert;
 import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
+import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
+
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackCreateRequestDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.CommentRequestDto;
@@ -30,6 +32,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import org.springframework.web.bind.annotation.*;
+
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -103,7 +108,7 @@ public class PlaylistController {
     @GetMapping("/playlists/{id}")
     @AccessTokenCheck
     public ResponseEntity<ApiResponseDto<PlaylistResponseDto>> getPlaylist(@PathVariable Long id,
-                                                                           @LoginUserId Long userId) {
+            @LoginUserId Long userId) {
         PlaylistResponseDto result = playlistService.getPlaylist(id, userId);
         return ResponseEntity.ok(ApiResponseDto.success(result, "조회 성공"));
     }
@@ -204,6 +209,19 @@ public class PlaylistController {
         ));
     }
 
+    @Operation(summary = "플레이리스트 좋아요/취소", description = "로그인한 사용자가 플레이리스트에 좋아요를 누르거나 취소합니다.")
+    @PostMapping("/playlists/{id}/likes")
+    @AccessTokenCheck
+    public ResponseEntity<LikeResponseDto> like(
+            @PathVariable Long id,
+            @LoginUserId Long userId) {
+        LikeResponseDto likeResponseDto = playlistService.like(id, userId);
+
+        return ResponseEntity.ok(likeResponseDto);
+    }
+
+
+
     @Operation(
             summary = "플레이리스트 댓글 작성",
             description = "로그인한 사용자가 플레이리스트에 댓글을 작성합니다. 비공개 플레이리스트에는 소유자만 댓글을 작성할 수 있습니다."
@@ -294,7 +312,8 @@ public class PlaylistController {
             @Parameter(description = "삭제할 댓글 ID", example = "10", required = true)
             @PathVariable Long commentId,
             @Parameter(hidden = true)
-            @LoginUserId Long userId) {
+            @LoginUserId Long userId )
+    {
         playlistService.deleteComment(id, commentId, userId);
         return ResponseEntity.ok(Map.of(
                 "success", true,

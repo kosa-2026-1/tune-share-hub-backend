@@ -1,5 +1,6 @@
 package com.example.tune_share_hub_backend;
 
+import com.example.tune_share_hub_backend.dao.like.LikeDao;
 import com.example.tune_share_hub_backend.dao.playlist.CommentDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
@@ -27,6 +28,9 @@ class TuneShareHubBackendApplicationTests {
 	@MockitoBean
 	private RefreshTokenDao refreshTokenDao;
 
+  @MockitoBean
+  private LikeDao likeDao;
+  
 	@MockitoBean
 	private CommentDao commentDao;
 

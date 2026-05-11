@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.tune_share_hub_backend.dao.like.LikeDao">
+    <insert id="insertLike">
+        INSERT INTO PLAYLIST_LIKES (LIKE_ID, USER_ID, PLAYLIST_ID, STATUS, CREATED_AT)
+        VALUES (SEQ_PLAYLIST_LIKES.NEXTVAL, #{userId}, #{playlistId}, #{status}, SYSDATE)
+    </insert>
+
+    <update id="incrementLikeCount" parameterType="Long">
+        UPDATE PLAYLISTS
+        SET LIKE_COUNT = LIKE_COUNT + 1, UPDATED_AT = SYSDATE
+        WHERE PLAYLIST_ID = #{playlistId}
+    </update>
+
+    <select id="getLikeByUserIdAndPlaylistId" resultType="Like">
+        SELECT *
+        FROM PLAYLIST_LIKES
+        WHERE PLAYLIST_ID = #{playlistId} AND USER_ID = #{userId}
+    </select>
+    
+    <update id="decrementLikeCount" parameterType="Long">
+        UPDATE PLAYLISTS
+        SET LIKE_COUNT = LIKE_COUNT - 1, UPDATED_AT = SYSDATE
+        WHERE PLAYLIST_ID = #{playlistId}
+    </update>
+
+    <update id="updateLikeStatus">
+        UPDATE PLAYLIST_LIKES
+        SET STATUS = #{status}
+        WHERE USER_ID = #{userId} AND PLAYLIST_ID = #{playlistId}
+    </update>
+
+    <select id="getLikedPlaylistsByUserId" parameterType="Long" resultType="Playlist">
+        SELECT P.*
+        FROM PLAYLISTS P
+                 JOIN PLAYLIST_LIKES L ON P.PLAYLIST_ID = L.PLAYLIST_ID
+        WHERE L.USER_ID = #{userId}
+          AND L.STATUS = 'Y'
+    </select>
+
+</mapper>

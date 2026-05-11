@@ -17,7 +17,7 @@
                    #{tokenValue},
                    #{expiresAt},
                    'N',
-                   #{createdAt}
+                   SYSTIMESTAMP
                )
     </insert>
 
