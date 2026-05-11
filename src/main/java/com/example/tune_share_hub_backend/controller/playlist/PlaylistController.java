@@ -24,7 +24,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -44,33 +43,32 @@ public class PlaylistController {
     @Operation(summary = "플레이리스트 수정", description = "로그인한 사용자가 본인 소유 플레이리스트를 수정합니다.")
     @AccessTokenCheck
     @PutMapping("/playlists/{id}")
-    public ResponseEntity<ApiResponseDto<Void>> updatePlaylist(
+    public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> updatePlaylist(
             @PathVariable("id") Long playlistId,
             @RequestBody PlaylistRequestDto request,
             @LoginUserId Long userId) {
-        playlistService.updatePlaylist(playlistId, userId, request);
-        return ResponseEntity.ok(ApiResponseDto.success(null, "플레이리스트가 수정되었습니다."));
+        PlaylistDetailResponseDto result = playlistService.updatePlaylist(playlistId, userId, request);
+        return ResponseEntity.ok(ApiResponseDto.success(result, "플레이리스트가 수정되었습니다."));
     }
 
     @Operation(summary = "공개/비공개 설정", description = "로그인한 사용자가 본인 소유 플레이리스트의 공개 여부를 변경합니다.")
     @PatchMapping("/playlists/{id}/visibility")
     @AccessTokenCheck
-    public ResponseEntity<ApiResponseDto<Void>> updatePlaylistVisibility(
+    public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> updatePlaylistVisibility(
             @PathVariable("id") Long playlistId,
             @RequestBody PlaylistRequestDto request,
             @LoginUserId Long userId) {
-        playlistService.updatePlaylistVisibility(playlistId, userId, request);
-        return ResponseEntity.ok(ApiResponseDto.success(null, "플레이리스트 공개 여부가 변경되었습니다."));
+        PlaylistDetailResponseDto result = playlistService.updatePlaylistVisibility(playlistId, userId, request);
+        return ResponseEntity.ok(ApiResponseDto.success(result, "플레이리스트 공개 여부가 변경되었습니다."));
     }
 
     @Operation(summary = "플레이리스트 생성", description = "로그인한 사용자가 새 플레이리스트를 생성합니다.")
     @PostMapping("/playlists")
     @AccessTokenCheck
-    public ResponseEntity<ApiResponseDto<PlaylistResponseDto>> create(
+    public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> create(
             @RequestBody @Valid PlaylistRequestDto req,
-            @LoginUserId Long userId,
-            HttpServletRequest httpRequest) {
-        PlaylistResponseDto result = playlistService.create(userId, req);
+            @LoginUserId Long userId) {
+        PlaylistDetailResponseDto result = playlistService.create(userId, req);
         return ResponseEntity.ok(ApiResponseDto.success(result, "플레이리스트 생성 성공"));
     }
 
@@ -121,7 +119,7 @@ public class PlaylistController {
     })
     @PostMapping("/playlists/{id}/tracks")
     @AccessTokenCheck
-    public ResponseEntity<?> addTrackToPlaylist(
+    public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> addTrackToPlaylist(
             @Parameter(description = "트랙을 추가할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
             @LoginUserId Long userId,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "추가할 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackCreateRequestDto.class)))) @RequestBody List<PlaylistTrackCreateRequestDto> requestListDto) {
@@ -130,11 +128,8 @@ public class PlaylistController {
         }
 
         List<PlaylistTrack> playlistTracksList = PlaylistTrackConvert.toEntities(requestListDto, id);
-        List<PlaylistTrack> newPlaylistTracksList = playlistService.addTrackToPlaylist(id, userId, playlistTracksList);
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "트랙이 플레이리스트에 추가되었습니다.",
-                "data", PlaylistTrackConvert.toResponseDtoList(newPlaylistTracksList)));
+        PlaylistDetailResponseDto result = playlistService.addTrackToPlaylist(id, userId, playlistTracksList);
+        return ResponseEntity.ok(ApiResponseDto.success(result, "트랙이 플레이리스트에 추가되었습니다."));
     }
 
     @Operation(summary = "플레이리스트 트랙 삭제", description = "로그인한 사용자가 본인 소유 플레이리스트에서 특정 트랙을 제거합니다.")
@@ -146,15 +141,12 @@ public class PlaylistController {
     })
     @DeleteMapping("/playlists/{id}/tracks/{trackId}")
     @AccessTokenCheck
-    public ResponseEntity<?> removeTrackFromPlaylist(
+    public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> removeTrackFromPlaylist(
             @LoginUserId Long userId,
             @Parameter(description = "트랙을 삭제할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
             @Parameter(description = "삭제할 플레이리스트 트랙 ID", example = "10", required = true) @PathVariable Long trackId) {
-        playlistService.removeTrackFromPlaylist(id, userId, trackId);
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "트랙이 플레이리스트에서 제거되었습니다."
-        ));
+        PlaylistDetailResponseDto result = playlistService.removeTrackFromPlaylist(id, userId, trackId);
+        return ResponseEntity.ok(ApiResponseDto.success(result, "트랙이 플레이리스트에서 제거되었습니다."));
     }
 
     @Operation(summary = "플레이리스트 트랙 순서 변경", description = "프론트에서 드래그앤드랍 후 전달한 트랙 목록의 배열 순서대로 POSITION_NO를 1부터 다시 저장합니다.")
@@ -166,14 +158,12 @@ public class PlaylistController {
     })
     @PatchMapping("/playlists/{id}/tracks/reorder")
     @AccessTokenCheck
-    public ResponseEntity<?> reorderPlaylistTracks(
+    public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> reorderPlaylistTracks(
             @Parameter(description = "트랙 순서를 변경할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
             @LoginUserId Long userId,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "드래그앤드랍 후 새 순서대로 정렬된 플레이리스트 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackReorderRequestDto.class)))) @RequestBody List<PlaylistTrackReorderRequestDto> requestListDto) {
-        playlistService.reorderTrack(id, userId, requestListDto);
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "트랙 순서가 변경되었습니다."));
+        PlaylistDetailResponseDto result = playlistService.reorderTrack(id, userId, requestListDto);
+        return ResponseEntity.ok(ApiResponseDto.success(result, "트랙 순서가 변경되었습니다."));
     }
 
     @Operation(summary = "플레이리스트 좋아요/취소", description = "로그인한 사용자가 플레이리스트에 좋아요를 누르거나 취소합니다.")
@@ -200,7 +190,7 @@ public class PlaylistController {
     })
     @PostMapping("playlists/{id}/comments")
     @AccessTokenCheck
-    public ResponseEntity<?> createCommentToPlaylist(
+    public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> createCommentToPlaylist(
             @Parameter(description = "댓글을 작성할 플레이리스트 ID", example = "1", required = true)
             @PathVariable Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -217,11 +207,8 @@ public class PlaylistController {
         }
 
         Comment comment = CommentConvert.toEntity(requestDto);
-        playlistService.createComment(id, userId, comment);
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "댓글이 추가되었습니다."
-        ));
+        PlaylistDetailResponseDto result = playlistService.createComment(id, userId, comment);
+        return ResponseEntity.ok(ApiResponseDto.success(result, "댓글이 추가되었습니다."));
     }
 
     @Operation(
@@ -236,7 +223,7 @@ public class PlaylistController {
     })
     @PutMapping("playlists/{id}/comments/{commentId}")
     @AccessTokenCheck
-    public ResponseEntity<?> updateCommentToPlaylist(
+    public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> updateCommentToPlaylist(
             @Parameter(description = "댓글이 속한 플레이리스트 ID", example = "1", required = true)
             @PathVariable Long id,
             @Parameter(description = "수정할 댓글 ID", example = "10", required = true)
@@ -254,11 +241,8 @@ public class PlaylistController {
         }
 
         Comment comment = CommentConvert.toEntity(requestDto);
-        playlistService.updateComment(id, commentId, userId, comment);
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "댓글이 수정되었습니다."
-        ));
+        PlaylistDetailResponseDto result = playlistService.updateComment(id, commentId, userId, comment);
+        return ResponseEntity.ok(ApiResponseDto.success(result, "댓글이 수정되었습니다."));
     }
 
     @Operation(
@@ -272,18 +256,15 @@ public class PlaylistController {
     })
     @DeleteMapping("playlists/{id}/comments/{commentId}")
     @AccessTokenCheck
-    public ResponseEntity<?> deleteCommentToPlaylist(
+    public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> deleteCommentToPlaylist(
             @Parameter(description = "댓글이 속한 플레이리스트 ID", example = "1", required = true)
             @PathVariable Long id,
             @Parameter(description = "삭제할 댓글 ID", example = "10", required = true)
             @PathVariable Long commentId,
             @Parameter(hidden = true)
             @LoginUserId Long userId) {
-        playlistService.deleteComment(id, commentId, userId);
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "댓글이 삭제되었습니다."
-        ));
+        PlaylistDetailResponseDto result = playlistService.deleteComment(id, commentId, userId);
+        return ResponseEntity.ok(ApiResponseDto.success(result, "댓글이 삭제되었습니다."));
     }
 
     @Operation(summary = "인기 플레이리스트 랭킹", description = "좋아요 수 기준 공개 플레이리스트 랭킹을 조회합니다.")
@@ -294,5 +275,4 @@ public class PlaylistController {
         return ResponseEntity.ok(ApiResponseDto.success(result, "인기 플레이리스트 랭킹 조회 성공"));
     }
 }
-
 
