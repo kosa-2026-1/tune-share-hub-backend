@@ -9,6 +9,8 @@ import com.example.tune_share_hub_backend.dao.user.UserDao;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
+import com.example.tune_share_hub_backend.entity.Comment;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 import com.example.tune_share_hub_backend.entity.like.Like;
@@ -78,7 +80,7 @@ public class PlaylistService {
         result.put("content", list);
         result.put("totalCount", total);
         result.put("currentPage", page);
-        result.put("totalPages", (int)Math.ceil((double)total / size));
+        result.put("totalPages", (int) Math.ceil((double) total / size));
         return result;
     }
 
@@ -95,9 +97,9 @@ public class PlaylistService {
 
     public List<PlaylistResponseDto> getMyPlaylists(Long userId) {
         return playlistMapper.findByUserId(userId)
-            .stream()
-            .map(this::toResponse)
-            .collect(Collectors.toList());
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     public PlaylistResponseDto getPlaylist(Long playlistId, Long loginUserId) {
@@ -151,19 +153,19 @@ public class PlaylistService {
     private PlaylistResponseDto toResponse(Playlist p) {
 
         return new PlaylistResponseDto(
-            p.getPlaylistId(), p.getTitle(), p.getDescription(),
-            p.getPublicYn(), p.getViewCount(), p.getLikeCount(),
-            p.getCoverImageUrl(), p.getCommentCount(), p.getCreatedAt(),
-            Collections.emptyList());
+                p.getPlaylistId(), p.getTitle(), p.getDescription(),
+                p.getPublicYn(), p.getViewCount(), p.getLikeCount(),
+                p.getCoverImageUrl(), p.getCommentCount(), p.getCreatedAt(),
+                Collections.emptyList());
     }
 
     ;
 
     @Transactional
     public List<PlaylistTrack> addTrackToPlaylist(
-        Long id,
-        Long currentUserId,
-        List<PlaylistTrack> playlistTracksList
+            Long id,
+            Long currentUserId,
+            List<PlaylistTrack> playlistTracksList
     ) {
         Playlist playlist = playlistMapper.findById(id);
 
@@ -200,10 +202,10 @@ public class PlaylistService {
         }
 
         return playlistTracks.stream()
-            .map(PlaylistTrack::getPositionNo)
-            .filter(positionNo -> positionNo != null)
-            .max(Integer::compareTo)
-            .orElse(0) + 1;
+                .map(PlaylistTrack::getPositionNo)
+                .filter(positionNo -> positionNo != null)
+                .max(Integer::compareTo)
+                .orElse(0) + 1;
     }
 
     @Transactional
@@ -273,15 +275,15 @@ public class PlaylistService {
         }
 
         Set<Long> uniqueTrackIds = requestListDto.stream()
-            .map(PlaylistTrackReorderRequestDto::getPlaylistTrackId)
-            .collect(Collectors.toSet());
+                .map(PlaylistTrackReorderRequestDto::getPlaylistTrackId)
+                .collect(Collectors.toSet());
         if (uniqueTrackIds.size() != requestListDto.size()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
         Set<Long> existingTrackIds = existingTracks.stream()
-            .map(PlaylistTrack::getPlaylistTrackId)
-            .collect(Collectors.toSet());
+                .map(PlaylistTrack::getPlaylistTrackId)
+                .collect(Collectors.toSet());
 
         for (PlaylistTrackReorderRequestDto requestDto : requestListDto) {
             if (requestDto.getPlaylistTrackId() == null) {
@@ -294,27 +296,27 @@ public class PlaylistService {
         }
 
         int maxPositionNo = existingTracks.stream()
-            .map(PlaylistTrack::getPositionNo)
-            .filter(positionNo -> positionNo != null)
-            .max(Integer::compareTo)
-            .orElse(0);
+                .map(PlaylistTrack::getPositionNo)
+                .filter(positionNo -> positionNo != null)
+                .max(Integer::compareTo)
+                .orElse(0);
         int temporaryPositionStart = maxPositionNo + requestListDto.size() + 1;
 
         List<PlaylistTrack> temporaryPositions = new ArrayList<>();
         for (int i = 0; i < requestListDto.size(); i++) {
             temporaryPositions.add(PlaylistTrack.builder()
-                .playlistTrackId(requestListDto.get(i).getPlaylistTrackId())
-                .positionNo(temporaryPositionStart + i)
-                .build());
+                    .playlistTrackId(requestListDto.get(i).getPlaylistTrackId())
+                    .positionNo(temporaryPositionStart + i)
+                    .build());
         }
         playlistTrackDao.updatePlaylistTrackPositions(temporaryPositions);
 
         List<PlaylistTrack> finalPositions = new ArrayList<>();
         for (int i = 0; i < requestListDto.size(); i++) {
             finalPositions.add(PlaylistTrack.builder()
-                .playlistTrackId(requestListDto.get(i).getPlaylistTrackId())
-                .positionNo(i + 1)
-                .build());
+                    .playlistTrackId(requestListDto.get(i).getPlaylistTrackId())
+                    .positionNo(i + 1)
+                    .build());
         }
         playlistTrackDao.updatePlaylistTrackPositions(finalPositions);
     }
@@ -429,5 +431,12 @@ public class PlaylistService {
         return likeDao.getLikedPlaylistsByUserId(userId)
                 .stream()
                 .map(PlaylistResponseDto::from).toList();
+    }
+
+    public List<PlaylistResponseDto> getPlaylistRanking(int limit) {
+        return playlistMapper.findTopPlaylists(limit)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 }
