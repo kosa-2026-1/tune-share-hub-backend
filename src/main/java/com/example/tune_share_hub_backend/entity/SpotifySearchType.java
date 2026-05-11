@@ -1,4 +1,4 @@
-package com.example.tune_share_hub_backend.type;
+package com.example.tune_share_hub_backend.entity;
 
 import lombok.Getter;
 
