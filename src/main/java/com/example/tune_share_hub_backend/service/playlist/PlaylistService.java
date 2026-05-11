@@ -40,7 +40,7 @@ public class PlaylistService {
     private final UserDao userDao;
 
     @Transactional
-    public void updatePlaylist(Long playlistId, Long userId, PlaylistRequestDto request) {
+    public PlaylistDetailResponseDto updatePlaylist(Long playlistId, Long userId, PlaylistRequestDto request) {
         validatePlaylistId(playlistId);
         validateRequest(request);
 
@@ -48,10 +48,12 @@ public class PlaylistService {
         if (updatedCount == 0) {
             throw new CustomException(ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
         }
+
+        return getPlaylist(playlistId, userId);
     }
 
     @Transactional
-    public void updatePlaylistVisibility(Long playlistId, Long userId, PlaylistRequestDto request) {
+    public PlaylistDetailResponseDto updatePlaylistVisibility(Long playlistId, Long userId, PlaylistRequestDto request) {
         validatePlaylistId(playlistId);
         validateVisibilityRequest(request);
 
@@ -59,9 +61,12 @@ public class PlaylistService {
         if (updatedCount == 0) {
             throw new CustomException(ErrorCode.PLAYLIST_VISIBILITY_UPDATE_FORBIDDEN);
         }
+
+        return getPlaylist(playlistId, userId);
     }
 
-    public PlaylistResponseDto create(Long userId, PlaylistRequestDto req) {
+    @Transactional
+    public PlaylistDetailResponseDto create(Long userId, PlaylistRequestDto req) {
         Playlist playlist = new Playlist();
         playlist.setUserId(userId);
         playlist.setTitle(req.getTitle());
@@ -71,7 +76,7 @@ public class PlaylistService {
 
         playlistMapper.insert(playlist);
 
-        return toResponse(playlist);
+        return getPlaylist(playlist.getPlaylistId(), userId);
     }
 
     public Map<String, Object> getPublicPlaylists(int page, int size) {
@@ -193,7 +198,7 @@ public class PlaylistService {
     ;
 
     @Transactional
-    public List<PlaylistTrack> addTrackToPlaylist(
+    public PlaylistDetailResponseDto addTrackToPlaylist(
             Long id,
             Long currentUserId,
             List<PlaylistTrack> playlistTracksList
@@ -224,7 +229,7 @@ public class PlaylistService {
 
         playlistTrackDao.insertPlaylistTracks(playlistTracksList);
 
-        return playlistTrackDao.findByPlaylistId(id);
+        return getPlaylist(id, currentUserId);
     }
 
     private int getNextPositionNo(List<PlaylistTrack> playlistTracks) {
@@ -240,7 +245,7 @@ public class PlaylistService {
     }
 
     @Transactional
-    public void removeTrackFromPlaylist(Long id, Long currentUserId, Long trackId) {
+    public PlaylistDetailResponseDto removeTrackFromPlaylist(Long id, Long currentUserId, Long trackId) {
         if (trackId == null || trackId <= 0) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
@@ -264,6 +269,8 @@ public class PlaylistService {
         }
 
         compactPlaylistTrackPositions(id);
+
+        return getPlaylist(id, currentUserId);
     }
 
     private void compactPlaylistTrackPositions(Long playlistId) {
@@ -286,7 +293,7 @@ public class PlaylistService {
     }
 
     @Transactional
-    public void reorderTrack(Long id, Long currentUserId, List<PlaylistTrackReorderRequestDto> requestListDto) {
+    public PlaylistDetailResponseDto reorderTrack(Long id, Long currentUserId, List<PlaylistTrackReorderRequestDto> requestListDto) {
         Playlist playlist = playlistMapper.findById(id);
 
         if (playlist == null) {
@@ -350,10 +357,12 @@ public class PlaylistService {
                     .build());
         }
         playlistTrackDao.updatePlaylistTrackPositions(finalPositions);
+
+        return getPlaylist(id, currentUserId);
     }
 
     @Transactional
-    public void createComment(Long id, Long userId, Comment comment) {
+    public PlaylistDetailResponseDto createComment(Long id, Long userId, Comment comment) {
         if (comment == null || comment.getContent() == null || comment.getContent().trim().isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
@@ -379,9 +388,11 @@ public class PlaylistService {
         commentDao.insertComment(comment);
         playlistMapper.increaseCommentCount(id);
 
+        return getPlaylist(id, userId);
     }
 
-    public void updateComment(Long id, Long commentId, Long userId, Comment comment) {
+    @Transactional
+    public PlaylistDetailResponseDto updateComment(Long id, Long commentId, Long userId, Comment comment) {
         if (comment == null || comment.getContent() == null || comment.getContent().trim().isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
@@ -397,6 +408,8 @@ public class PlaylistService {
 
         existingComment.setContent(comment.getContent());
         commentDao.updateComment(existingComment);
+
+        return getPlaylist(id, userId);
     }
 
     public void increaseViewCount(Long playlistId) {
@@ -404,7 +417,7 @@ public class PlaylistService {
     }
 
     @Transactional
-    public void deleteComment(Long id, Long commentId, Long userId) {
+    public PlaylistDetailResponseDto deleteComment(Long id, Long commentId, Long userId) {
         Comment existingComment = commentDao.findById(commentId);
         if (existingComment == null || !existingComment.getPlaylistId().equals(id)) {
             throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
@@ -416,6 +429,8 @@ public class PlaylistService {
 
         commentDao.deleteComment(commentId);
         playlistMapper.decreaseCommentCount(id);
+
+        return getPlaylist(id, userId);
     }
 
     @Transactional
