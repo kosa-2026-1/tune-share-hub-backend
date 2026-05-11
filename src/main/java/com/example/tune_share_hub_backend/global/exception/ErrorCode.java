@@ -15,12 +15,15 @@ public enum ErrorCode {
     //Auth & User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 올바르지 않습니다."),
+    AUTH_CONTEXT_NOT_FOUND(HttpStatus.UNAUTHORIZED,  "인증 정보를 찾을 수 없습니다."),
+    LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
 
     //Token
     INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 액세스 토큰입니다."),
     EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "액세스 토큰이 만료되었습니다."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 리프레시 토큰입니다."),
     EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "리프레시 토큰이 만료되었습니다."),
+    REFRESH_TOKEN_REUSE_DETECTED(HttpStatus.UNAUTHORIZED, "이미 사용되었거나 유효하지 않은 리프레시 토큰입니다."),
 
 
     //Playlist
@@ -30,11 +33,16 @@ public enum ErrorCode {
     PLAYLIST_VISIBILITY_UPDATE_FORBIDDEN(HttpStatus.FORBIDDEN, "플레이리스트 공개 여부를 변경할 수 없습니다."),
     INVALID_PUBLIC_YN(HttpStatus.BAD_REQUEST, "공개 여부는 Y 또는 N만 가능합니다."),
     INVALID_PLAYLIST_TITLE(HttpStatus.BAD_REQUEST, "플레이리스트 제목은 필수입니다."),
-    PLAYLIST_TRACK_NOT_FOUND(HttpStatus.NOT_FOUND, "플레이리스트에 노래를 찾을 수 없습니다."),
+    PLAYLIST_TRACK_NOT_FOUND(HttpStatus.NOT_FOUND, "플레이리스트에 노래를 찾을 수 없습니다." ),
+    PLAYLIST_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "플레이리스트를 삭제할 권한이 없습니다."),
+    PRIVATE_PLAYLIST_CANNOT_BE_LIKED(HttpStatus.FORBIDDEN, "비공개 플레이리스트는 좋아요 할 수 없습니다."),
+
+    //Like
+    LIKE_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 좋아요가 존재합니다."),
+    LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "좋아요를 찾을 수 없습니다."),
 
     // Comment
-    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다." ),
-    PLAYLIST_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "플레이리스트를 삭제할 권한이 없습니다.");
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다." );
 
     private final HttpStatus status;
     private final String message;

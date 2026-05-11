@@ -1,5 +1,6 @@
 package com.example.tune_share_hub_backend.dto.auth;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
+@Schema(example = "{\"email\": \"test@example.com\", \"password\": \"password123\"}")
 public class LoginRequestDto {
 
     @NotBlank(message = "이메일은 필수입니다")
