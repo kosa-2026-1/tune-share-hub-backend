@@ -114,5 +114,19 @@
         WHERE ROWNUM &lt;= #{limit}
     </select>
 
+    <select id="findCommentsByPlaylistId" parameterType="long"
+            resultType="com.example.tune_share_hub_backend.entity.Comment">
+        SELECT *
+        FROM COMMENTS
+        WHERE PLAYLIST_ID = #{playlistId}
+        ORDER BY CREATED_AT ASC
+    </select>
+
+    <update id="increaseViewCount" parameterType="long">
+        UPDATE PLAYLISTS
+        SET VIEW_COUNT = NVL(VIEW_COUNT, 0) + 1,
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+    </update>
 
 </mapper>

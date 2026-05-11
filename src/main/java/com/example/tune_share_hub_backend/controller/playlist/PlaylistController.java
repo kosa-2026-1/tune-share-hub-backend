@@ -4,10 +4,10 @@ import com.example.tune_share_hub_backend.convert.CommentConvert;
 import com.example.tune_share_hub_backend.convert.PlaylistTrackConvert;
 import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
 import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
-
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackCreateRequestDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.CommentRequestDto;
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Comment;
@@ -32,9 +32,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import org.springframework.web.bind.annotation.*;
-
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -107,9 +104,10 @@ public class PlaylistController {
     @Operation(summary = "플레이리스트 상세 조회", description = "플레이리스트 ID로 상세 정보를 조회합니다.")
     @GetMapping("/playlists/{id}")
     @AccessTokenCheck
-    public ResponseEntity<ApiResponseDto<PlaylistResponseDto>> getPlaylist(@PathVariable Long id,
+    public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> getPlaylist(
+            @PathVariable Long id,
             @LoginUserId Long userId) {
-        PlaylistResponseDto result = playlistService.getPlaylist(id, userId);
+        PlaylistDetailResponseDto result = playlistService.getPlaylist(id, userId);
         return ResponseEntity.ok(ApiResponseDto.success(result, "조회 성공"));
     }
 
@@ -187,7 +185,6 @@ public class PlaylistController {
 
         return ResponseEntity.ok(likeResponseDto);
     }
-
 
 
     @Operation(
