@@ -25,14 +25,14 @@
                                        FROM SEARCH_HISTORIES
                                        WHERE USER_ID = #{userId}
                                    )
-            WHERE RN > 10
+            WHERE RN > #{maxSearchHistoryCount}
         )
     </delete>
 
-    <delete id="deleteByUserIdAndKeyword">
+    <delete id="deleteByUserIdAndHistoryId">
         DELETE FROM SEARCH_HISTORIES
         WHERE USER_ID = #{userId}
-        AND KEYWORD = #{keyword}
+        AND HISTORY_ID = #{historyId}
     </delete>
 
     <select id="findAllByUserId" resultType="SearchHistory">
@@ -42,5 +42,22 @@
                CREATED_AT
         FROM SEARCH_HISTORIES
         WHERE USER_ID = #{userId}
+        ORDER BY CREATED_AT DESC
+    </select>
+    
+    <update id="updateCreatedAtByUserIdAndKeyword">
+        UPDATE SEARCH_HISTORIES
+        SET CREATED_AT = SYSTIMESTAMP
+        WHERE USER_ID = #{userId}
+        AND KEYWORD = #{keyword}
+    </update>
+
+    <select id="findByHistoryId" resultType="SearchHistory">
+        SELECT HISTORY_ID,
+               USER_ID,
+               KEYWORD,
+               CREATED_AT
+        FROM SEARCH_HISTORIES
+        WHERE HISTORY_ID = #{historyId}
     </select>
 </mapper>

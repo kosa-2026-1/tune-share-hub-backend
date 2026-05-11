@@ -9,7 +9,9 @@ import java.util.List;
 @Mapper
 public interface SearchHistoryDao {
     void insert(@Param("userId") Long userId, @Param("keyword") String keyword);
-    void deleteByUserIdAndKeyword(@Param("userId") Long userId, @Param("keyword") String keyword);
-    void deleteExcessHistory(@Param("userId") Long userId);
+    void deleteByUserIdAndHistoryId(@Param("userId") Long userId, @Param("historyId") Long historyId);
+    void deleteExcessHistory(@Param("userId") Long userId, @Param("maxSearchHistoryCount") int maxSearchHistoryCount);
     List<SearchHistory> findAllByUserId(@Param("userId") Long userId);
+    int updateCreatedAtByUserIdAndKeyword(@Param("userId") Long userId, @Param("keyword") String keyword);
+    SearchHistory findByHistoryId(@Param("historyId") Long historyId);
 }

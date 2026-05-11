@@ -8,6 +8,7 @@ import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,25 +21,28 @@ import java.util.List;
 public class SearchHistoryService {
     private final SearchHistoryDao searchHistoryDao;
 
+    @Value("${search.history.max-count}")
+    private int maxSearchHistoryCount;
+
+
     @Transactional
     public void saveHistory(Long userId, SearchHistoryRequestDto request) {
-        String keyword = request.getKeyword();
+        String keyword = request.getKeyword().trim();
 
-        if (keyword == null || keyword.trim().isBlank()) {
-            throw new CustomException(ErrorCode.SEARCH_HISTORY_INVALID_KEYWORD);
+        // 기존 검색어의 생성일 변경
+        int updatedRows = searchHistoryDao.updateCreatedAtByUserIdAndKeyword(userId, keyword);
+
+        if(updatedRows == 0){
+            // 검색 기록이 없다면 검색어 히스토리 생성
+            log.info("Save search history - userId: {}, keyword: {}", userId, keyword);
+            searchHistoryDao.insert(userId, keyword);
+        }else{
+            // 검색어 생성일 변경
+            log.info("Update search history createdAt - userId: {}, keyword: {}", userId, keyword);
         }
 
-        keyword = keyword.trim();
-
-        // 검색 기록 삭제
-        searchHistoryDao.deleteByUserIdAndKeyword(userId, keyword);
-
-        // 검색 기록 저장
-        log.info("Save search history - userId: {}, keyword: {}", userId, keyword);
-        searchHistoryDao.insert(userId, keyword);
-
         // 검색 기록 10개 초과 시 삭제
-        searchHistoryDao.deleteExcessHistory(userId);
+        searchHistoryDao.deleteExcessHistory(userId, maxSearchHistoryCount);
     }
 
     public List<SearchHistoryResponseDto> getHistory(Long userId) {
@@ -49,16 +53,14 @@ public class SearchHistoryService {
     }
 
     @Transactional
-    public void deleteHistory(Long userId, SearchHistoryRequestDto request) {
-        String keyword = request.getKeyword();
+    public void deleteHistory(Long userId, Long historyId) {
+        SearchHistory searchHistory = searchHistoryDao.findByHistoryId(historyId);
 
-        if (keyword == null || keyword.trim().isBlank()) {
-            throw new CustomException(ErrorCode.SEARCH_HISTORY_INVALID_KEYWORD);
+        if(searchHistory == null){
+            throw new CustomException(ErrorCode.SEARCH_HISTORY_NOT_FOUND);
         }
 
-        keyword = keyword.trim();
-
         // 검색 기록 삭제
-        searchHistoryDao.deleteByUserIdAndKeyword(userId, keyword);
+        searchHistoryDao.deleteByUserIdAndHistoryId(userId, historyId);
     }
 }

@@ -44,8 +44,8 @@ public class SearchHistoryController {
     @AccessTokenCheck
     public ResponseEntity<String> deleteHistory(
             @LoginUserId Long userId,
-            @Valid @RequestBody SearchHistoryRequestDto request) {
-        searchHistoryService.deleteHistory(userId, request);
+            @RequestParam Long historyId) {
+        searchHistoryService.deleteHistory(userId, historyId);
         return ResponseEntity.ok("검색어 히스토리가 삭제되었습니다.");
     }
 }
