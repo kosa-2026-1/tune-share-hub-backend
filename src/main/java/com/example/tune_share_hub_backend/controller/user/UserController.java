@@ -5,7 +5,7 @@ import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.dto.user.UserResponseDto;
 import com.example.tune_share_hub_backend.global.interceptor.AccessTokenCheck;
 import com.example.tune_share_hub_backend.global.interceptor.LoginUserId;
-import com.example.tune_share_hub_backend.service.playlist.PlaylistService;
+import com.example.tune_share_hub_backend.service.like.LikeService;
 import com.example.tune_share_hub_backend.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    private final PlaylistService playlistService;
+    private final LikeService likeService;
 
     @Operation(summary = "내 정보 조회", description = "로그인한 사용자의 정보를 조회합니다. Access Token이 필요합니다.")
     @AccessTokenCheck
@@ -36,7 +36,7 @@ public class UserController {
     @AccessTokenCheck
     @GetMapping("/me/likes")
     public ApiResponseDto<List<PlaylistResponseDto>> getLikedPlaylists(@LoginUserId Long userId) {
-        List<PlaylistResponseDto> likedPlaylists = playlistService.getLikedPlaylists(userId);
+        List<PlaylistResponseDto> likedPlaylists = likeService.getLikedPlaylists(userId);
         return ApiResponseDto.success(likedPlaylists, "좋아요한 플레이리스트 조회 성공");
     }
 }

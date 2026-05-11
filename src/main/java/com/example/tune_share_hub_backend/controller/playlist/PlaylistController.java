@@ -16,6 +16,7 @@ import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 import com.example.tune_share_hub_backend.global.interceptor.AccessTokenCheck;
 import com.example.tune_share_hub_backend.global.interceptor.LoginUserId;
+import com.example.tune_share_hub_backend.service.like.LikeService;
 import com.example.tune_share_hub_backend.service.playlist.PlaylistService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,6 +39,7 @@ import java.util.Map;
 public class PlaylistController {
 
     private final PlaylistService playlistService;
+    private final LikeService likeService;
 
     @Operation(summary = "플레이리스트 수정", description = "로그인한 사용자가 본인 소유 플레이리스트를 수정합니다.")
     @AccessTokenCheck
@@ -171,7 +173,7 @@ public class PlaylistController {
     public ApiResponseDto<LikeResponseDto> like(
             @PathVariable Long id,
             @LoginUserId Long userId) {
-        LikeResponseDto likeResponseDto = playlistService.like(id, userId);
+        LikeResponseDto likeResponseDto = likeService.like(id, userId);
 
         return ApiResponseDto.success(likeResponseDto, "플레이리스트 좋아요 상태 변경 성공");
     }
