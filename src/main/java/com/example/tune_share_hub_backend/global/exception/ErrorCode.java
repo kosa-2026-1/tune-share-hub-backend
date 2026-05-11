@@ -42,7 +42,10 @@ public enum ErrorCode {
     LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "좋아요를 찾을 수 없습니다."),
 
     // Comment
-    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다." );
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다." ),
+
+    // SearchHistory
+    SEARCH_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "검색 기록이 존재하지 않습니다.");
 
     private final HttpStatus status;
     private final String message;
