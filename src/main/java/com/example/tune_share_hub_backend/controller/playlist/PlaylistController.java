@@ -104,7 +104,7 @@ public class PlaylistController {
     @Operation(summary = "플레이리스트 상세 조회", description = "플레이리스트 ID로 상세 정보를 조회합니다.")
     @GetMapping("/playlists/{id}")
     @AccessTokenCheck
-    public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> getPlaylist(
+    public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> getPlaylistDetail(
             @PathVariable Long id,
             @LoginUserId Long userId) {
         PlaylistDetailResponseDto result = playlistService.getPlaylist(id, userId);
