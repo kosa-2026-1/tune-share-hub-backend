@@ -2,6 +2,7 @@ package com.example.tune_share_hub_backend.service.playlist;
 
 import com.example.tune_share_hub_backend.convert.CommentConvert;
 import com.example.tune_share_hub_backend.convert.PlaylistTrackConvert;
+import com.example.tune_share_hub_backend.dao.like.LikeDao;
 import com.example.tune_share_hub_backend.dao.playlist.CommentDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
@@ -34,6 +35,7 @@ public class PlaylistService {
     private final PlaylistTrackDao playlistTrackDao;
     private final CommentDao commentDao;
     private final UserDao userDao;
+    private final LikeDao likeDao;
 
     @Transactional
     public PlaylistDetailResponseDto updatePlaylist(Long playlistId, Long userId, PlaylistRequestDto request) {
@@ -93,6 +95,17 @@ public class PlaylistService {
     public void deletePlaylist(Long playlistId, Long userId) {
         validatePlaylistId(playlistId);
 
+        Playlist playlist = playlistMapper.findById(playlistId);
+        if (playlist == null) {
+            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
+        }
+        if (!playlist.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.PLAYLIST_DELETE_FORBIDDEN);
+        }
+
+        playlistTrackDao.deleteByPlaylistId(playlistId);
+        commentDao.deleteByPlaylistId(playlistId);
+        likeDao.deleteByPlaylistId(playlistId);
         int deletedCount = playlistMapper.deletePlaylist(playlistId, userId);
 
         if (deletedCount == 0) {

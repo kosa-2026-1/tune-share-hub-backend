@@ -86,6 +86,11 @@
         WHERE PLAYLIST_TRACK_ID = #{trackId}
     </delete>
 
+    <delete id="deleteByPlaylistId" parameterType="long">
+        DELETE FROM PLAYLIST_TRACKS
+        WHERE PLAYLIST_ID = #{playlistId}
+    </delete>
+
     <update id="updatePlaylistTrackPosition">
         UPDATE PLAYLIST_TRACKS
         SET POSITION_NO = #{positionNo}

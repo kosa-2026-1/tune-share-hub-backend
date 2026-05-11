@@ -14,6 +14,7 @@ public interface PlaylistTrackDao {
 	List<PlaylistTrack> findByPlaylistId(@Param("playlistId") Long playlistId);
 	int existsByPlaylistIdAndTrackId(@Param("playlistId") Long playlistId, @Param("trackId") Long trackId);
 	int deletePlaylistTrack(@Param("trackId") Long trackId);
+	int deleteByPlaylistId(@Param("playlistId") Long playlistId);
 	int updatePlaylistTrackPosition(@Param("trackId") Long trackId, @Param("positionNo") int positionNo);
 	void updatePlaylistTrackPositions(@Param("tracks") List<PlaylistTrack> tracks);
 }

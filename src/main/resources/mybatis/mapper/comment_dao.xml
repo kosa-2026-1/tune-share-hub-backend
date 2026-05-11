@@ -7,7 +7,7 @@
         <id property="commentId" column="COMMENT_ID"/>
         <result property="playlistId" column="PLAYLIST_ID"/>
         <result property="userId" column="USER_ID"/>
-        <result property="userNickname" column="USER_NICKNAME"/>
+        <result property="userNickname" column="NICKNAME"/>
         <result property="content" column="CONTENT"/>
         <result property="createdAt" column="CREATED_AT"/>
         <result property="updatedAt" column="UPDATED_AT"/>
@@ -18,7 +18,7 @@
             COMMENT_ID,
             PLAYLIST_ID,
             USER_ID,
-            USER_NICKNAME,
+            NICKNAME,
             CONTENT,
             CREATED_AT,
             UPDATED_AT
@@ -34,7 +34,13 @@
     </insert>
 
     <select id="findById" parameterType="long" resultMap="CommentResultMap">
-        SELECT *
+        SELECT COMMENT_ID,
+               PLAYLIST_ID,
+               USER_ID,
+               NICKNAME,
+               CONTENT,
+               CREATED_AT,
+               UPDATED_AT
         FROM COMMENTS
         WHERE COMMENT_ID = #{commentId}
     </select>
@@ -51,8 +57,20 @@
         WHERE COMMENT_ID = #{commentId}
     </delete>
 
+    <delete id="deleteByPlaylistId" parameterType="long">
+        DELETE FROM COMMENTS
+        WHERE PLAYLIST_ID = #{playlistId}
+    </delete>
+
     <select id="findByPlaylistId" parameterType="long" resultMap="CommentResultMap">
-        SELECT * FROM COMMENTS
+        SELECT COMMENT_ID,
+               PLAYLIST_ID,
+               USER_ID,
+               NICKNAME,
+               CONTENT,
+               CREATED_AT,
+               UPDATED_AT
+        FROM COMMENTS
         WHERE PLAYLIST_ID = #{playlistId}
         ORDER BY CREATED_AT ASC
     </select>

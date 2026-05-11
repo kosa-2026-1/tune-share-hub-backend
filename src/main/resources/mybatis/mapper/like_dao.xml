@@ -31,6 +31,11 @@
         WHERE USER_ID = #{userId} AND PLAYLIST_ID = #{playlistId}
     </update>
 
+    <delete id="deleteByPlaylistId" parameterType="Long">
+        DELETE FROM PLAYLIST_LIKES
+        WHERE PLAYLIST_ID = #{playlistId}
+    </delete>
+
     <select id="getLikedPlaylistsByUserId" parameterType="Long" resultType="Playlist">
         SELECT P.*
         FROM PLAYLISTS P
