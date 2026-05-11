@@ -1,6 +1,7 @@
 package com.example.tune_share_hub_backend.service.playlist;
 
 import com.example.tune_share_hub_backend.convert.CommentConvert;
+import com.example.tune_share_hub_backend.convert.PlaylistTrackConvert;
 import com.example.tune_share_hub_backend.dao.like.LikeDao;
 import com.example.tune_share_hub_backend.dao.playlist.CommentDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
@@ -8,6 +9,7 @@ import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
 import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
 import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
+import com.example.tune_share_hub_backend.dto.music.PlaylistTrackResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
@@ -122,14 +124,15 @@ public class PlaylistService {
             }
         }
 
-        List<PlaylistTrack> tracks = playlistTrackDao.findByPlaylistId(playlistId);
+        List<PlaylistTrackResponseDto> tracks = PlaylistTrackConvert.toResponseDtoList(
+                playlistTrackDao.findByPlaylistId(playlistId));
         List<CommentResponseDto> comments = CommentConvert.toCommentResponseDtoList(
                 commentDao.findByPlaylistId(playlistId));
 
         return toDetailResponse(playlist, tracks, comments);
     }
 
-    private PlaylistDetailResponseDto toDetailResponse(Playlist p, List<PlaylistTrack> tracks,
+    private PlaylistDetailResponseDto toDetailResponse(Playlist p, List<PlaylistTrackResponseDto> tracks,
                                                        List<CommentResponseDto> comments) {
         return PlaylistDetailResponseDto.builder()
                 .playlistId(p.getPlaylistId())

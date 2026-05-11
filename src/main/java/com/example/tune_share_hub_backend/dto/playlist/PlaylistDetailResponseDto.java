@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
-import com.example.tune_share_hub_backend.entity.PlaylistTrack;
+import com.example.tune_share_hub_backend.dto.music.PlaylistTrackResponseDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +27,6 @@ public class PlaylistDetailResponseDto {
     private int commentCount;
     private LocalDateTime createdAt;
 
-    private List<PlaylistTrack> tracks;
+    private List<PlaylistTrackResponseDto> tracks;
     private List<CommentResponseDto> comments;
 }
