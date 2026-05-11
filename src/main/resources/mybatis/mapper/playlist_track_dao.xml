@@ -67,7 +67,7 @@
         END;
     </insert>
 
-    <select id="findByPlaylistId" parameterType="long" resultType="com.example.tune_share_hub_backend.entity.PlaylistTrack">
+    <select id="findByPlaylistId" parameterType="long" resultType="PlaylistTrack">
         SELECT *
         FROM PLAYLIST_TRACKS
         WHERE PLAYLIST_ID = #{playlistId}
