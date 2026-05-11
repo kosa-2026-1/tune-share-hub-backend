@@ -2,19 +2,22 @@ package com.example.tune_share_hub_backend.service.playlist;
 
 import com.example.tune_share_hub_backend.dao.like.LikeDao;
 import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
+import com.example.tune_share_hub_backend.convert.CommentConvert;
 import com.example.tune_share_hub_backend.dao.playlist.CommentDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
+import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
-import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
+
 import com.example.tune_share_hub_backend.entity.Comment;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 import com.example.tune_share_hub_backend.entity.like.Like;
-import com.example.tune_share_hub_backend.entity.Comment;
+
 import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
@@ -24,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -102,7 +106,7 @@ public class PlaylistService {
                 .collect(Collectors.toList());
     }
 
-    public PlaylistResponseDto getPlaylist(Long playlistId, Long loginUserId) {
+    public PlaylistDetailResponseDto getPlaylist(Long playlistId, Long loginUserId) {
         Playlist playlist = playlistMapper.findById(playlistId);
 
         if (playlist == null) {
@@ -115,7 +119,28 @@ public class PlaylistService {
             }
         }
 
-        return toResponse(playlist);
+        List<PlaylistTrack> tracks = playlistTrackDao.findByPlaylistId(playlistId);
+        List<CommentResponseDto> comments = CommentConvert.toCommentResponseDtoList(
+                commentDao.findByPlaylistId(playlistId));
+
+        return toDetailResponse(playlist, tracks, comments);
+    }
+
+    private PlaylistDetailResponseDto toDetailResponse(Playlist p, List<PlaylistTrack> tracks,
+                                                       List<CommentResponseDto> comments) {
+        return PlaylistDetailResponseDto.builder()
+                .playlistId(p.getPlaylistId())
+                .title(p.getTitle())
+                .description(p.getDescription())
+                .publicYn(p.getPublicYn())
+                .viewCount(p.getViewCount())
+                .likeCount(p.getLikeCount())
+                .coverImageUrl(p.getCoverImageUrl())
+                .commentCount(p.getCommentCount())
+                .createdAt(p.getCreatedAt())
+                .tracks(tracks)
+                .comments(comments)
+                .build();
     }
 
     private void validatePlaylistId(Long playlistId) {
@@ -152,11 +177,17 @@ public class PlaylistService {
 
     private PlaylistResponseDto toResponse(Playlist p) {
 
-        return new PlaylistResponseDto(
-                p.getPlaylistId(), p.getTitle(), p.getDescription(),
-                p.getPublicYn(), p.getViewCount(), p.getLikeCount(),
-                p.getCoverImageUrl(), p.getCommentCount(), p.getCreatedAt(),
-                Collections.emptyList());
+        return PlaylistResponseDto.builder()
+                .playlistId(p.getPlaylistId())
+                .title(p.getTitle())
+                .description(p.getDescription())
+                .publicYn(p.getPublicYn())
+                .viewCount(p.getViewCount())
+                .likeCount(p.getLikeCount())
+                .coverImageUrl(p.getCoverImageUrl())
+                .commentCount(p.getCommentCount())
+                .createdAt(p.getCreatedAt())
+                .build();
     }
 
     ;
@@ -368,6 +399,10 @@ public class PlaylistService {
         commentDao.updateComment(existingComment);
     }
 
+    public void increaseViewCount(Long playlistId) {
+        playlistMapper.increaseViewCount(playlistId);
+    }
+
     @Transactional
     public void deleteComment(Long id, Long commentId, Long userId) {
         Comment existingComment = commentDao.findById(commentId);
@@ -439,4 +474,5 @@ public class PlaylistService {
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
+
 }

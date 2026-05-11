@@ -2,42 +2,21 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.tune_share_hub_backend.dao.playlist.CommentDao">
+
     <resultMap id="CommentResultMap" type="com.example.tune_share_hub_backend.entity.Comment">
         <id property="commentId" column="COMMENT_ID"/>
         <result property="playlistId" column="PLAYLIST_ID"/>
         <result property="userId" column="USER_ID"/>
+        <result property="userNickname" column="USER_NICKNAME"/>
         <result property="content" column="CONTENT"/>
         <result property="createdAt" column="CREATED_AT"/>
         <result property="updatedAt" column="UPDATED_AT"/>
     </resultMap>
 
-    <insert id="insertComment" parameterType="com.example.tune_share_hub_backend.entity.Comment">
-        INSERT INTO COMMENTS (
-            COMMENT_ID, PLAYLIST_ID, USER_ID, CONTENT
-        ) VALUES (
-            SEQ_COMMENTS.NEXTVAL,
-            #{comment.playlistId},
-            #{comment.userId},
-            #{comment.content}
-        )
-    </insert>
-
-    <select id="findById" parameterType="long" resultMap="CommentResultMap">
+    <select id="findByPlaylistId" parameterType="long" resultMap="CommentResultMap">
         SELECT * FROM COMMENTS
-        WHERE COMMENT_ID = #{commentId}
+        WHERE PLAYLIST_ID = #{playlistId}
+        ORDER BY CREATED_AT ASC
     </select>
 
-    <update id="updateComment" parameterType="com.example.tune_share_hub_backend.entity.Comment">
-        UPDATE COMMENTS
-        SET CONTENT = #{comment.content},
-            UPDATED_AT = SYSTIMESTAMP
-        WHERE COMMENT_ID = #{comment.commentId}
-          AND USER_ID = #{comment.userId}
-    </update>
-
-    <delete id="deleteComment" parameterType="long">
-        DELETE FROM COMMENTS
-        WHERE COMMENT_ID = #{commentId}
-    </delete>
 </mapper>
-
