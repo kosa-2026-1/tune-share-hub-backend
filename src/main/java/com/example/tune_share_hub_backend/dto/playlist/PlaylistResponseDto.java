@@ -1,16 +1,18 @@
 package com.example.tune_share_hub_backend.dto.playlist;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.example.tune_share_hub_backend.entity.Playlist;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Builder
 @AllArgsConstructor
 @Getter
 @NoArgsConstructor
-
-
 public class PlaylistResponseDto {
 
     private Long playlistId;
@@ -24,4 +26,16 @@ public class PlaylistResponseDto {
     private LocalDateTime createdAt;
     private List<Object> tracks;
 
+    public static PlaylistResponseDto from(Playlist playlist){
+        return PlaylistResponseDto.builder()
+                .playlistId(playlist.getPlaylistId())
+                .title(playlist.getTitle())
+                .description(playlist.getDescription())
+                .publicYn(playlist.getPublicYn())
+                .viewCount(playlist.getViewCount())
+                .likeCount(playlist.getLikeCount())
+                .commentCount(playlist.getCommentCount())
+                .createdAt(playlist.getCreatedAt())
+                .build();
+    }
 }

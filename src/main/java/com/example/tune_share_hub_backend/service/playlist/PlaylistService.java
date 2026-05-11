@@ -1,31 +1,28 @@
 package com.example.tune_share_hub_backend.service.playlist;
 
+import com.example.tune_share_hub_backend.dao.like.LikeDao;
+import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
 import com.example.tune_share_hub_backend.dao.playlist.CommentDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
-import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Comment;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
+import com.example.tune_share_hub_backend.entity.like.Like;
+import com.example.tune_share_hub_backend.entity.Comment;
 import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +31,7 @@ public class PlaylistService {
 
     private final PlaylistMapperDao playlistMapper;
     private final PlaylistTrackDao playlistTrackDao;
+    private final LikeDao likeDao;
     private final CommentDao commentDao;
     private final UserDao userDao;
 
@@ -82,7 +80,7 @@ public class PlaylistService {
         result.put("content", list);
         result.put("totalCount", total);
         result.put("currentPage", page);
-        result.put("totalPages", (int)Math.ceil((double)total / size));
+        result.put("totalPages", (int) Math.ceil((double) total / size));
         return result;
     }
 
@@ -99,9 +97,9 @@ public class PlaylistService {
 
     public List<PlaylistResponseDto> getMyPlaylists(Long userId) {
         return playlistMapper.findByUserId(userId)
-            .stream()
-            .map(this::toResponse)
-            .collect(Collectors.toList());
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     public PlaylistResponseDto getPlaylist(Long playlistId, Long loginUserId) {
@@ -155,19 +153,19 @@ public class PlaylistService {
     private PlaylistResponseDto toResponse(Playlist p) {
 
         return new PlaylistResponseDto(
-            p.getPlaylistId(), p.getTitle(), p.getDescription(),
-            p.getPublicYn(), p.getViewCount(), p.getLikeCount(),
-            p.getCoverImageUrl(), p.getCommentCount(), p.getCreatedAt(),
-            Collections.emptyList());
+                p.getPlaylistId(), p.getTitle(), p.getDescription(),
+                p.getPublicYn(), p.getViewCount(), p.getLikeCount(),
+                p.getCoverImageUrl(), p.getCommentCount(), p.getCreatedAt(),
+                Collections.emptyList());
     }
 
     ;
 
     @Transactional
     public List<PlaylistTrack> addTrackToPlaylist(
-        Long id,
-        Long currentUserId,
-        List<PlaylistTrack> playlistTracksList
+            Long id,
+            Long currentUserId,
+            List<PlaylistTrack> playlistTracksList
     ) {
         Playlist playlist = playlistMapper.findById(id);
 
@@ -204,10 +202,10 @@ public class PlaylistService {
         }
 
         return playlistTracks.stream()
-            .map(PlaylistTrack::getPositionNo)
-            .filter(positionNo -> positionNo != null)
-            .max(Integer::compareTo)
-            .orElse(0) + 1;
+                .map(PlaylistTrack::getPositionNo)
+                .filter(positionNo -> positionNo != null)
+                .max(Integer::compareTo)
+                .orElse(0) + 1;
     }
 
     @Transactional
@@ -277,15 +275,15 @@ public class PlaylistService {
         }
 
         Set<Long> uniqueTrackIds = requestListDto.stream()
-            .map(PlaylistTrackReorderRequestDto::getPlaylistTrackId)
-            .collect(Collectors.toSet());
+                .map(PlaylistTrackReorderRequestDto::getPlaylistTrackId)
+                .collect(Collectors.toSet());
         if (uniqueTrackIds.size() != requestListDto.size()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
         Set<Long> existingTrackIds = existingTracks.stream()
-            .map(PlaylistTrack::getPlaylistTrackId)
-            .collect(Collectors.toSet());
+                .map(PlaylistTrack::getPlaylistTrackId)
+                .collect(Collectors.toSet());
 
         for (PlaylistTrackReorderRequestDto requestDto : requestListDto) {
             if (requestDto.getPlaylistTrackId() == null) {
@@ -298,27 +296,27 @@ public class PlaylistService {
         }
 
         int maxPositionNo = existingTracks.stream()
-            .map(PlaylistTrack::getPositionNo)
-            .filter(positionNo -> positionNo != null)
-            .max(Integer::compareTo)
-            .orElse(0);
+                .map(PlaylistTrack::getPositionNo)
+                .filter(positionNo -> positionNo != null)
+                .max(Integer::compareTo)
+                .orElse(0);
         int temporaryPositionStart = maxPositionNo + requestListDto.size() + 1;
 
         List<PlaylistTrack> temporaryPositions = new ArrayList<>();
         for (int i = 0; i < requestListDto.size(); i++) {
             temporaryPositions.add(PlaylistTrack.builder()
-                .playlistTrackId(requestListDto.get(i).getPlaylistTrackId())
-                .positionNo(temporaryPositionStart + i)
-                .build());
+                    .playlistTrackId(requestListDto.get(i).getPlaylistTrackId())
+                    .positionNo(temporaryPositionStart + i)
+                    .build());
         }
         playlistTrackDao.updatePlaylistTrackPositions(temporaryPositions);
 
         List<PlaylistTrack> finalPositions = new ArrayList<>();
         for (int i = 0; i < requestListDto.size(); i++) {
             finalPositions.add(PlaylistTrack.builder()
-                .playlistTrackId(requestListDto.get(i).getPlaylistTrackId())
-                .positionNo(i + 1)
-                .build());
+                    .playlistTrackId(requestListDto.get(i).getPlaylistTrackId())
+                    .positionNo(i + 1)
+                    .build());
         }
         playlistTrackDao.updatePlaylistTrackPositions(finalPositions);
     }
@@ -383,5 +381,62 @@ public class PlaylistService {
 
         commentDao.deleteComment(commentId);
         playlistMapper.decreaseCommentCount(id);
+    }
+
+    @Transactional
+    public LikeResponseDto like(Long playlistId, Long userId) {
+        // 플레이리스트 유효성 검사
+        Playlist playlist = playlistMapper.findById(playlistId);
+        if (playlist == null) throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
+        if ("N".equals(playlist.getPublicYn())) throw new CustomException(ErrorCode.PRIVATE_PLAYLIST_CANNOT_BE_LIKED);
+
+        // 상태 조회 및 결정
+        Like existingLike = likeDao.getLikeByUserIdAndPlaylistId(playlistId, userId);
+
+        // 이력이 없거나 현재 상태가 'N'이면 -> 좋아요('Y') / 아니면 -> 취소('N')
+        boolean isActionLike = (existingLike == null || "N".equals(existingLike.getStatus()));
+        String newStatus = isActionLike ? "Y" : "N";
+
+        // DB 반영 (Insert or Update)
+        if (existingLike == null) {
+            likeDao.insertLike(playlistId, userId, newStatus);
+        } else {
+            likeDao.updateLikeStatus(playlistId, userId, newStatus);
+        }
+
+        // 플레이리스트 카운트 업데이트
+        if (isActionLike) {
+            likeDao.incrementLikeCount(playlistId);
+        } else {
+            likeDao.decrementLikeCount(playlistId);
+        }
+
+        Playlist updatedPlaylist = playlistMapper.findById(playlistId);
+
+        return LikeResponseDto.builder()
+                .playlistId(playlistId)
+                .userId(userId)
+                .status(newStatus)
+                .totalLikeCount(updatedPlaylist.getLikeCount())
+                .build();
+    }
+
+    @Transactional
+    public List<PlaylistResponseDto> getLikedPlaylists(Long userId){
+        // 사용자 유효성 검사
+        User user = userDao.getUserById(userId);
+        if (user == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+        return likeDao.getLikedPlaylistsByUserId(userId)
+                .stream()
+                .map(PlaylistResponseDto::from).toList();
+    }
+
+    public List<PlaylistResponseDto> getPlaylistRanking(int limit) {
+        return playlistMapper.findTopPlaylists(limit)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 }

@@ -56,8 +56,8 @@ public class AccessTokenCheckInterceptor implements HandlerInterceptor {
         String authorization = request.getHeader(AUTHORIZATION_HEADER);
 
         if (authorization == null || !authorization.startsWith(BEARER_PREFIX)) {
-            log.warn("Missing or invalid Authorization header");
-            throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+            log.warn("Invalid Authorization header. uri={}", request.getRequestURI());
+            throw new CustomException(ErrorCode.LOGIN_REQUIRED);
         }
 
         String accessToken = authorization.substring(BEARER_PREFIX.length());

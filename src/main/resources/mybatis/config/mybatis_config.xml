@@ -17,6 +17,8 @@
         <typeAlias alias="User" type="com.example.tune_share_hub_backend.entity.user.User"/>
         <typeAlias alias="Refresh" type="com.example.tune_share_hub_backend.entity.refresh.Refresh"/>
         <typeAlias alias="SearchHistory" type="com.example.tune_share_hub_backend.entity.searchhistory.SearchHistory"/>
+        <typeAlias alias="Like" type="com.example.tune_share_hub_backend.entity.like.Like"/>
+        <typeAlias alias="Playlist" type="com.example.tune_share_hub_backend.entity.Playlist"/>
 
         <!-- 엔티티 패키지 전체 자동 alias 등록 -->
         <!-- <package name="com.example.tune_share_hub_backend.entity"/>-->
