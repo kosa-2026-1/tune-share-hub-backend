@@ -127,9 +127,9 @@ public class PlaylistService {
         List<PlaylistTrack> tracks = playlistTrackDao.findByPlaylistId(playlistId);
         for (PlaylistTrack track : tracks) {
             track.setPlaylistId(copied.getPlaylistId());
-            playlistTrackDao.insertPlaylistTracks(tracks);
-        }
 
+        }
+        playlistTrackDao.insertPlaylistTracks(tracks);
         return getPlaylist(copied.getPlaylistId(), userId);
     }
 
