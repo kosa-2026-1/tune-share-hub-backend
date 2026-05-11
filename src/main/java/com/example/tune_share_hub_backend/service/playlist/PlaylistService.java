@@ -1,23 +1,21 @@
 package com.example.tune_share_hub_backend.service.playlist;
 
-import com.example.tune_share_hub_backend.dao.like.LikeDao;
-import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
 import com.example.tune_share_hub_backend.convert.CommentConvert;
+import com.example.tune_share_hub_backend.dao.like.LikeDao;
 import com.example.tune_share_hub_backend.dao.playlist.CommentDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
+import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
 import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
-
 import com.example.tune_share_hub_backend.entity.Comment;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 import com.example.tune_share_hub_backend.entity.like.Like;
-
 import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
@@ -77,7 +75,7 @@ public class PlaylistService {
     public Map<String, Object> getPublicPlaylists(int page, int size) {
         int offset = (page - 1) * size;
         List<PlaylistResponseDto> list = playlistMapper.findPublicPlaylists(offset, size)
-            .stream().map(this::toResponse).collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
         int total = playlistMapper.countPublicPlaylists();
 
         Map<String, Object> result = new HashMap<>();
@@ -457,7 +455,7 @@ public class PlaylistService {
     }
 
     @Transactional
-    public List<PlaylistResponseDto> getLikedPlaylists(Long userId){
+    public List<PlaylistResponseDto> getLikedPlaylists(Long userId) {
         // 사용자 유효성 검사
         User user = userDao.getUserById(userId);
         if (user == null) {
