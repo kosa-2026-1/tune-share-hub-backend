@@ -26,7 +26,7 @@ public class PlaylistResponseDto {
     private LocalDateTime createdAt;
     private List<Object> tracks;
 
-    public static PlaylistResponseDto from(Playlist playlist){
+    public static PlaylistResponseDto from(Playlist playlist) {
         return PlaylistResponseDto.builder()
                 .playlistId(playlist.getPlaylistId())
                 .title(playlist.getTitle())
@@ -34,6 +34,7 @@ public class PlaylistResponseDto {
                 .publicYn(playlist.getPublicYn())
                 .viewCount(playlist.getViewCount())
                 .likeCount(playlist.getLikeCount())
+                .coverImageUrl(playlist.getCoverImageUrl())
                 .commentCount(playlist.getCommentCount())
                 .createdAt(playlist.getCreatedAt())
                 .build();

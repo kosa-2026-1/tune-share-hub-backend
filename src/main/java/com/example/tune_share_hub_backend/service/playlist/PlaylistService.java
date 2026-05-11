@@ -80,7 +80,7 @@ public class PlaylistService {
     public Map<String, Object> getPublicPlaylists(int page, int size) {
         int offset = (page - 1) * size;
         List<PlaylistResponseDto> list = playlistMapper.findPublicPlaylists(offset, size)
-                .stream().map(this::toResponse).collect(Collectors.toList());
+                .stream().map(PlaylistResponseDto::from).collect(Collectors.toList());
         int total = playlistMapper.countPublicPlaylists();
 
         Map<String, Object> result = new HashMap<>();
@@ -112,7 +112,7 @@ public class PlaylistService {
         }
 
         if (!"Y".equals(original.getPublicYn())) {
-            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
+            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
         }
 
         Playlist copied = new Playlist();
@@ -136,7 +136,7 @@ public class PlaylistService {
     public List<PlaylistResponseDto> getMyPlaylists(Long userId) {
         return playlistMapper.findByUserId(userId)
                 .stream()
-                .map(this::toResponse)
+                .map(PlaylistResponseDto::from)
                 .collect(Collectors.toList());
     }
 
@@ -157,24 +157,7 @@ public class PlaylistService {
         List<CommentResponseDto> comments = CommentConvert.toCommentResponseDtoList(
                 commentDao.findByPlaylistId(playlistId));
 
-        return toDetailResponse(playlist, tracks, comments);
-    }
-
-    private PlaylistDetailResponseDto toDetailResponse(Playlist p, List<PlaylistTrack> tracks,
-                                                       List<CommentResponseDto> comments) {
-        return PlaylistDetailResponseDto.builder()
-                .playlistId(p.getPlaylistId())
-                .title(p.getTitle())
-                .description(p.getDescription())
-                .publicYn(p.getPublicYn())
-                .viewCount(p.getViewCount())
-                .likeCount(p.getLikeCount())
-                .coverImageUrl(p.getCoverImageUrl())
-                .commentCount(p.getCommentCount())
-                .createdAt(p.getCreatedAt())
-                .tracks(tracks)
-                .comments(comments)
-                .build();
+        return PlaylistDetailResponseDto.from(playlist, tracks, comments);
     }
 
     private void validatePlaylistId(Long playlistId) {
@@ -207,21 +190,6 @@ public class PlaylistService {
         if (!"Y".equals(publicYn) && !"N".equals(publicYn)) {
             throw new CustomException(ErrorCode.INVALID_PUBLIC_YN);
         }
-    }
-
-    private PlaylistResponseDto toResponse(Playlist p) {
-
-        return PlaylistResponseDto.builder()
-                .playlistId(p.getPlaylistId())
-                .title(p.getTitle())
-                .description(p.getDescription())
-                .publicYn(p.getPublicYn())
-                .viewCount(p.getViewCount())
-                .likeCount(p.getLikeCount())
-                .coverImageUrl(p.getCoverImageUrl())
-                .commentCount(p.getCommentCount())
-                .createdAt(p.getCreatedAt())
-                .build();
     }
 
     @Transactional
@@ -513,7 +481,7 @@ public class PlaylistService {
     public List<PlaylistResponseDto> getPlaylistRanking(int limit) {
         return playlistMapper.findTopPlaylists(limit)
                 .stream()
-                .map(this::toResponse)
+                .map(PlaylistResponseDto::from)
                 .collect(Collectors.toList());
     }
 
