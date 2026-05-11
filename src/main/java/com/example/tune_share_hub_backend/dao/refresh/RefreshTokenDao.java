@@ -2,6 +2,7 @@ package com.example.tune_share_hub_backend.dao.refresh;
 
 import com.example.tune_share_hub_backend.entity.refresh.Refresh;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface RefreshTokenDao {

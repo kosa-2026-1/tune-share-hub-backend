@@ -35,5 +35,5 @@ public interface PlaylistMapperDao {
     int deletePlaylist(@Param("playlistId") Long playlistId,
                        @Param("userId") Long userId);
 
-    void increaseViewCount(@Param("playlistId") Long playlistId);
+    List<Playlist> findTopPlaylists(@Param("limit") int limit);
 }

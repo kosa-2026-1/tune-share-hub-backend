@@ -1,4 +1,4 @@
-package com.example.tune_share_hub_backend.entity.user;
+package com.example.tune_share_hub_backend.entity.like;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,12 +11,10 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Like {
+    private Long likeId;
+    private Long playlistId;
     private Long userId;
-    private String email;
-    private String passwordHash;
-    private String nickname;
-    private UserRoleType role;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String status;
 }

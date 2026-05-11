@@ -1,5 +1,6 @@
 package com.example.tune_share_hub_backend.dto.playlist;
 
+import com.example.tune_share_hub_backend.entity.Playlist;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,4 +25,17 @@ public class PlaylistResponseDto {
     private int commentCount;
     private LocalDateTime createdAt;
     private List<Object> tracks;
+
+    public static PlaylistResponseDto from(Playlist playlist){
+        return PlaylistResponseDto.builder()
+                .playlistId(playlist.getPlaylistId())
+                .title(playlist.getTitle())
+                .description(playlist.getDescription())
+                .publicYn(playlist.getPublicYn())
+                .viewCount(playlist.getViewCount())
+                .likeCount(playlist.getLikeCount())
+                .commentCount(playlist.getCommentCount())
+                .createdAt(playlist.getCreatedAt())
+                .build();
+    }
 }

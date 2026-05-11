@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.tune_share_hub_backend.dao.searchhistory.SearchHistoryDao">
+    <insert id="insert">
+        INSERT INTO SEARCH_HISTORIES (
+            HISTORY_ID,
+            USER_ID,
+            KEYWORD,
+            CREATED_AT
+            )
+        VALUES (
+            SEQ_SEARCH_HISTORIES.NEXTVAL,
+            #{userId},
+            #{keyword},
+            SYSTIMESTAMP
+            )
+    </insert>
+
+    <delete id="deleteExcessHistory">
+        DELETE FROM SEARCH_HISTORIES
+        WHERE HISTORY_ID IN (
+            SELECT HISTORY_ID FROM (
+                                       SELECT HISTORY_ID, ROW_NUMBER() OVER (ORDER BY CREATED_AT DESC) AS RN
+                                       FROM SEARCH_HISTORIES
+                                       WHERE USER_ID = #{userId}
+                                   )
+            WHERE RN > #{maxSearchHistoryCount}
+        )
+    </delete>
+
+    <delete id="deleteByUserIdAndHistoryId">
+        DELETE FROM SEARCH_HISTORIES
+        WHERE USER_ID = #{userId}
+        AND HISTORY_ID = #{historyId}
+    </delete>
+
+    <select id="findAllByUserId" resultType="SearchHistory">
+            SELECT HISTORY_ID,
+               USER_ID,
+               KEYWORD,
+               CREATED_AT
+        FROM SEARCH_HISTORIES
+        WHERE USER_ID = #{userId}
+        ORDER BY CREATED_AT DESC
+    </select>
+    
+    <update id="updateCreatedAtByUserIdAndKeyword">
+        UPDATE SEARCH_HISTORIES
+        SET CREATED_AT = SYSTIMESTAMP
+        WHERE USER_ID = #{userId}
+        AND KEYWORD = #{keyword}
+    </update>
+
+    <select id="findByHistoryId" resultType="SearchHistory">
+        SELECT HISTORY_ID,
+               USER_ID,
+               KEYWORD,
+               CREATED_AT
+        FROM SEARCH_HISTORIES
+        WHERE HISTORY_ID = #{historyId}
+    </select>
+</mapper>

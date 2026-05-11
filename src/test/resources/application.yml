@@ -19,3 +19,7 @@ jwt:
   refresh-expiration: 1209600000
   secret:
     key: test-jwt-secret-key-for-context-loads-only
+
+search:
+  history:
+    max-count: 10
