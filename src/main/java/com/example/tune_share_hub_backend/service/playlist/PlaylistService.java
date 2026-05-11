@@ -124,21 +124,13 @@ public class PlaylistService {
 
         playlistMapper.insert(copied);
 
-        Playlist saved = playlistMapper.findById(copied.getPlaylistId());
+        List<PlaylistTrack> tracks = playlistTrackDao.findByPlaylistId(playlistId);
+        for (PlaylistTrack track : tracks) {
+            track.setPlaylistId(copied.getPlaylistId());
+            playlistTrackDao.insertPlaylistTracks(tracks);
+        }
 
-        return PlaylistDetailResponseDto.builder()
-                .playlistId(saved.getPlaylistId())
-                .title(saved.getTitle())
-                .description(saved.getDescription())
-                .publicYn(saved.getPublicYn())
-                .viewCount(saved.getViewCount())
-                .likeCount(saved.getLikeCount())
-                .coverImageUrl(saved.getCoverImageUrl())
-                .commentCount(saved.getCommentCount())
-                .createdAt(saved.getCreatedAt())
-                .tracks(Collections.emptyList())
-                .comments(Collections.emptyList())
-                .build();
+        return getPlaylist(copied.getPlaylistId(), userId);
     }
 
     public List<PlaylistResponseDto> getMyPlaylists(Long userId) {
