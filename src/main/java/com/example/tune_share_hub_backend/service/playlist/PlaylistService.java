@@ -112,7 +112,7 @@ public class PlaylistService {
         }
 
         if (!"Y".equals(original.getPublicYn())) {
-            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
+            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
         }
 
         Playlist copied = new Playlist();

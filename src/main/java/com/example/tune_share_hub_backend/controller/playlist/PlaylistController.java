@@ -82,7 +82,7 @@ public class PlaylistController {
         return ResponseEntity.ok(ApiResponseDto.success(null, "플레이리스트가 삭제되었습니다."));
     }
 
-    @Operation(summary = "플레이리스트 복사", description = "로그인한 사용자가 공개된 플레이리스트를 복사합니다.")
+    @Operation(summary = "플레이리스트 복사", description = "로그인한 사용자가 공개 플레이리스트를 복사합니다.")
     @AccessTokenCheck
     @PostMapping("/playlists/{id}/copy")
     public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> copyPlaylist(
