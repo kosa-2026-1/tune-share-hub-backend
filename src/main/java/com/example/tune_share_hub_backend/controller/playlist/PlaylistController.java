@@ -107,8 +107,8 @@ public class PlaylistController {
     public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> getPlaylistDetail(
             @PathVariable Long id,
             @LoginUserId Long userId) {
-        PlaylistDetailResponseDto result = playlistService.getPlaylist(id, userId);
         playlistService.increaseViewCount(id);
+        PlaylistDetailResponseDto result = playlistService.getPlaylist(id, userId);
         return ResponseEntity.ok(ApiResponseDto.success(result, "조회 성공"));
     }
 
