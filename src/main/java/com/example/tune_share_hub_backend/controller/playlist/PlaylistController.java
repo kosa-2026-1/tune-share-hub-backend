@@ -82,6 +82,16 @@ public class PlaylistController {
         return ResponseEntity.ok(ApiResponseDto.success(null, "플레이리스트가 삭제되었습니다."));
     }
 
+    @Operation(summary = "플레이리스트 복사", description = "로그인한 사용자가 본인 소유 원본 공개 플레이리스트를 복사합니다.")
+    @AccessTokenCheck
+    @PostMapping("/playlists/{id}/copy")
+    public ResponseEntity<ApiResponseDto<PlaylistDetailResponseDto>> copyPlaylist(
+            @PathVariable("id") Long playlistId,
+            @LoginUserId Long userId) {
+        PlaylistDetailResponseDto result = playlistService.copyPlaylist(playlistId, userId);
+        return ResponseEntity.ok(ApiResponseDto.success(result, "플레이리스트가 복사되었습니다."));
+    }
+
     @Operation(summary = "공개 목록 조회", description = "공개된 플레이리스트를 페이지 단위로 조회합니다.")
     @GetMapping("/playlists")
     public ResponseEntity<ApiResponseDto<Map<String, Object>>> getPublicPlaylists(

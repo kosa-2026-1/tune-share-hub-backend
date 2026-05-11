@@ -102,6 +102,45 @@ public class PlaylistService {
         }
     }
 
+    @Transactional
+    public PlaylistDetailResponseDto copyPlaylist(Long playlistId, Long userId) {
+        validatePlaylistId(playlistId);
+
+        Playlist original = playlistMapper.findById(playlistId);
+        if (original == null) {
+            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
+        }
+
+        if (!"Y".equals(original.getPublicYn())) {
+            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
+        }
+
+        Playlist copied = new Playlist();
+        copied.setUserId(userId);
+        copied.setTitle(original.getTitle());
+        copied.setDescription(original.getDescription());
+        copied.setCoverImageUrl(original.getCoverImageUrl());
+        copied.setPublicYn("Y");
+
+        playlistMapper.insert(copied);
+
+        Playlist saved = playlistMapper.findById(copied.getPlaylistId());
+
+        return PlaylistDetailResponseDto.builder()
+                .playlistId(saved.getPlaylistId())
+                .title(saved.getTitle())
+                .description(saved.getDescription())
+                .publicYn(saved.getPublicYn())
+                .viewCount(saved.getViewCount())
+                .likeCount(saved.getLikeCount())
+                .coverImageUrl(saved.getCoverImageUrl())
+                .commentCount(saved.getCommentCount())
+                .createdAt(saved.getCreatedAt())
+                .tracks(Collections.emptyList())
+                .comments(Collections.emptyList())
+                .build();
+    }
+
     public List<PlaylistResponseDto> getMyPlaylists(Long userId) {
         return playlistMapper.findByUserId(userId)
                 .stream()
@@ -192,8 +231,6 @@ public class PlaylistService {
                 .createdAt(p.getCreatedAt())
                 .build();
     }
-
-    ;
 
     @Transactional
     public PlaylistDetailResponseDto addTrackToPlaylist(
