@@ -45,7 +45,10 @@ public enum ErrorCode {
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다." ),
 
     // SearchHistory
-    SEARCH_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "검색 기록이 존재하지 않습니다.");
+    SEARCH_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "검색 기록이 존재하지 않습니다."),
+
+    // Tag
+    INVALID_TAG_FORMAT(HttpStatus.BAD_REQUEST, "태그에 콤마(,)를 포함할 수 없습니다.");
 
     private final HttpStatus status;
     private final String message;
