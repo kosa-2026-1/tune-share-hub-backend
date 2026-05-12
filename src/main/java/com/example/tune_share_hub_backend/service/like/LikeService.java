@@ -1,6 +1,5 @@
 package com.example.tune_share_hub_backend.service.like;
 
-import com.example.tune_share_hub_backend.convert.PlaylistConvert;
 import com.example.tune_share_hub_backend.dao.like.LikeDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
@@ -8,7 +7,6 @@ import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.like.Like;
-import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -63,14 +61,6 @@ public class LikeService {
 
     @Transactional(readOnly = true)
     public List<PlaylistResponseDto> getLikedPlaylists(Long userId) {
-        User user = userDao.getUserById(userId);
-        if (user == null) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
-
-        return likeDao.getLikedPlaylistsByUserId(userId)
-                .stream()
-                .map(PlaylistConvert::toResponseDto)
-                .toList();
+        return likeDao.getLikedPlaylistsByUserId(userId);
     }
 }
