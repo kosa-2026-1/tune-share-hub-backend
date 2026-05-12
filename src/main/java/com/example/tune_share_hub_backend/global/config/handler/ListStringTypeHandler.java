@@ -10,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,7 +49,7 @@ public class ListStringTypeHandler extends BaseTypeHandler<List<String>> {
 
     private List<String> convertStringToList(String value) {
         if (value == null || value.trim().isEmpty()) {
-            return null; // 또는 Collections.emptyList();
+            return Collections.emptyList();
         }
         return Arrays.stream(value.split(DELIMITER))
                 .map(String::trim)
