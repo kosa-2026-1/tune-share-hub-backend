@@ -65,6 +65,7 @@ public class PlaylistConvert {
                 .comments(comments)
                 .tags(p.getTags())
                 .liked(liked)
+                .trackCount(p.getTrackCount())
                 .build();
     }
 
@@ -80,6 +81,7 @@ public class PlaylistConvert {
                 .commentCount(playlist.getCommentCount())
                 .createdAt(playlist.getCreatedAt())
                 .tags(playlist.getTags())
+                .trackCount(playlist.getTrackCount())
                 .build();
     }
-}
+    }

@@ -138,6 +138,7 @@ public class PlaylistController {
             @Parameter(description = "트랙을 추가할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
             @LoginUserId Long userId,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "추가할 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackCreateRequestDto.class)))) @RequestBody List<PlaylistTrackCreateRequestDto> requestListDto) {
+        playlistService.increaseTrackCount(id);
         if (requestListDto == null || requestListDto.isEmpty() || requestListDto.contains(null)) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
@@ -160,6 +161,7 @@ public class PlaylistController {
             @LoginUserId Long userId,
             @Parameter(description = "트랙을 삭제할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
             @Parameter(description = "삭제할 플레이리스트 트랙 ID", example = "10", required = true) @PathVariable Long trackId) {
+        playlistService.decreaseTrackCount(id);
         PlaylistDetailResponseDto result = playlistService.removeTrackFromPlaylist(id, userId, trackId);
         return ApiResponseDto.success(result, "트랙이 플레이리스트에서 제거되었습니다.");
     }
@@ -177,6 +179,7 @@ public class PlaylistController {
             @Parameter(description = "트랙 순서를 변경할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
             @LoginUserId Long userId,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "드래그앤드랍 후 새 순서대로 정렬된 플레이리스트 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackReorderRequestDto.class)))) @RequestBody List<PlaylistTrackReorderRequestDto> requestListDto) {
+        playlistService.increaseTrackCount(id);
         if (requestListDto == null || requestListDto.isEmpty() || requestListDto.contains(null)) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }

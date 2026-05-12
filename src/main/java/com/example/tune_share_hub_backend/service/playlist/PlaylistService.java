@@ -433,6 +433,14 @@ public class PlaylistService {
         playlistDao.increaseViewCount(playlistId);
     }
 
+    public void increaseTrackCount(Long playlistId) {
+        playlistDao.increaseTrackCount(playlistId);
+    }
+
+    public void decreaseTrackCount(Long playlistId) {
+        playlistDao.decreaseTrackCount(playlistId);
+    }
+
     @Transactional
     public PlaylistDetailResponseDto deleteComment(Long id, Long commentId, Long userId) {
         Comment existingComment = commentDao.findById(commentId);
