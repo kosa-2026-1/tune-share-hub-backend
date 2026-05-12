@@ -1,5 +1,6 @@
 package com.example.tune_share_hub_backend.controller.searchhistory;
 
+import com.example.tune_share_hub_backend.convert.SearchHistoryConvert;
 import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
 import com.example.tune_share_hub_backend.dto.searchhistory.SearchHistoryRequestDto;
 import com.example.tune_share_hub_backend.dto.searchhistory.SearchHistoryResponseDto;
@@ -27,7 +28,7 @@ public class SearchHistoryController {
     public ApiResponseDto<Void> saveHistory(
             @LoginUserId Long userId,
             @Valid @RequestBody SearchHistoryRequestDto request){
-        searchHistoryService.saveHistory(userId, request);
+        searchHistoryService.saveHistory(SearchHistoryConvert.toEntity(request, userId));
         return ApiResponseDto.success(null, "검색어 히스토리가 저장되었습니다.");
     }
 

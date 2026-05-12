@@ -1,7 +1,7 @@
 package com.example.tune_share_hub_backend.service.searchhistory;
 
+import com.example.tune_share_hub_backend.convert.SearchHistoryConvert;
 import com.example.tune_share_hub_backend.dao.searchhistory.SearchHistoryDao;
-import com.example.tune_share_hub_backend.dto.searchhistory.SearchHistoryRequestDto;
 import com.example.tune_share_hub_backend.dto.searchhistory.SearchHistoryResponseDto;
 import com.example.tune_share_hub_backend.entity.searchhistory.SearchHistory;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
@@ -26,8 +26,14 @@ public class SearchHistoryService {
 
 
     @Transactional
-    public void saveHistory(Long userId, SearchHistoryRequestDto request) {
-        String keyword = request.getKeyword().trim();
+    public void saveHistory(SearchHistory searchHistory) {
+        if (searchHistory == null || searchHistory.getUserId() == null
+                || searchHistory.getKeyword() == null || searchHistory.getKeyword().trim().isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        String keyword = searchHistory.getKeyword().trim();
+        Long userId = searchHistory.getUserId();
 
         // 기존 검색어의 생성일 변경
         int updatedRows = searchHistoryDao.updateCreatedAtByUserIdAndKeyword(userId, keyword);
@@ -48,7 +54,7 @@ public class SearchHistoryService {
     public List<SearchHistoryResponseDto> getHistory(Long userId) {
         List<SearchHistory> searchHistoryList = searchHistoryDao.findAllByUserId(userId);
         return searchHistoryList.stream()
-                .map(SearchHistoryResponseDto::from)
+                .map(SearchHistoryConvert::toResponseDto)
                 .toList();
     }
 

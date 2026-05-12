@@ -1,5 +1,7 @@
 package com.example.tune_share_hub_backend.service.auth;
 
+import com.example.tune_share_hub_backend.convert.AuthConvert;
+import com.example.tune_share_hub_backend.convert.UserConvert;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
 import com.example.tune_share_hub_backend.dto.auth.LoginRequestDto;
 import com.example.tune_share_hub_backend.dto.auth.LoginResponseDto;
@@ -40,7 +42,7 @@ public class AuthService {
         User user = findAndValidateUser(loginRequestDto);
         
         // 토큰 생성
-        UserResponseDto userResponseDto = UserResponseDto.from(user);
+        UserResponseDto userResponseDto = UserConvert.toResponseDto(user);
         String accessToken = jwtProvider.createAccessToken(userResponseDto);
         String refreshToken = jwtProvider.createRefreshToken(userResponseDto);
 
@@ -54,11 +56,7 @@ public class AuthService {
                 expiresAt
         );
 
-        return LoginResponseDto.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .userResponseDto(userResponseDto)
-                .build();
+        return AuthConvert.toLoginResponseDto(accessToken, refreshToken, userResponseDto);
     }
 
     @Transactional
@@ -72,7 +70,7 @@ public class AuthService {
 
         // 사용자 조회
         User user = userDao.getUserById(userId);
-        UserResponseDto userResponseDto = UserResponseDto.from(user);
+        UserResponseDto userResponseDto = UserConvert.toResponseDto(user);
 
         // 토큰 재발급
         String newAccessToken = jwtProvider.createAccessToken(userResponseDto);
@@ -87,11 +85,7 @@ public class AuthService {
                 expiresAt
         );
 
-        return LoginResponseDto.builder()
-                .accessToken(newAccessToken)
-                .refreshToken(newRefreshToken)
-                .userResponseDto(userResponseDto)
-                .build();
+        return AuthConvert.toLoginResponseDto(newAccessToken, newRefreshToken, userResponseDto);
     }
 
     @Transactional
