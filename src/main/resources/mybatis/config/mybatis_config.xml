@@ -22,8 +22,14 @@
         <typeAlias alias="PlaylistTrack" type="com.example.tune_share_hub_backend.entity.PlaylistTrack"/>
         <typeAlias alias="Comment" type="com.example.tune_share_hub_backend.entity.Comment"/>
         <typeAlias alias="PlaylistResponseDto" type="com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto"/>
+        <typeAlias alias="ListStringTypeHandler" type="com.example.tune_share_hub_backend.global.config.handler.ListStringTypeHandler"/>
 
         <!-- 엔티티 패키지 전체 자동 alias 등록 -->
         <!-- <package name="com.example.tune_share_hub_backend.entity"/>-->
     </typeAliases>
+
+    <!-- TypeHandlers 등록 -->
+    <typeHandlers>
+        <typeHandler handler="com.example.tune_share_hub_backend.global.config.handler.ListStringTypeHandler"/>
+    </typeHandlers>
 </configuration>
