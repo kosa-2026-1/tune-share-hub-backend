@@ -2,6 +2,20 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.tune_share_hub_backend.dao.like.LikeDao">
+    <resultMap id="PlaylistResponseDtoResultMap" type="PlaylistResponseDto">
+        <id property="playlistId" column="PLAYLIST_ID"/>
+        <result property="title" column="TITLE"/>
+        <result property="description" column="DESCRIPTION"/>
+        <result property="coverImageUrl" column="COVER_IMAGE_URL"/>
+        <result property="publicYn" column="PUBLIC_YN"/>
+        <result property="viewCount" column="VIEW_COUNT"/>
+        <result property="likeCount" column="LIKE_COUNT"/>
+        <result property="commentCount" column="COMMENT_COUNT"/>
+        <result property="createdAt" column="CREATED_AT"/>
+        <result property="tags" column="TAGS"/>
+        <result property="liked" column="LIKED"/>
+    </resultMap>
+
     <insert id="insertLike">
         INSERT INTO PLAYLIST_LIKES (LIKE_ID, USER_ID, PLAYLIST_ID, STATUS, CREATED_AT)
         VALUES (SEQ_PLAYLIST_LIKES.NEXTVAL, #{userId}, #{playlistId}, #{status}, SYSDATE)
@@ -36,8 +50,9 @@
         WHERE PLAYLIST_ID = #{playlistId}
     </delete>
 
-    <select id="getLikedPlaylistsByUserId" parameterType="Long" resultType="Playlist">
-        SELECT P.*
+    <select id="getLikedPlaylistsByUserId" parameterType="Long" resultMap="PlaylistResponseDtoResultMap">
+        SELECT P.*,
+            1 AS LIKED
         FROM PLAYLISTS P
                  JOIN PLAYLIST_LIKES L ON P.PLAYLIST_ID = L.PLAYLIST_ID
         WHERE L.USER_ID = #{userId}
