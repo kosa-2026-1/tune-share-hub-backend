@@ -152,7 +152,11 @@
 
     <update id="decreaseTrackCount" parameterType="long">
         UPDATE PLAYLISTS
-        SET TRACK_COUNT = NVL(TRACK_COUNT, 0) - 1,
+        SET TRACK_COUNT = CASE
+                              WHEN NVL(TRACK_COUNT, 0) > 0
+                                  THEN TRACK_COUNT - 1
+                              ELSE 0
+            END,
             UPDATED_AT  = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
     </update>
