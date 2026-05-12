@@ -112,9 +112,17 @@
     <select id="findTopPlaylists" resultMap="PlaylistResultMap">
         SELECT *
         FROM (SELECT *
-              FROM PLAYLISTS
-              WHERE PUBLIC_YN = 'Y'
-              ORDER BY LIKE_COUNT DESC)
+        FROM PLAYLISTS
+        WHERE PUBLIC_YN = 'Y'
+        <choose>
+            <when test="type == 'view'">
+                ORDER BY VIEW_COUNT DESC
+            </when>
+            <otherwise>
+                ORDER BY LIKE_COUNT DESC
+            </otherwise>
+        </choose>
+        )
         WHERE ROWNUM &lt;= #{limit}
     </select>
 

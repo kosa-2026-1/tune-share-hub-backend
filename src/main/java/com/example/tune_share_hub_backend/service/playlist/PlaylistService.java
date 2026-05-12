@@ -444,8 +444,11 @@ public class PlaylistService {
         return getPlaylist(id, userId);
     }
 
-    public List<PlaylistResponseDto> getPlaylistRanking(int limit) {
-        return playlistDao.findTopPlaylists(limit)
+    public List<PlaylistResponseDto> getPlaylistRanking(int limit, String type) {
+        if (!"like".equals(type) && !"view".equals(type)) {
+            throw new CustomException(ErrorCode.INVALID_RANKING_TYPE);
+        }
+        return playlistDao.findTopPlaylists(limit, type)
                 .stream()
                 .map(PlaylistConvert::toResponseDto)
                 .collect(Collectors.toList());
