@@ -22,6 +22,7 @@ public class PlaylistDetailResponseDto {
     private String publicYn;
     private int viewCount;
     private int likeCount;
+    private int trackCount;
     private String coverImageUrl;
     private int commentCount;
     private LocalDateTime createdAt;
@@ -30,5 +31,6 @@ public class PlaylistDetailResponseDto {
     private List<CommentResponseDto> comments;
     private List<String> tags;
     private boolean liked;
+
 
 }

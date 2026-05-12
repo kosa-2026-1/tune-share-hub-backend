@@ -120,7 +120,6 @@ public class PlaylistController {
     public ApiResponseDto<PlaylistDetailResponseDto> getPlaylistDetail(
             @PathVariable Long id,
             @LoginUserId Long userId) {
-        playlistService.increaseViewCount(id);
         PlaylistDetailResponseDto result = playlistService.getPlaylist(id, userId);
         return ApiResponseDto.success(result, "조회 성공");
     }

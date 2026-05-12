@@ -26,4 +26,5 @@ public class Playlist {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<String> tags;
+    private int trackCount;
 }

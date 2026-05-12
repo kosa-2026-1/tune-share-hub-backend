@@ -15,8 +15,8 @@ import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Comment;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
-import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.entity.like.Like;
+import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 import com.example.tune_share_hub_backend.service.file.FileStorageService;
@@ -172,6 +172,8 @@ public class PlaylistService {
             }
         }
 
+        playlistDao.increaseViewCount(playlistId);
+
         List<PlaylistTrackResponseDto> tracks = PlaylistTrackConvert.toResponseDtoList(
                 playlistTrackDao.findByPlaylistId(playlistId));
         List<CommentResponseDto> comments = CommentConvert.toCommentResponseDtoList(
@@ -250,6 +252,9 @@ public class PlaylistService {
 
         playlistTrackDao.insertPlaylistTracks(playlistTracksList);
 
+        playlistDao.increaseTrackCount(id, playlistTracksList.size());
+
+
         return getPlaylist(id, currentUserId);
     }
 
@@ -288,6 +293,8 @@ public class PlaylistService {
         if (deletedCount == 0) {
             throw new CustomException(ErrorCode.PLAYLIST_TRACK_NOT_FOUND);
         }
+
+        playlistDao.decreaseTrackCount(id);
 
         compactPlaylistTrackPositions(id);
 
@@ -427,10 +434,6 @@ public class PlaylistService {
         commentDao.updateComment(existingComment);
 
         return getPlaylist(id, userId);
-    }
-
-    public void increaseViewCount(Long playlistId) {
-        playlistDao.increaseViewCount(playlistId);
     }
 
     @Transactional

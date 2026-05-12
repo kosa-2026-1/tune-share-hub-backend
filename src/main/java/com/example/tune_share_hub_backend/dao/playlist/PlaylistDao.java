@@ -37,4 +37,10 @@ public interface PlaylistDao {
     List<Playlist> findTopPlaylists(@Param("limit") int limit, @Param("type") String type);
 
     void increaseViewCount(@Param("playlistId") Long playlistId);
+
+    void increaseTrackCount(@Param("playlistId") Long playlistId, int size);
+
+    void decreaseTrackCount(@Param("playlistId") Long playlistId);
+
+
 }

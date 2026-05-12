@@ -60,7 +60,7 @@
             UPDATED_AT = SYSTIMESTAMP
         </set>
         WHERE PLAYLIST_ID = #{playlistId}
-          AND USER_ID = #{userId}
+        AND USER_ID = #{userId}
     </update>
 
     <update id="updatePlaylistVisibility">
@@ -140,6 +140,20 @@
         UPDATE PLAYLISTS
         SET VIEW_COUNT = NVL(VIEW_COUNT, 0) + 1,
             UPDATED_AT = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+    </update>
+
+    <update id="increaseTrackCount" parameterType="long">
+        UPDATE PLAYLISTS
+        SET TRACK_COUNT = NVL(TRACK_COUNT, 0) + 1,
+            UPDATED_AT  = SYSTIMESTAMP
+        WHERE PLAYLIST_ID = #{playlistId}
+    </update>
+
+    <update id="decreaseTrackCount" parameterType="long">
+        UPDATE PLAYLISTS
+        SET TRACK_COUNT = GREATEST(NVL(TRACK_COUNT, 0) - 1, 0),
+            UPDATED_AT  = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
     </update>
 
