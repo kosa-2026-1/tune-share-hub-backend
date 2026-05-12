@@ -5,6 +5,7 @@ import java.util.List;
 
 
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackCreateRequestDto;
+import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackResponseDto;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 
@@ -51,6 +52,16 @@ public class PlaylistTrackConvert {
 		return playlistTracks;
 	}
 
+	public static List<PlaylistTrack> toReorderEntities(List<PlaylistTrackReorderRequestDto> requests) {
+		List<PlaylistTrack> playlistTracks = new ArrayList<>();
+
+		for (int i = 0; i < requests.size(); i++) {
+			playlistTracks.add(toPositionEntity(requests.get(i).getPlaylistTrackId(), i + 1));
+		}
+
+		return playlistTracks;
+	}
+
 	public static PlaylistTrackResponseDto toResponseDto(PlaylistTrack playlistTrack) {
 		return PlaylistTrackResponseDto.builder()
 			.playlistTrackId(playlistTrack.getPlaylistTrackId())
@@ -63,6 +74,13 @@ public class PlaylistTrackConvert {
 			.youtubeUrl(playlistTrack.getYoutubeUrl())
 			.durationMs(playlistTrack.getDurationMs())
 			.positionNo(playlistTrack.getPositionNo())
+			.build();
+	}
+
+	public static PlaylistTrack toPositionEntity(Long playlistTrackId, Integer positionNo) {
+		return PlaylistTrack.builder()
+			.playlistTrackId(playlistTrackId)
+			.positionNo(positionNo)
 			.build();
 	}
 

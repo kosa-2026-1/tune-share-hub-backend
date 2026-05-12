@@ -1,8 +1,9 @@
 package com.example.tune_share_hub_backend.service.like;
 
+import com.example.tune_share_hub_backend.convert.LikeConvert;
 import com.example.tune_share_hub_backend.convert.PlaylistConvert;
 import com.example.tune_share_hub_backend.dao.like.LikeDao;
-import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
+import com.example.tune_share_hub_backend.dao.playlist.PlaylistDao;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
 import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
@@ -22,7 +23,7 @@ import java.util.List;
 public class LikeService {
 
     private final LikeDao likeDao;
-    private final PlaylistMapperDao playlistMapper;
+    private final PlaylistDao playlistMapper;
     private final UserDao userDao;
 
     @Transactional
@@ -53,12 +54,7 @@ public class LikeService {
 
         Playlist updatedPlaylist = playlistMapper.findById(playlistId);
 
-        return LikeResponseDto.builder()
-                .playlistId(playlistId)
-                .userId(userId)
-                .status(newStatus)
-                .totalLikeCount(updatedPlaylist.getLikeCount())
-                .build();
+        return LikeConvert.toResponseDto(playlistId, userId, newStatus, updatedPlaylist);
     }
 
     @Transactional(readOnly = true)

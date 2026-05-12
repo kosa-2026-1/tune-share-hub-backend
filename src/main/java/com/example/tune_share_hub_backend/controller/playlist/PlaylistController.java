@@ -1,6 +1,7 @@
 package com.example.tune_share_hub_backend.controller.playlist;
 
 import com.example.tune_share_hub_backend.convert.CommentConvert;
+import com.example.tune_share_hub_backend.convert.PlaylistConvert;
 import com.example.tune_share_hub_backend.convert.PlaylistTrackConvert;
 import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
 import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
@@ -10,8 +11,6 @@ import com.example.tune_share_hub_backend.dto.playlist.CommentRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
-import com.example.tune_share_hub_backend.entity.Comment;
-import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 import com.example.tune_share_hub_backend.global.interceptor.AccessTokenCheck;
@@ -27,6 +26,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,12 +44,13 @@ public class PlaylistController {
 
     @Operation(summary = "플레이리스트 수정", description = "로그인한 사용자가 본인 소유 플레이리스트를 수정합니다.")
     @AccessTokenCheck
-    @PutMapping("/playlists/{id}")
+    @PutMapping(value = "/playlists/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponseDto<PlaylistDetailResponseDto> updatePlaylist(
             @PathVariable("id") Long playlistId,
-            @RequestBody PlaylistRequestDto request,
+            @Valid @ModelAttribute PlaylistRequestDto request,
             @LoginUserId Long userId) {
-        PlaylistDetailResponseDto result = playlistService.updatePlaylist(playlistId, userId, request);
+        PlaylistDetailResponseDto result = playlistService.updatePlaylist(
+                playlistId, userId, PlaylistConvert.toEntity(request), request.getCoverImage());
         return ApiResponseDto.success(result, "플레이리스트가 수정되었습니다.");
     }
 
@@ -59,17 +61,19 @@ public class PlaylistController {
             @PathVariable("id") Long playlistId,
             @RequestBody PlaylistRequestDto request,
             @LoginUserId Long userId) {
-        PlaylistDetailResponseDto result = playlistService.updatePlaylistVisibility(playlistId, userId, request);
+        PlaylistDetailResponseDto result = playlistService.updatePlaylistVisibility(
+                playlistId, userId, PlaylistConvert.toEntity(request));
         return ApiResponseDto.success(result, "플레이리스트 공개 여부가 변경되었습니다.");
     }
 
     @Operation(summary = "플레이리스트 생성", description = "로그인한 사용자가 새 플레이리스트를 생성합니다.")
-    @PostMapping("/playlists")
+    @PostMapping(value = "/playlists", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @AccessTokenCheck
     public ApiResponseDto<PlaylistDetailResponseDto> create(
-            @RequestBody @Valid PlaylistRequestDto req,
+            @Valid @ModelAttribute PlaylistRequestDto req,
             @LoginUserId Long userId) {
-        PlaylistDetailResponseDto result = playlistService.create(userId, req);
+        PlaylistDetailResponseDto result = playlistService.create(
+                userId, PlaylistConvert.toEntity(req, userId), req.getCoverImage());
         return ApiResponseDto.success(result, "플레이리스트 생성 성공");
     }
 
@@ -138,8 +142,8 @@ public class PlaylistController {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        List<PlaylistTrack> playlistTracksList = PlaylistTrackConvert.toEntities(requestListDto, id);
-        PlaylistDetailResponseDto result = playlistService.addTrackToPlaylist(id, userId, playlistTracksList);
+        PlaylistDetailResponseDto result = playlistService.addTrackToPlaylist(
+                id, userId, PlaylistTrackConvert.toEntities(requestListDto, id));
         return ApiResponseDto.success(result, "트랙이 플레이리스트에 추가되었습니다.");
     }
 
@@ -173,7 +177,12 @@ public class PlaylistController {
             @Parameter(description = "트랙 순서를 변경할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
             @LoginUserId Long userId,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "드래그앤드랍 후 새 순서대로 정렬된 플레이리스트 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackReorderRequestDto.class)))) @RequestBody List<PlaylistTrackReorderRequestDto> requestListDto) {
-        PlaylistDetailResponseDto result = playlistService.reorderTrack(id, userId, requestListDto);
+        if (requestListDto == null || requestListDto.isEmpty() || requestListDto.contains(null)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        PlaylistDetailResponseDto result = playlistService.reorderTrack(
+                id, userId, PlaylistTrackConvert.toReorderEntities(requestListDto));
         return ApiResponseDto.success(result, "트랙 순서가 변경되었습니다.");
     }
 
@@ -217,8 +226,7 @@ public class PlaylistController {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        Comment comment = CommentConvert.toEntity(requestDto);
-        PlaylistDetailResponseDto result = playlistService.createComment(id, userId, comment);
+        PlaylistDetailResponseDto result = playlistService.createComment(id, userId, CommentConvert.toEntity(requestDto));
         return ApiResponseDto.success(result, "댓글이 추가되었습니다.");
     }
 
@@ -251,8 +259,7 @@ public class PlaylistController {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        Comment comment = CommentConvert.toEntity(requestDto);
-        PlaylistDetailResponseDto result = playlistService.updateComment(id, commentId, userId, comment);
+        PlaylistDetailResponseDto result = playlistService.updateComment(id, commentId, userId, CommentConvert.toEntity(requestDto));
         return ApiResponseDto.success(result, "댓글이 수정되었습니다.");
     }
 
