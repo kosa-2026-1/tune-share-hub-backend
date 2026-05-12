@@ -1,6 +1,5 @@
 package com.example.tune_share_hub_backend.dao.playlist;
 
-import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -8,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface PlaylistMapperDao {
+public interface PlaylistDao {
 
     void insert(Playlist playlist);
 
@@ -18,7 +17,7 @@ public interface PlaylistMapperDao {
 
     int updatePlaylist(@Param("playlistId") Long playlistId,
                        @Param("userId") Long userId,
-                       @Param("request") PlaylistRequestDto request);
+                       @Param("playlist") Playlist playlist);
 
     int updatePlaylistVisibility(@Param("playlistId") Long playlistId,
                                  @Param("userId") Long userId,

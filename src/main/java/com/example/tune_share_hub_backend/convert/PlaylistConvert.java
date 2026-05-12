@@ -3,12 +3,51 @@ package com.example.tune_share_hub_backend.convert;
 import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Playlist;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class PlaylistConvert {
+
+    private static final String DEFAULT_PUBLIC_YN = "Y";
+
+    public static Playlist toEntity(PlaylistRequestDto request) {
+        return toEntity(request, null, null);
+    }
+
+    public static Playlist toEntity(PlaylistRequestDto request, Long userId) {
+        return toEntity(request, userId, null);
+    }
+
+    public static Playlist toEntity(PlaylistRequestDto request, Long userId, String coverImageUrl) {
+        if (request == null) {
+            return null;
+        }
+
+        Playlist playlist = new Playlist();
+        playlist.setUserId(userId);
+        playlist.setTitle(request.getTitle());
+        playlist.setDescription(request.getDescription());
+        playlist.setCoverImageUrl(coverImageUrl);
+        playlist.setPublicYn(request.getPublicYn());
+        playlist.setTags(toTagText(request.getTags()));
+        return playlist;
+    }
+
+    public static Playlist toCopiedEntity(Playlist original, Long userId) {
+        Playlist copied = new Playlist();
+        copied.setUserId(userId);
+        copied.setTitle(original.getTitle());
+        copied.setDescription(original.getDescription());
+        copied.setCoverImageUrl(original.getCoverImageUrl());
+        copied.setPublicYn(DEFAULT_PUBLIC_YN);
+        copied.setTags(original.getTags());
+        return copied;
+    }
 
     public static PlaylistDetailResponseDto toDetailResponseDto(Playlist p,
                                                                 List<PlaylistTrackResponseDto> tracks,
@@ -39,6 +78,26 @@ public class PlaylistConvert {
                 .coverImageUrl(playlist.getCoverImageUrl())
                 .commentCount(playlist.getCommentCount())
                 .createdAt(playlist.getCreatedAt())
+                .tags(toTagList(playlist.getTags()))
                 .build();
+    }
+
+    private static String toTagText(List<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return null;
+        }
+
+        return String.join(",", tags);
+    }
+
+    private static List<String> toTagList(String tags) {
+        if (tags == null || tags.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        return Arrays.stream(tags.split(","))
+                .map(String::trim)
+                .filter(tag -> !tag.isEmpty())
+                .toList();
     }
 }
