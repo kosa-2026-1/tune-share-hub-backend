@@ -28,5 +28,7 @@ public class PlaylistDetailResponseDto {
 
     private List<PlaylistTrackResponseDto> tracks;
     private List<CommentResponseDto> comments;
+    private List<String> tags;
+    private boolean liked;
 
 }

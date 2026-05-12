@@ -16,10 +16,10 @@ import com.example.tune_share_hub_backend.entity.Comment;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 import com.example.tune_share_hub_backend.entity.user.User;
+import com.example.tune_share_hub_backend.entity.like.Like;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 import com.example.tune_share_hub_backend.service.file.FileStorageService;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -176,8 +176,11 @@ public class PlaylistService {
                 playlistTrackDao.findByPlaylistId(playlistId));
         List<CommentResponseDto> comments = CommentConvert.toCommentResponseDtoList(
                 commentDao.findByPlaylistId(playlistId));
+        Like like = likeDao.getLikeByUserIdAndPlaylistId(playlistId, loginUserId);
 
-        return PlaylistConvert.toDetailResponseDto(playlist, tracks, comments);
+        boolean likeStatus = (like != null && like.getStatus().equals("Y"));
+
+        return PlaylistConvert.toDetailResponseDto(playlist, tracks, comments, likeStatus);
     }
 
     private void validatePlaylistId(Long playlistId) {
