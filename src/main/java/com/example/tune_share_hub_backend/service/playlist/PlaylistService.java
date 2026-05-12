@@ -5,14 +5,12 @@ import com.example.tune_share_hub_backend.convert.PlaylistConvert;
 import com.example.tune_share_hub_backend.convert.PlaylistTrackConvert;
 import com.example.tune_share_hub_backend.dao.like.LikeDao;
 import com.example.tune_share_hub_backend.dao.playlist.CommentDao;
-import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
+import com.example.tune_share_hub_backend.dao.playlist.PlaylistDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
 import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
-import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
-import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Comment;
 import com.example.tune_share_hub_backend.entity.Playlist;
@@ -20,9 +18,12 @@ import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
+import com.example.tune_share_hub_backend.service.file.FileStorageService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,18 +32,23 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PlaylistService {
 
-    private final PlaylistMapperDao playlistMapper;
+    private final FileStorageService fileStorageService;
+    private final PlaylistDao playlistDao;
     private final PlaylistTrackDao playlistTrackDao;
     private final CommentDao commentDao;
     private final UserDao userDao;
     private final LikeDao likeDao;
 
     @Transactional
-    public PlaylistDetailResponseDto updatePlaylist(Long playlistId, Long userId, PlaylistRequestDto request) {
+    public PlaylistDetailResponseDto updatePlaylist(Long playlistId, Long userId, Playlist playlist, MultipartFile coverImage) {
         validatePlaylistId(playlistId);
-        validateRequest(request);
+        validatePlaylist(playlist);
 
-        int updatedCount = playlistMapper.updatePlaylist(playlistId, userId, request);
+        if (hasFile(coverImage)) {
+            playlist.setCoverImageUrl(fileStorageService.saveFile(coverImage));
+        }
+
+        int updatedCount = playlistDao.updatePlaylist(playlistId, userId, playlist);
         if (updatedCount == 0) {
             throw new CustomException(ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
         }
@@ -51,11 +57,11 @@ public class PlaylistService {
     }
 
     @Transactional
-    public PlaylistDetailResponseDto updatePlaylistVisibility(Long playlistId, Long userId, PlaylistRequestDto request) {
+    public PlaylistDetailResponseDto updatePlaylistVisibility(Long playlistId, Long userId, Playlist playlist) {
         validatePlaylistId(playlistId);
-        validateVisibilityRequest(request);
+        validateVisibilityRequest(playlist);
 
-        int updatedCount = playlistMapper.updatePlaylistVisibility(playlistId, userId, request.getPublicYn());
+        int updatedCount = playlistDao.updatePlaylistVisibility(playlistId, userId, playlist.getPublicYn());
         if (updatedCount == 0) {
             throw new CustomException(ErrorCode.PLAYLIST_VISIBILITY_UPDATE_FORBIDDEN);
         }
@@ -64,26 +70,29 @@ public class PlaylistService {
     }
 
     @Transactional
-    public PlaylistDetailResponseDto create(Long userId, PlaylistRequestDto req) {
-        Playlist playlist = new Playlist();
-        playlist.setUserId(userId);
-        playlist.setTitle(req.getTitle());
-        playlist.setDescription(req.getDescription());
-        playlist.setCoverImageUrl(req.getCoverImageUrl());
-        playlist.setPublicYn(req.getPublicYn() == null ? "Y" : req.getPublicYn());
+    public PlaylistDetailResponseDto create(Long userId, Playlist playlist, MultipartFile coverImage) {
+        if (playlist != null && playlist.getPublicYn() == null) {
+            playlist.setPublicYn("Y");
+        }
+        validatePlaylist(playlist);
 
-        playlistMapper.insert(playlist);
+        playlist.setUserId(userId);
+        if (hasFile(coverImage)) {
+            playlist.setCoverImageUrl(fileStorageService.saveFile(coverImage));
+        }
+
+        playlistDao.insert(playlist);
 
         return getPlaylist(playlist.getPlaylistId(), userId);
     }
 
     public Map<String, Object> getPublicPlaylists(int page, int size) {
         int offset = (page - 1) * size;
-        List<PlaylistResponseDto> list = playlistMapper.findPublicPlaylists(offset, size)
+        List<PlaylistResponseDto> list = playlistDao.findPublicPlaylists(offset, size)
                 .stream()
                 .map(PlaylistConvert::toResponseDto)
                 .collect(Collectors.toList());
-        int total = playlistMapper.countPublicPlaylists();
+        int total = playlistDao.countPublicPlaylists();
 
         Map<String, Object> result = new HashMap<>();
         result.put("content", list);
@@ -97,7 +106,7 @@ public class PlaylistService {
     public void deletePlaylist(Long playlistId, Long userId) {
         validatePlaylistId(playlistId);
 
-        Playlist playlist = playlistMapper.findById(playlistId);
+        Playlist playlist = playlistDao.findById(playlistId);
         if (playlist == null) {
             throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
         }
@@ -108,7 +117,7 @@ public class PlaylistService {
         playlistTrackDao.deleteByPlaylistId(playlistId);
         commentDao.deleteByPlaylistId(playlistId);
         likeDao.deleteByPlaylistId(playlistId);
-        int deletedCount = playlistMapper.deletePlaylist(playlistId, userId);
+        int deletedCount = playlistDao.deletePlaylist(playlistId, userId);
 
         if (deletedCount == 0) {
             throw new CustomException(ErrorCode.PLAYLIST_DELETE_FORBIDDEN);
@@ -119,7 +128,7 @@ public class PlaylistService {
     public PlaylistDetailResponseDto copyPlaylist(Long playlistId, Long userId) {
         validatePlaylistId(playlistId);
 
-        Playlist original = playlistMapper.findById(playlistId);
+        Playlist original = playlistDao.findById(playlistId);
         if (original == null) {
             throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
         }
@@ -128,14 +137,9 @@ public class PlaylistService {
             throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
         }
 
-        Playlist copied = new Playlist();
-        copied.setUserId(userId);
-        copied.setTitle(original.getTitle());
-        copied.setDescription(original.getDescription());
-        copied.setCoverImageUrl(original.getCoverImageUrl());
-        copied.setPublicYn("Y");
+        Playlist copied = PlaylistConvert.toCopiedEntity(original, userId);
 
-        playlistMapper.insert(copied);
+        playlistDao.insert(copied);
 
         List<PlaylistTrack> tracks = playlistTrackDao.findByPlaylistId(playlistId);
         for (PlaylistTrack track : tracks) {
@@ -149,14 +153,14 @@ public class PlaylistService {
     }
 
     public List<PlaylistResponseDto> getMyPlaylists(Long userId) {
-        return playlistMapper.findByUserId(userId)
+        return playlistDao.findByUserId(userId)
                 .stream()
                 .map(PlaylistConvert::toResponseDto)
                 .collect(Collectors.toList());
     }
 
     public PlaylistDetailResponseDto getPlaylist(Long playlistId, Long loginUserId) {
-        Playlist playlist = playlistMapper.findById(playlistId);
+        Playlist playlist = playlistDao.findById(playlistId);
 
         if (playlist == null) {
             throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
@@ -182,24 +186,24 @@ public class PlaylistService {
         }
     }
 
-    private void validateRequest(PlaylistRequestDto request) {
-        if (request == null) {
+    private void validatePlaylist(Playlist playlist) {
+        if (playlist == null) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
+        if (playlist.getTitle() == null || playlist.getTitle().trim().isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_PLAYLIST_TITLE);
         }
 
-        validatePublicYn(request.getPublicYn());
+        validatePublicYn(playlist.getPublicYn());
     }
 
-    private void validateVisibilityRequest(PlaylistRequestDto request) {
-        if (request == null) {
+    private void validateVisibilityRequest(Playlist playlist) {
+        if (playlist == null) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        validatePublicYn(request.getPublicYn());
+        validatePublicYn(playlist.getPublicYn());
     }
 
     private void validatePublicYn(String publicYn) {
@@ -208,9 +212,13 @@ public class PlaylistService {
         }
     }
 
+    private boolean hasFile(MultipartFile file) {
+        return file != null && !file.isEmpty();
+    }
+
     @Transactional
     public PlaylistDetailResponseDto addTrackToPlaylist(Long id, Long currentUserId, List<PlaylistTrack> playlistTracksList) {
-        Playlist playlist = playlistMapper.findById(id);
+        Playlist playlist = playlistDao.findById(id);
 
         if (playlist == null) {
             throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
@@ -246,7 +254,7 @@ public class PlaylistService {
 
         return playlistTracks.stream()
                 .map(PlaylistTrack::getPositionNo)
-                .filter(positionNo -> positionNo != null)
+                .filter(Objects::nonNull)
                 .max(Integer::compareTo)
                 .orElse(0) + 1;
     }
@@ -257,7 +265,7 @@ public class PlaylistService {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        Playlist playlist = playlistMapper.findById(id);
+        Playlist playlist = playlistDao.findById(id);
 
         if (playlist == null) {
             throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
@@ -300,8 +308,8 @@ public class PlaylistService {
     }
 
     @Transactional
-    public PlaylistDetailResponseDto reorderTrack(Long id, Long currentUserId, List<PlaylistTrackReorderRequestDto> requestListDto) {
-        Playlist playlist = playlistMapper.findById(id);
+    public PlaylistDetailResponseDto reorderTrack(Long id, Long currentUserId, List<PlaylistTrack> requestTracks) {
+        Playlist playlist = playlistDao.findById(id);
 
         if (playlist == null) {
             throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
@@ -310,19 +318,19 @@ public class PlaylistService {
             throw new CustomException(ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
         }
 
-        if (requestListDto == null || requestListDto.isEmpty() || requestListDto.contains(null)) {
+        if (requestTracks == null || requestTracks.isEmpty() || requestTracks.contains(null)) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
         List<PlaylistTrack> existingTracks = playlistTrackDao.findByPlaylistId(id);
-        if (existingTracks.size() != requestListDto.size()) {
+        if (existingTracks.size() != requestTracks.size()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        Set<Long> uniqueTrackIds = requestListDto.stream()
-                .map(PlaylistTrackReorderRequestDto::getPlaylistTrackId)
+        Set<Long> uniqueTrackIds = requestTracks.stream()
+                .map(PlaylistTrack::getPlaylistTrackId)
                 .collect(Collectors.toSet());
-        if (uniqueTrackIds.size() != requestListDto.size()) {
+        if (uniqueTrackIds.size() != requestTracks.size()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
@@ -330,38 +338,34 @@ public class PlaylistService {
                 .map(PlaylistTrack::getPlaylistTrackId)
                 .collect(Collectors.toSet());
 
-        for (PlaylistTrackReorderRequestDto requestDto : requestListDto) {
-            if (requestDto.getPlaylistTrackId() == null) {
+        for (PlaylistTrack requestTrack : requestTracks) {
+            if (requestTrack.getPlaylistTrackId() == null) {
                 throw new CustomException(ErrorCode.INVALID_REQUEST);
             }
 
-            if (!existingTrackIds.contains(requestDto.getPlaylistTrackId())) {
+            if (!existingTrackIds.contains(requestTrack.getPlaylistTrackId())) {
                 throw new CustomException(ErrorCode.PLAYLIST_TRACK_NOT_FOUND);
             }
         }
 
         int maxPositionNo = existingTracks.stream()
                 .map(PlaylistTrack::getPositionNo)
-                .filter(positionNo -> positionNo != null)
+                .filter(Objects::nonNull)
                 .max(Integer::compareTo)
                 .orElse(0);
-        int temporaryPositionStart = maxPositionNo + requestListDto.size() + 1;
+        int temporaryPositionStart = maxPositionNo + requestTracks.size() + 1;
 
         List<PlaylistTrack> temporaryPositions = new ArrayList<>();
-        for (int i = 0; i < requestListDto.size(); i++) {
-            temporaryPositions.add(PlaylistTrack.builder()
-                    .playlistTrackId(requestListDto.get(i).getPlaylistTrackId())
-                    .positionNo(temporaryPositionStart + i)
-                    .build());
+        for (int i = 0; i < requestTracks.size(); i++) {
+            temporaryPositions.add(PlaylistTrackConvert.toPositionEntity(
+                    requestTracks.get(i).getPlaylistTrackId(), temporaryPositionStart + i));
         }
         playlistTrackDao.updatePlaylistTrackPositions(temporaryPositions);
 
         List<PlaylistTrack> finalPositions = new ArrayList<>();
-        for (int i = 0; i < requestListDto.size(); i++) {
-            finalPositions.add(PlaylistTrack.builder()
-                    .playlistTrackId(requestListDto.get(i).getPlaylistTrackId())
-                    .positionNo(i + 1)
-                    .build());
+        for (int i = 0; i < requestTracks.size(); i++) {
+            finalPositions.add(PlaylistTrackConvert.toPositionEntity(
+                    requestTracks.get(i).getPlaylistTrackId(), i + 1));
         }
         playlistTrackDao.updatePlaylistTrackPositions(finalPositions);
 
@@ -374,7 +378,7 @@ public class PlaylistService {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        Playlist playlist = playlistMapper.findById(id);
+        Playlist playlist = playlistDao.findById(id);
         if (playlist == null) {
             throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
         }
@@ -393,7 +397,7 @@ public class PlaylistService {
         comment.setUserNickname(user.getNickname());
 
         commentDao.insertComment(comment);
-        playlistMapper.increaseCommentCount(id);
+        playlistDao.increaseCommentCount(id);
 
         return getPlaylist(id, userId);
     }
@@ -420,7 +424,7 @@ public class PlaylistService {
     }
 
     public void increaseViewCount(Long playlistId) {
-        playlistMapper.increaseViewCount(playlistId);
+        playlistDao.increaseViewCount(playlistId);
     }
 
     @Transactional
@@ -435,13 +439,13 @@ public class PlaylistService {
         }
 
         commentDao.deleteComment(commentId);
-        playlistMapper.decreaseCommentCount(id);
+        playlistDao.decreaseCommentCount(id);
 
         return getPlaylist(id, userId);
     }
 
     public List<PlaylistResponseDto> getPlaylistRanking(int limit) {
-        return playlistMapper.findTopPlaylists(limit)
+        return playlistDao.findTopPlaylists(limit)
                 .stream()
                 .map(PlaylistConvert::toResponseDto)
                 .collect(Collectors.toList());

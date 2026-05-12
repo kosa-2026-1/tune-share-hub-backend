@@ -8,10 +8,14 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 
@@ -25,9 +29,7 @@ public class PlaylistRequestDto {
     @JsonProperty("description")
     private String description;
 
-    @JsonAlias("coverImageUrl")
-    @JsonProperty("cover_image_url")
-    private String coverImageUrl;
+    private MultipartFile coverImage;
 
     @JsonAlias("publicYn")
     @JsonProperty("public_yn")
@@ -37,6 +39,8 @@ public class PlaylistRequestDto {
     @JsonProperty("tags")
     private List<@NotBlank(message = "태그는 비어 있을 수 없습니다.") @Size(max = 20, message = "태그는 20자 이내여야 합니다.") String> tags;
 
+    public void setPublic_yn(String publicYn) {
+        this.publicYn = publicYn;
+    }
 }
-
 
