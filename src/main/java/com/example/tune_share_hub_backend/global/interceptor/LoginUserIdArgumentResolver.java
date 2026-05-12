@@ -31,13 +31,21 @@ public class LoginUserIdArgumentResolver implements HandlerMethodArgumentResolve
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
         HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
+        boolean required = true;
+        LoginUserId annotation = parameter.getParameterAnnotation(LoginUserId.class);
+        if (annotation != null) {
+            required = annotation.required();
+        }
         if (request != null) {
             Object userIdAttr = request.getAttribute("userId");
             if (userIdAttr instanceof Long userId) {
                 return userId;
             }
         }
+        if (required) {
+            throw new CustomException(ErrorCode.AUTH_CONTEXT_NOT_FOUND);
+        }
+        return null;
 
-        throw new CustomException(ErrorCode.AUTH_CONTEXT_NOT_FOUND);
     }
 }
