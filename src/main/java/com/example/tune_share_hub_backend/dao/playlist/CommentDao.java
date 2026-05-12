@@ -17,5 +17,7 @@ public interface CommentDao {
 
     void deleteComment(@Param("commentId") Long commentId);
 
+    int deleteByPlaylistId(@Param("playlistId") Long playlistId);
+
     List<Comment> findByPlaylistId(Long playlistId);
 }

@@ -8,6 +8,7 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class PlaylistTrackResponseDto {
+	private Long playlistTrackId;
 	private String trackId;
 	private String title;
 	private String artistName;
