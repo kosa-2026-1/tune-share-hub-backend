@@ -21,6 +21,7 @@
         <typeAlias alias="Playlist" type="com.example.tune_share_hub_backend.entity.Playlist"/>
         <typeAlias alias="PlaylistTrack" type="com.example.tune_share_hub_backend.entity.PlaylistTrack"/>
         <typeAlias alias="Comment" type="com.example.tune_share_hub_backend.entity.Comment"/>
+        <typeAlias alias="PlaylistResponseDto" type="com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto"/>
 
         <!-- 엔티티 패키지 전체 자동 alias 등록 -->
         <!-- <package name="com.example.tune_share_hub_backend.entity"/>-->
