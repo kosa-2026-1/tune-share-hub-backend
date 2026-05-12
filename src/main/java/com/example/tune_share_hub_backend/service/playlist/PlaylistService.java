@@ -71,6 +71,7 @@ public class PlaylistService {
         playlist.setDescription(req.getDescription());
         playlist.setCoverImageUrl(req.getCoverImageUrl());
         playlist.setPublicYn(req.getPublicYn() == null ? "Y" : req.getPublicYn());
+        playlist.setTags(req.getTags());
 
         playlistMapper.insert(playlist);
 
@@ -78,6 +79,7 @@ public class PlaylistService {
     }
 
     public Map<String, Object> getPublicPlaylists(int page, int size, Long userId) {
+        System.out.println("getPublicPlaylists called with page: " + page + ", size: " + size + ", userId: " + userId);
         int offset = (page - 1) * size;
         List<PlaylistResponseDto> list = playlistMapper.findPublicPlaylists(offset, size, userId);
         int total = playlistMapper.countPublicPlaylists();

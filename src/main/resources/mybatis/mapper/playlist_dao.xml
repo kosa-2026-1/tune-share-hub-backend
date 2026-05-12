@@ -42,7 +42,7 @@
         COVER_IMAGE_URL, PUBLIC_YN, TAGS
         ) VALUES (
         #{playlistId}, #{userId}, #{title}, #{description},
-        #{coverImageUrl}, #{publicYn}, #{tags}
+        #{coverImageUrl}, #{publicYn}, #{tags, typeHandler=ListStringTypeHandler}
         )
     </insert>
 
@@ -72,7 +72,7 @@
             DESCRIPTION     = #{request.description},
             COVER_IMAGE_URL = #{request.coverImageUrl},
             PUBLIC_YN       = #{request.publicYn},
-            TAGS            = #{request.tags},
+            TAGS            = #{request.tags, typeHandler=ListStringTypeHandler},
             UPDATED_AT      = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
           AND USER_ID = #{userId}

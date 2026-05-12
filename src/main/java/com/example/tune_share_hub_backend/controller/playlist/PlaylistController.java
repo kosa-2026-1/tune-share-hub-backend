@@ -46,7 +46,7 @@ public class PlaylistController {
     @PutMapping("/playlists/{id}")
     public ApiResponseDto<PlaylistDetailResponseDto> updatePlaylist(
             @PathVariable("id") Long playlistId,
-            @RequestBody PlaylistRequestDto request,
+            @RequestBody @Valid PlaylistRequestDto request,
             @LoginUserId Long userId) {
         PlaylistDetailResponseDto result = playlistService.updatePlaylist(playlistId, userId, request);
         return ApiResponseDto.success(result, "플레이리스트가 수정되었습니다.");
@@ -95,9 +95,11 @@ public class PlaylistController {
 
     @Operation(summary = "공개 목록 조회", description = "공개된 플레이리스트를 페이지 단위로 조회합니다.")
     @GetMapping("/playlists")
+    @AccessTokenCheck(required = false)
     public ApiResponseDto<Map<String, Object>> getPublicPlaylists(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
+            @Parameter(hidden = true)
             @LoginUserId(required = false ) Long userId) {
         Map<String, Object> result = playlistService.getPublicPlaylists(page, size, userId);
         return ApiResponseDto.success(result, "공개 플레이리스트 목록 조회 성공");
@@ -281,8 +283,10 @@ public class PlaylistController {
 
     @Operation(summary = "인기 플레이리스트 랭킹", description = "좋아요 수 기준 공개 플레이리스트 랭킹을 조회합니다.")
     @GetMapping("/playlists/ranking")
+    @AccessTokenCheck(required = false)
     public ApiResponseDto<List<PlaylistResponseDto>> getPlaylistRanking(
             @RequestParam(defaultValue = "10") int limit,
+            @Parameter(hidden = true)
             @LoginUserId(required = false) Long userId) {
         List<PlaylistResponseDto> result = playlistService.getPlaylistRanking(limit, userId);
         return ApiResponseDto.success(result, "인기 플레이리스트 랭킹 조회 성공");

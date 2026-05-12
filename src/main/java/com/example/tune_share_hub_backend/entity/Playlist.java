@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,5 +26,5 @@ public class Playlist {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private String tags;
+    private List<String> tags;
 }
