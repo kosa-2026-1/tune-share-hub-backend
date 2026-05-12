@@ -7,8 +7,6 @@ import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Playlist;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class PlaylistConvert {
@@ -34,7 +32,7 @@ public class PlaylistConvert {
         playlist.setDescription(request.getDescription());
         playlist.setCoverImageUrl(coverImageUrl);
         playlist.setPublicYn(request.getPublicYn());
-        playlist.setTags(toTagText(request.getTags()));
+        playlist.setTags(request.getTags());
         return playlist;
     }
 
@@ -51,7 +49,8 @@ public class PlaylistConvert {
 
     public static PlaylistDetailResponseDto toDetailResponseDto(Playlist p,
                                                                 List<PlaylistTrackResponseDto> tracks,
-                                                                List<CommentResponseDto> comments) {
+                                                                List<CommentResponseDto> comments,
+                                                                boolean liked) {
         return PlaylistDetailResponseDto.builder()
                 .playlistId(p.getPlaylistId())
                 .title(p.getTitle())
@@ -64,6 +63,8 @@ public class PlaylistConvert {
                 .createdAt(p.getCreatedAt())
                 .tracks(tracks)
                 .comments(comments)
+                .tags(p.getTags())
+                .liked(liked)
                 .build();
     }
 
@@ -78,26 +79,7 @@ public class PlaylistConvert {
                 .coverImageUrl(playlist.getCoverImageUrl())
                 .commentCount(playlist.getCommentCount())
                 .createdAt(playlist.getCreatedAt())
-                .tags(toTagList(playlist.getTags()))
+                .tags(playlist.getTags())
                 .build();
-    }
-
-    private static String toTagText(List<String> tags) {
-        if (tags == null || tags.isEmpty()) {
-            return null;
-        }
-
-        return String.join(",", tags);
-    }
-
-    private static List<String> toTagList(String tags) {
-        if (tags == null || tags.isBlank()) {
-            return Collections.emptyList();
-        }
-
-        return Arrays.stream(tags.split(","))
-                .map(String::trim)
-                .filter(tag -> !tag.isEmpty())
-                .toList();
     }
 }

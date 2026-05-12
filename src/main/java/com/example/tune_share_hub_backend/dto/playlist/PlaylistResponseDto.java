@@ -23,8 +23,6 @@ public class PlaylistResponseDto {
     private String coverImageUrl;
     private int commentCount;
     private LocalDateTime createdAt;
-
     private List<String> tags;
-    private boolean liked;
 
 }
