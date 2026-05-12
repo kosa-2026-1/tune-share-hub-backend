@@ -38,6 +38,7 @@ public enum ErrorCode {
     INVALID_RANKING_TYPE(HttpStatus.BAD_REQUEST, "랭킹 기준은 like 또는 view만 가능합니다."),
     INVALID_IMAGE_FILE(HttpStatus.BAD_REQUEST, "이미지 파일만 업로드할 수 있습니다."),
     FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파일 저장에 실패했습니다."),
+    INVALID_RANKING_TYPE(HttpStatus.BAD_REQUEST, "랭킹 기준은 like 또는 view만 가능합니다."),
 
     //Like
     LIKE_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 좋아요가 존재합니다."),
