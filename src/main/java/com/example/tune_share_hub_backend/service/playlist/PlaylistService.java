@@ -15,8 +15,8 @@ import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Comment;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
-import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.entity.like.Like;
+import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 import com.example.tune_share_hub_backend.service.file.FileStorageService;
@@ -171,6 +171,8 @@ public class PlaylistService {
                 throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
             }
         }
+        
+        playlistDao.increaseViewCount(playlistId);
 
         List<PlaylistTrackResponseDto> tracks = PlaylistTrackConvert.toResponseDtoList(
                 playlistTrackDao.findByPlaylistId(playlistId));
@@ -250,6 +252,11 @@ public class PlaylistService {
 
         playlistTrackDao.insertPlaylistTracks(playlistTracksList);
 
+        for (int i = 0; i < playlistTracksList.size(); i++) {
+            playlistDao.increaseTrackCount(id);
+        }
+
+
         return getPlaylist(id, currentUserId);
     }
 
@@ -288,6 +295,8 @@ public class PlaylistService {
         if (deletedCount == 0) {
             throw new CustomException(ErrorCode.PLAYLIST_TRACK_NOT_FOUND);
         }
+
+        playlistDao.decreaseTrackCount(id);
 
         compactPlaylistTrackPositions(id);
 
