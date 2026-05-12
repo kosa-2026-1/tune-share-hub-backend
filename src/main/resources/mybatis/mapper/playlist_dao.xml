@@ -15,6 +15,21 @@
         <result property="commentCount" column="COMMENT_COUNT"/>
         <result property="createdAt" column="CREATED_AT"/>
         <result property="updatedAt" column="UPDATED_AT"/>
+        <result property="tags" column="TAGS"/>
+    </resultMap>
+
+    <resultMap id="PlaylistResponseDtoResultMap" type="PlaylistResponseDto">
+        <id property="playlistId" column="PLAYLIST_ID"/>
+        <result property="title" column="TITLE"/>
+        <result property="description" column="DESCRIPTION"/>
+        <result property="coverImageUrl" column="COVER_IMAGE_URL"/>
+        <result property="publicYn" column="PUBLIC_YN"/>
+        <result property="viewCount" column="VIEW_COUNT"/>
+        <result property="likeCount" column="LIKE_COUNT"/>
+        <result property="commentCount" column="COMMENT_COUNT"/>
+        <result property="createdAt" column="CREATED_AT"/>
+        <result property="tags" column="TAGS"/>
+        <result property="liked" column="LIKED"/>
     </resultMap>
 
     <!-- MVP-4: 생성 -->
@@ -24,19 +39,24 @@
         </selectKey>
         INSERT INTO PLAYLISTS (
         PLAYLIST_ID, USER_ID, TITLE, DESCRIPTION,
-        COVER_IMAGE_URL, PUBLIC_YN
+        COVER_IMAGE_URL, PUBLIC_YN, TAGS
         ) VALUES (
         #{playlistId}, #{userId}, #{title}, #{description},
-        #{coverImageUrl}, #{publicYn}
+        #{coverImageUrl}, #{publicYn}, #{tags}
         )
     </insert>
 
     <!-- MVP-5: 내 플레이리스트 목록 -->
-    <select id="findByUserId" parameterType="long" resultMap="PlaylistResultMap">
-        SELECT *
-        FROM PLAYLISTS
-        WHERE USER_ID = #{userId}
-        ORDER BY CREATED_AT DESC
+    <select id="findByUserId" parameterType="long" resultMap="PlaylistResponseDtoResultMap">
+        SELECT p.*,
+               CASE WHEN pl.status = 'Y' THEN 1 ELSE 0 END AS LIKED
+        FROM PLAYLISTS p
+                 LEFT JOIN PLAYLIST_LIKES pl
+                           ON p.PLAYLIST_ID = pl.PLAYLIST_ID
+                               AND pl.USER_ID = #{userId}
+                               AND pl.STATUS = 'Y'
+        WHERE p.USER_ID = #{userId}
+        ORDER BY p.CREATED_AT DESC
     </select>
 
     <!-- MVP-6: 상세 조회 -->
@@ -52,6 +72,7 @@
             DESCRIPTION     = #{request.description},
             COVER_IMAGE_URL = #{request.coverImageUrl},
             PUBLIC_YN       = #{request.publicYn},
+            TAGS            = #{request.tags},
             UPDATED_AT      = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
           AND USER_ID = #{userId}
@@ -87,15 +108,36 @@
     </delete>
 
 
-    <select id="findPublicPlaylists" resultMap="PlaylistResultMap">
+    <select id="findPublicPlaylists" resultMap="PlaylistResponseDtoResultMap">
+        SELECT P.*,
+        <choose>
+            <when test="userId != null">
+                CASE WHEN PL.STATUS = 'Y' THEN 1 ELSE 0 END AS LIKED
+            </when>
+            <otherwise>
+                0 AS LIKED
+            </otherwise>
+        </choose>
+
+        FROM (
+        SELECT ROWNUM AS RN, P.*
+        FROM (
         SELECT *
-        FROM (SELECT ROWNUM AS RN, P.*
-              FROM (SELECT *
-                    FROM PLAYLISTS
-                    WHERE PUBLIC_YN = 'Y'
-                    ORDER BY CREATED_AT DESC) P
-              WHERE ROWNUM &lt;= #{offset} + #{size})
-        WHERE RN > #{offset}
+        FROM PLAYLISTS
+        WHERE PUBLIC_YN = 'Y'
+        ORDER BY CREATED_AT DESC
+        ) P
+        WHERE ROWNUM &lt;= #{offset} + #{size}
+        ) P
+
+        <if test="userId != null">
+            LEFT JOIN PLAYLIST_LIKES PL
+            ON P.PLAYLIST_ID = PL.PLAYLIST_ID
+            AND PL.USER_ID = #{userId}
+            AND PL.STATUS = 'Y'
+        </if>
+
+        WHERE P.RN &gt; #{offset}
     </select>
 
 
@@ -105,13 +147,34 @@
         WHERE PUBLIC_YN = 'Y'
     </select>
 
-    <select id="findTopPlaylists" resultMap="PlaylistResultMap">
+    <select id="findTopPlaylists" resultMap="PlaylistResponseDtoResultMap">
+        SELECT P.*,
+        <choose>
+            <when test="userId != null">
+                CASE WHEN PL.STATUS = 'Y' THEN 1 ELSE 0 END AS LIKED
+            </when>
+            <otherwise>
+                0 AS LIKED
+            </otherwise>
+        </choose>
+
+        FROM (
         SELECT *
-        FROM (SELECT *
-              FROM PLAYLISTS
-              WHERE PUBLIC_YN = 'Y'
-              ORDER BY LIKE_COUNT DESC)
+        FROM (
+        SELECT *
+        FROM PLAYLISTS
+        WHERE PUBLIC_YN = 'Y'
+        ORDER BY LIKE_COUNT DESC
+        )
         WHERE ROWNUM &lt;= #{limit}
+        ) P
+
+        <if test="userId != null">
+            LEFT JOIN PLAYLIST_LIKES PL
+            ON P.PLAYLIST_ID = PL.PLAYLIST_ID
+            AND PL.USER_ID = #{userId}
+            AND PL.STATUS = 'Y'
+        </if>
     </select>
 
     <select id="findCommentsByPlaylistId" parameterType="long"

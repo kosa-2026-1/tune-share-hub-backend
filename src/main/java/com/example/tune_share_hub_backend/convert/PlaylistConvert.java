@@ -39,6 +39,17 @@ public class PlaylistConvert {
                 .coverImageUrl(playlist.getCoverImageUrl())
                 .commentCount(playlist.getCommentCount())
                 .createdAt(playlist.getCreatedAt())
+                .tags(convertStringToList(playlist.getTags()))
                 .build();
+    }
+
+    private static List<String> convertStringToList(String tags) {
+        if (tags == null || tags.trim().isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        return java.util.Arrays.stream(tags.split(","))
+                .map(String::trim)
+                .filter(tag -> !tag.isEmpty())
+                .collect(java.util.stream.Collectors.toList());
     }
 }

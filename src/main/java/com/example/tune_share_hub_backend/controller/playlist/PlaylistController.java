@@ -97,8 +97,9 @@ public class PlaylistController {
     @GetMapping("/playlists")
     public ApiResponseDto<Map<String, Object>> getPublicPlaylists(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        Map<String, Object> result = playlistService.getPublicPlaylists(page, size);
+            @RequestParam(defaultValue = "20") int size,
+            @LoginUserId(required = false ) Long userId) {
+        Map<String, Object> result = playlistService.getPublicPlaylists(page, size, userId);
         return ApiResponseDto.success(result, "공개 플레이리스트 목록 조회 성공");
     }
 
@@ -281,8 +282,9 @@ public class PlaylistController {
     @Operation(summary = "인기 플레이리스트 랭킹", description = "좋아요 수 기준 공개 플레이리스트 랭킹을 조회합니다.")
     @GetMapping("/playlists/ranking")
     public ApiResponseDto<List<PlaylistResponseDto>> getPlaylistRanking(
-            @RequestParam(defaultValue = "10") int limit) {
-        List<PlaylistResponseDto> result = playlistService.getPlaylistRanking(limit);
+            @RequestParam(defaultValue = "10") int limit,
+            @LoginUserId(required = false) Long userId) {
+        List<PlaylistResponseDto> result = playlistService.getPlaylistRanking(limit, userId);
         return ApiResponseDto.success(result, "인기 플레이리스트 랭킹 조회 성공");
     }
 }

@@ -77,12 +77,9 @@ public class PlaylistService {
         return getPlaylist(playlist.getPlaylistId(), userId);
     }
 
-    public Map<String, Object> getPublicPlaylists(int page, int size) {
+    public Map<String, Object> getPublicPlaylists(int page, int size, Long userId) {
         int offset = (page - 1) * size;
-        List<PlaylistResponseDto> list = playlistMapper.findPublicPlaylists(offset, size)
-                .stream()
-                .map(PlaylistConvert::toResponseDto)
-                .collect(Collectors.toList());
+        List<PlaylistResponseDto> list = playlistMapper.findPublicPlaylists(offset, size, userId);
         int total = playlistMapper.countPublicPlaylists();
 
         Map<String, Object> result = new HashMap<>();
@@ -149,10 +146,7 @@ public class PlaylistService {
     }
 
     public List<PlaylistResponseDto> getMyPlaylists(Long userId) {
-        return playlistMapper.findByUserId(userId)
-                .stream()
-                .map(PlaylistConvert::toResponseDto)
-                .collect(Collectors.toList());
+        return playlistMapper.findByUserId(userId);
     }
 
     public PlaylistDetailResponseDto getPlaylist(Long playlistId, Long loginUserId) {
@@ -440,10 +434,7 @@ public class PlaylistService {
         return getPlaylist(id, userId);
     }
 
-    public List<PlaylistResponseDto> getPlaylistRanking(int limit) {
-        return playlistMapper.findTopPlaylists(limit)
-                .stream()
-                .map(PlaylistConvert::toResponseDto)
-                .collect(Collectors.toList());
+    public List<PlaylistResponseDto> getPlaylistRanking(int limit, Long userId) {
+        return playlistMapper.findTopPlaylists(limit, userId);
     }
 }

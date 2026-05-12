@@ -1,6 +1,7 @@
 package com.example.tune_share_hub_backend.dao.playlist;
 
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -12,7 +13,7 @@ public interface PlaylistMapperDao {
 
     void insert(Playlist playlist);
 
-    List<Playlist> findByUserId(Long userId);
+    List<PlaylistResponseDto> findByUserId(Long userId);
 
     Playlist findById(Long playlistId);
 
@@ -28,14 +29,14 @@ public interface PlaylistMapperDao {
 
     void decreaseCommentCount(@Param("playlistId") Long playlistId);
 
-    List<Playlist> findPublicPlaylists(@Param("offset") int offset, @Param("size") int size);
+    List<PlaylistResponseDto> findPublicPlaylists(@Param("offset") int offset, @Param("size") int size, @Param("userId") Long userId);
 
     int countPublicPlaylists();
 
     int deletePlaylist(@Param("playlistId") Long playlistId,
                        @Param("userId") Long userId);
 
-    List<Playlist> findTopPlaylists(@Param("limit") int limit);
+    List<PlaylistResponseDto> findTopPlaylists(@Param("limit") int limit, @Param("userId") Long userId);
 
     void increaseViewCount(@Param("playlistId") Long playlistId);
 }
