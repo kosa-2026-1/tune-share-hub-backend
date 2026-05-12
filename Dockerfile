@@ -28,6 +28,8 @@ RUN addgroup --system spring && adduser --system --ingroup spring spring
 
 COPY --from=build /workspace/app.jar /app/app.jar
 
+RUN mkdir -p /app/uploads/images && chown -R spring:spring /app/uploads
+
 USER spring
 EXPOSE 8080
 
