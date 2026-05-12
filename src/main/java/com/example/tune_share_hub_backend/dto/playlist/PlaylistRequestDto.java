@@ -2,6 +2,7 @@ package com.example.tune_share_hub_backend.dto.playlist;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,11 +32,11 @@ public class PlaylistRequestDto {
     @Schema(description = "공개 여부", example = "Y")
     private String publicYn;
 
-    @Size(max = 5, message = "태그는 최대 5개까지만 등록 가능합니다.")
     @Schema(description = "태그 목록", example = "[\"운동\", \"힙합\"]")
     private List<
             @NotBlank(message = "태그는 비어 있을 수 없습니다.")
             @Size(max = 20, message = "태그는 20자 이내여야 합니다.")
+            @Pattern(regexp = "^[^,\\\\s]+$", message = "태그에는 공백이나 콤마(,)를 포함할 수 없습니다.")
                     String
             > tags;
 }

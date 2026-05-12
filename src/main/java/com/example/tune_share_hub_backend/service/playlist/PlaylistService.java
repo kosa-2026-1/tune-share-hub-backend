@@ -176,9 +176,12 @@ public class PlaylistService {
                 playlistTrackDao.findByPlaylistId(playlistId));
         List<CommentResponseDto> comments = CommentConvert.toCommentResponseDtoList(
                 commentDao.findByPlaylistId(playlistId));
-        Like like = likeDao.getLikeByUserIdAndPlaylistId(playlistId, loginUserId);
 
-        boolean likeStatus = (like != null && like.getStatus().equals("Y"));
+        boolean likeStatus = false;
+        if (loginUserId != null) {
+            Like like = likeDao.getLikeByUserIdAndPlaylistId(loginUserId, playlistId);
+            likeStatus = (like != null && "Y".equals(like.getStatus()));
+        }
 
         return PlaylistConvert.toDetailResponseDto(playlist, tracks, comments, likeStatus);
     }
