@@ -41,6 +41,7 @@ public class PlaylistService {
     public PlaylistDetailResponseDto updatePlaylist(Long playlistId, Long userId, PlaylistRequestDto request) {
         validatePlaylistId(playlistId);
         validateRequest(request);
+        validateTags(request.getTags());
 
         int updatedCount = playlistMapper.updatePlaylist(playlistId, userId, request);
         if (updatedCount == 0) {
@@ -65,6 +66,8 @@ public class PlaylistService {
 
     @Transactional
     public PlaylistDetailResponseDto create(Long userId, PlaylistRequestDto req) {
+        validateTags(req.getTags());
+
         Playlist playlist = new Playlist();
         playlist.setUserId(userId);
         playlist.setTitle(req.getTitle());
@@ -201,6 +204,19 @@ public class PlaylistService {
     private void validatePublicYn(String publicYn) {
         if (!"Y".equals(publicYn) && !"N".equals(publicYn)) {
             throw new CustomException(ErrorCode.INVALID_PUBLIC_YN);
+        }
+    }
+
+    private void validateTags(List<String> tags) {
+        if (tags == null) {
+            return;
+        }
+
+        boolean hasComma = tags.stream()
+                .anyMatch(tag -> tag != null && tag.contains(","));
+
+        if (hasComma) {
+            throw new CustomException(ErrorCode.INVALID_TAG_FORMAT);
         }
     }
 
