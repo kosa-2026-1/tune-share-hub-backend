@@ -53,6 +53,7 @@ public class PlaylistTrackConvert {
 
 	public static PlaylistTrackResponseDto toResponseDto(PlaylistTrack playlistTrack) {
 		return PlaylistTrackResponseDto.builder()
+			.playlistTrackId(playlistTrack.getPlaylistTrackId())
 			.trackId(playlistTrack.getSpotifyTrackId())
 			.title(playlistTrack.getTitle())
 			.artistName(playlistTrack.getArtistName())

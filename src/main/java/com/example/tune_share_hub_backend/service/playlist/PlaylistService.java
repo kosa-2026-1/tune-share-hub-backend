@@ -1,21 +1,22 @@
 package com.example.tune_share_hub_backend.service.playlist;
 
 import com.example.tune_share_hub_backend.convert.CommentConvert;
+import com.example.tune_share_hub_backend.convert.PlaylistConvert;
+import com.example.tune_share_hub_backend.convert.PlaylistTrackConvert;
 import com.example.tune_share_hub_backend.dao.like.LikeDao;
 import com.example.tune_share_hub_backend.dao.playlist.CommentDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
-import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
 import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
+import com.example.tune_share_hub_backend.dto.music.PlaylistTrackResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Comment;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
-import com.example.tune_share_hub_backend.entity.like.Like;
 import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
@@ -26,16 +27,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @Service
 @RequiredArgsConstructor
 public class PlaylistService {
 
     private final PlaylistMapperDao playlistMapper;
     private final PlaylistTrackDao playlistTrackDao;
-    private final LikeDao likeDao;
     private final CommentDao commentDao;
     private final UserDao userDao;
+    private final LikeDao likeDao;
 
     @Transactional
     public PlaylistDetailResponseDto updatePlaylist(Long playlistId, Long userId, PlaylistRequestDto request) {
@@ -80,7 +80,9 @@ public class PlaylistService {
     public Map<String, Object> getPublicPlaylists(int page, int size) {
         int offset = (page - 1) * size;
         List<PlaylistResponseDto> list = playlistMapper.findPublicPlaylists(offset, size)
-                .stream().map(PlaylistResponseDto::from).collect(Collectors.toList());
+                .stream()
+                .map(PlaylistConvert::toResponseDto)
+                .collect(Collectors.toList());
         int total = playlistMapper.countPublicPlaylists();
 
         Map<String, Object> result = new HashMap<>();
@@ -95,6 +97,17 @@ public class PlaylistService {
     public void deletePlaylist(Long playlistId, Long userId) {
         validatePlaylistId(playlistId);
 
+        Playlist playlist = playlistMapper.findById(playlistId);
+        if (playlist == null) {
+            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
+        }
+        if (!playlist.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.PLAYLIST_DELETE_FORBIDDEN);
+        }
+
+        playlistTrackDao.deleteByPlaylistId(playlistId);
+        commentDao.deleteByPlaylistId(playlistId);
+        likeDao.deleteByPlaylistId(playlistId);
         int deletedCount = playlistMapper.deletePlaylist(playlistId, userId);
 
         if (deletedCount == 0) {
@@ -127,16 +140,18 @@ public class PlaylistService {
         List<PlaylistTrack> tracks = playlistTrackDao.findByPlaylistId(playlistId);
         for (PlaylistTrack track : tracks) {
             track.setPlaylistId(copied.getPlaylistId());
-
         }
-        playlistTrackDao.insertPlaylistTracks(tracks);
+        if (!tracks.isEmpty()) {
+            playlistTrackDao.insertPlaylistTracks(tracks);
+        }
+
         return getPlaylist(copied.getPlaylistId(), userId);
     }
 
     public List<PlaylistResponseDto> getMyPlaylists(Long userId) {
         return playlistMapper.findByUserId(userId)
                 .stream()
-                .map(PlaylistResponseDto::from)
+                .map(PlaylistConvert::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -153,11 +168,12 @@ public class PlaylistService {
             }
         }
 
-        List<PlaylistTrack> tracks = playlistTrackDao.findByPlaylistId(playlistId);
+        List<PlaylistTrackResponseDto> tracks = PlaylistTrackConvert.toResponseDtoList(
+                playlistTrackDao.findByPlaylistId(playlistId));
         List<CommentResponseDto> comments = CommentConvert.toCommentResponseDtoList(
                 commentDao.findByPlaylistId(playlistId));
 
-        return PlaylistDetailResponseDto.from(playlist, tracks, comments);
+        return PlaylistConvert.toDetailResponseDto(playlist, tracks, comments);
     }
 
     private void validatePlaylistId(Long playlistId) {
@@ -193,11 +209,7 @@ public class PlaylistService {
     }
 
     @Transactional
-    public PlaylistDetailResponseDto addTrackToPlaylist(
-            Long id,
-            Long currentUserId,
-            List<PlaylistTrack> playlistTracksList
-    ) {
+    public PlaylistDetailResponseDto addTrackToPlaylist(Long id, Long currentUserId, List<PlaylistTrack> playlistTracksList) {
         Playlist playlist = playlistMapper.findById(id);
 
         if (playlist == null) {
@@ -428,61 +440,10 @@ public class PlaylistService {
         return getPlaylist(id, userId);
     }
 
-    @Transactional
-    public LikeResponseDto like(Long playlistId, Long userId) {
-        // 플레이리스트 유효성 검사
-        Playlist playlist = playlistMapper.findById(playlistId);
-        if (playlist == null) throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
-        if ("N".equals(playlist.getPublicYn())) throw new CustomException(ErrorCode.PRIVATE_PLAYLIST_CANNOT_BE_LIKED);
-
-        // 상태 조회 및 결정
-        Like existingLike = likeDao.getLikeByUserIdAndPlaylistId(playlistId, userId);
-
-        // 이력이 없거나 현재 상태가 'N'이면 -> 좋아요('Y') / 아니면 -> 취소('N')
-        boolean isActionLike = (existingLike == null || "N".equals(existingLike.getStatus()));
-        String newStatus = isActionLike ? "Y" : "N";
-
-        // DB 반영 (Insert or Update)
-        if (existingLike == null) {
-            likeDao.insertLike(playlistId, userId, newStatus);
-        } else {
-            likeDao.updateLikeStatus(playlistId, userId, newStatus);
-        }
-
-        // 플레이리스트 카운트 업데이트
-        if (isActionLike) {
-            likeDao.incrementLikeCount(playlistId);
-        } else {
-            likeDao.decrementLikeCount(playlistId);
-        }
-
-        Playlist updatedPlaylist = playlistMapper.findById(playlistId);
-
-        return LikeResponseDto.builder()
-                .playlistId(playlistId)
-                .userId(userId)
-                .status(newStatus)
-                .totalLikeCount(updatedPlaylist.getLikeCount())
-                .build();
-    }
-
-    @Transactional
-    public List<PlaylistResponseDto> getLikedPlaylists(Long userId) {
-        // 사용자 유효성 검사
-        User user = userDao.getUserById(userId);
-        if (user == null) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
-        return likeDao.getLikedPlaylistsByUserId(userId)
-                .stream()
-                .map(PlaylistResponseDto::from).toList();
-    }
-
     public List<PlaylistResponseDto> getPlaylistRanking(int limit) {
         return playlistMapper.findTopPlaylists(limit)
                 .stream()
-                .map(PlaylistResponseDto::from)
+                .map(PlaylistConvert::toResponseDto)
                 .collect(Collectors.toList());
     }
-
 }

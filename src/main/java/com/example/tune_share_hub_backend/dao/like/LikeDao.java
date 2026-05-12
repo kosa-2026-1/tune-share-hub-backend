@@ -15,4 +15,5 @@ public interface LikeDao {
     Like getLikeByUserIdAndPlaylistId(@Param("playlistId") Long playlistId, @Param("userId") Long userId);
     int insertLike(@Param("playlistId") Long playlistId, @Param("userId") Long userId, @Param("status") String status);
     int updateLikeStatus(@Param("playlistId") Long playlistId, @Param("userId") Long userId, @Param("status") String status);
+    int deleteByPlaylistId(@Param("playlistId") Long playlistId);
 }

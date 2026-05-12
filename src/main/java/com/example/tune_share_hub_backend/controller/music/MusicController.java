@@ -2,12 +2,12 @@ package com.example.tune_share_hub_backend.controller.music;
 
 import java.util.List;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
 import com.example.tune_share_hub_backend.dto.music.MusicSearchResponseDto;
 import com.example.tune_share_hub_backend.service.music.MusicService;
 
@@ -43,7 +43,7 @@ public class MusicController {
 		)
 	})
 	@GetMapping("/search")
-	public ResponseEntity<List<MusicSearchResponseDto>> searchMusic(
+	public ApiResponseDto<List<MusicSearchResponseDto>> searchMusic(
 		@Parameter(
 			description = "검색할 곡명 또는 아티스트명",
 			example = "아이유",
@@ -51,6 +51,6 @@ public class MusicController {
 		)
 		@RequestParam String keyword
 	) {
-		return ResponseEntity.ok(musicService.searchMusic(keyword));
+		return ApiResponseDto.success(musicService.searchMusic(keyword), "곡 검색 성공");
 	}
 }

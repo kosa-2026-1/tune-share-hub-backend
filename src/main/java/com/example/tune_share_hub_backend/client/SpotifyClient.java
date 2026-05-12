@@ -3,7 +3,7 @@ package com.example.tune_share_hub_backend.client;
 import com.example.tune_share_hub_backend.convert.SpotifyTrackConverter;
 import com.example.tune_share_hub_backend.dto.music.MusicSearchResponseDto;
 import com.example.tune_share_hub_backend.dto.music.SpotifyTrackSearchResponseDto;
-import com.example.tune_share_hub_backend.type.SpotifySearchType;
+import com.example.tune_share_hub_backend.entity.SpotifySearchType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
