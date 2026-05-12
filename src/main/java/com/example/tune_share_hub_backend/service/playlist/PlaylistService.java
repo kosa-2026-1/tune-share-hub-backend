@@ -171,7 +171,7 @@ public class PlaylistService {
                 throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
             }
         }
-        
+
         playlistDao.increaseViewCount(playlistId);
 
         List<PlaylistTrackResponseDto> tracks = PlaylistTrackConvert.toResponseDtoList(
@@ -252,9 +252,7 @@ public class PlaylistService {
 
         playlistTrackDao.insertPlaylistTracks(playlistTracksList);
 
-        for (int i = 0; i < playlistTracksList.size(); i++) {
-            playlistDao.increaseTrackCount(id);
-        }
+        playlistDao.increaseTrackCount(id, playlistTracksList.size());
 
 
         return getPlaylist(id, currentUserId);
@@ -443,7 +441,7 @@ public class PlaylistService {
     }
 
     public void increaseTrackCount(Long playlistId) {
-        playlistDao.increaseTrackCount(playlistId);
+        playlistDao.increaseTrackCount(playlistId, playlistTracksList.size());
     }
 
     public void decreaseTrackCount(Long playlistId) {
