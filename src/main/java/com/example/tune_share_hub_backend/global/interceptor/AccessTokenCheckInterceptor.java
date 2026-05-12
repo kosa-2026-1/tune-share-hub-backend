@@ -34,6 +34,13 @@ public class AccessTokenCheckInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        String authorization = request.getHeader(AUTHORIZATION_HEADER);
+
+        // required = false -> 비로그인 허용
+        if ((authorization == null || authorization.isBlank()) && !accessTokenCheck.required()) {
+            return true;
+        }
+
         // @AccessTokenCheck가 붙어있는 경우, AccessToken 추출 및 검증
         String accessToken = extractAndValidateToken(request);
 
