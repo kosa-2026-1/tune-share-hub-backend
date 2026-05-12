@@ -1,6 +1,7 @@
 package com.example.tune_share_hub_backend.service.playlist;
 
 import com.example.tune_share_hub_backend.convert.CommentConvert;
+import com.example.tune_share_hub_backend.convert.PlaylistConvert;
 import com.example.tune_share_hub_backend.convert.PlaylistTrackConvert;
 import com.example.tune_share_hub_backend.dao.like.LikeDao;
 import com.example.tune_share_hub_backend.dao.playlist.CommentDao;
@@ -8,8 +9,8 @@ import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
 import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
-import com.example.tune_share_hub_backend.dto.music.PlaylistTrackResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
+import com.example.tune_share_hub_backend.dto.music.PlaylistTrackResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
@@ -25,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
 
 @Service
 @RequiredArgsConstructor
@@ -80,7 +80,9 @@ public class PlaylistService {
     public Map<String, Object> getPublicPlaylists(int page, int size) {
         int offset = (page - 1) * size;
         List<PlaylistResponseDto> list = playlistMapper.findPublicPlaylists(offset, size)
-                .stream().map(this::toResponse).collect(Collectors.toList());
+                .stream()
+                .map(PlaylistConvert::toResponseDto)
+                .collect(Collectors.toList());
         int total = playlistMapper.countPublicPlaylists();
 
         Map<String, Object> result = new HashMap<>();
@@ -113,10 +115,43 @@ public class PlaylistService {
         }
     }
 
+    @Transactional
+    public PlaylistDetailResponseDto copyPlaylist(Long playlistId, Long userId) {
+        validatePlaylistId(playlistId);
+
+        Playlist original = playlistMapper.findById(playlistId);
+        if (original == null) {
+            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
+        }
+
+        if (!"Y".equals(original.getPublicYn())) {
+            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
+        }
+
+        Playlist copied = new Playlist();
+        copied.setUserId(userId);
+        copied.setTitle(original.getTitle());
+        copied.setDescription(original.getDescription());
+        copied.setCoverImageUrl(original.getCoverImageUrl());
+        copied.setPublicYn("Y");
+
+        playlistMapper.insert(copied);
+
+        List<PlaylistTrack> tracks = playlistTrackDao.findByPlaylistId(playlistId);
+        for (PlaylistTrack track : tracks) {
+            track.setPlaylistId(copied.getPlaylistId());
+        }
+        if (!tracks.isEmpty()) {
+            playlistTrackDao.insertPlaylistTracks(tracks);
+        }
+
+        return getPlaylist(copied.getPlaylistId(), userId);
+    }
+
     public List<PlaylistResponseDto> getMyPlaylists(Long userId) {
         return playlistMapper.findByUserId(userId)
                 .stream()
-                .map(this::toResponse)
+                .map(PlaylistConvert::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -138,24 +173,7 @@ public class PlaylistService {
         List<CommentResponseDto> comments = CommentConvert.toCommentResponseDtoList(
                 commentDao.findByPlaylistId(playlistId));
 
-        return toDetailResponse(playlist, tracks, comments);
-    }
-
-    private PlaylistDetailResponseDto toDetailResponse(Playlist p, List<PlaylistTrackResponseDto> tracks,
-                                                       List<CommentResponseDto> comments) {
-        return PlaylistDetailResponseDto.builder()
-                .playlistId(p.getPlaylistId())
-                .title(p.getTitle())
-                .description(p.getDescription())
-                .publicYn(p.getPublicYn())
-                .viewCount(p.getViewCount())
-                .likeCount(p.getLikeCount())
-                .coverImageUrl(p.getCoverImageUrl())
-                .commentCount(p.getCommentCount())
-                .createdAt(p.getCreatedAt())
-                .tracks(tracks)
-                .comments(comments)
-                .build();
+        return PlaylistConvert.toDetailResponseDto(playlist, tracks, comments);
     }
 
     private void validatePlaylistId(Long playlistId) {
@@ -190,29 +208,8 @@ public class PlaylistService {
         }
     }
 
-    private PlaylistResponseDto toResponse(Playlist p) {
-
-        return PlaylistResponseDto.builder()
-                .playlistId(p.getPlaylistId())
-                .title(p.getTitle())
-                .description(p.getDescription())
-                .publicYn(p.getPublicYn())
-                .viewCount(p.getViewCount())
-                .likeCount(p.getLikeCount())
-                .coverImageUrl(p.getCoverImageUrl())
-                .commentCount(p.getCommentCount())
-                .createdAt(p.getCreatedAt())
-                .build();
-    }
-
-    ;
-
     @Transactional
-    public PlaylistDetailResponseDto addTrackToPlaylist(
-            Long id,
-            Long currentUserId,
-            List<PlaylistTrack> playlistTracksList
-    ) {
+    public PlaylistDetailResponseDto addTrackToPlaylist(Long id, Long currentUserId, List<PlaylistTrack> playlistTracksList) {
         Playlist playlist = playlistMapper.findById(id);
 
         if (playlist == null) {
@@ -446,8 +443,7 @@ public class PlaylistService {
     public List<PlaylistResponseDto> getPlaylistRanking(int limit) {
         return playlistMapper.findTopPlaylists(limit)
                 .stream()
-                .map(this::toResponse)
+                .map(PlaylistConvert::toResponseDto)
                 .collect(Collectors.toList());
     }
-
 }

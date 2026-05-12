@@ -1,5 +1,6 @@
 package com.example.tune_share_hub_backend.service.like;
 
+import com.example.tune_share_hub_backend.convert.PlaylistConvert;
 import com.example.tune_share_hub_backend.dao.like.LikeDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistMapperDao;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
@@ -69,7 +70,7 @@ public class LikeService {
 
         return likeDao.getLikedPlaylistsByUserId(userId)
                 .stream()
-                .map(PlaylistResponseDto::from)
+                .map(PlaylistConvert::toResponseDto)
                 .toList();
     }
 }

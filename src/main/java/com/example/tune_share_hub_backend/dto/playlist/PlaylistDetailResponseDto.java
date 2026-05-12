@@ -1,15 +1,14 @@
 package com.example.tune_share_hub_backend.dto.playlist;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackResponseDto;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 @AllArgsConstructor
@@ -29,4 +28,5 @@ public class PlaylistDetailResponseDto {
 
     private List<PlaylistTrackResponseDto> tracks;
     private List<CommentResponseDto> comments;
+
 }
