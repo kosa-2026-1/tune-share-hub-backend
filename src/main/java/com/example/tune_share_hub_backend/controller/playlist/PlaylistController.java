@@ -278,11 +278,12 @@ public class PlaylistController {
         return ApiResponseDto.success(result, "댓글이 삭제되었습니다.");
     }
 
-    @Operation(summary = "인기 플레이리스트 랭킹", description = "좋아요 수 기준 공개 플레이리스트 랭킹을 조회합니다.")
+    @Operation(summary = "인기 플레이리스트 랭킹", description = "like(좋아요 수) 또는 view(조회수) 기준으로 랭킹을 조회합니다.")
     @GetMapping("/playlists/ranking")
     public ApiResponseDto<List<PlaylistResponseDto>> getPlaylistRanking(
-            @RequestParam(defaultValue = "10") int limit) {
-        List<PlaylistResponseDto> result = playlistService.getPlaylistRanking(limit);
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "like") String type) {
+        List<PlaylistResponseDto> result = playlistService.getPlaylistRanking(limit, type);
         return ApiResponseDto.success(result, "인기 플레이리스트 랭킹 조회 성공");
     }
 }

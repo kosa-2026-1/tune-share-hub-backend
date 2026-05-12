@@ -1,9 +1,8 @@
 package com.example.tune_share_hub_backend.global.exception;
 
-import org.springframework.http.HttpStatus;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
@@ -15,7 +14,7 @@ public enum ErrorCode {
     //Auth & User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "비밀번호가 올바르지 않습니다."),
-    AUTH_CONTEXT_NOT_FOUND(HttpStatus.UNAUTHORIZED,  "인증 정보를 찾을 수 없습니다."),
+    AUTH_CONTEXT_NOT_FOUND(HttpStatus.UNAUTHORIZED, "인증 정보를 찾을 수 없습니다."),
     LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
 
     //Token
@@ -33,16 +32,17 @@ public enum ErrorCode {
     PLAYLIST_VISIBILITY_UPDATE_FORBIDDEN(HttpStatus.FORBIDDEN, "플레이리스트 공개 여부를 변경할 수 없습니다."),
     INVALID_PUBLIC_YN(HttpStatus.BAD_REQUEST, "공개 여부는 Y 또는 N만 가능합니다."),
     INVALID_PLAYLIST_TITLE(HttpStatus.BAD_REQUEST, "플레이리스트 제목은 필수입니다."),
-    PLAYLIST_TRACK_NOT_FOUND(HttpStatus.NOT_FOUND, "플레이리스트에 노래를 찾을 수 없습니다." ),
+    PLAYLIST_TRACK_NOT_FOUND(HttpStatus.NOT_FOUND, "플레이리스트에 노래를 찾을 수 없습니다."),
     PLAYLIST_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "플레이리스트를 삭제할 권한이 없습니다."),
     PRIVATE_PLAYLIST_CANNOT_BE_LIKED(HttpStatus.FORBIDDEN, "비공개 플레이리스트는 좋아요 할 수 없습니다."),
+    INVALID_RANKING_TYPE(HttpStatus.BAD_REQUEST, "랭킹 기준은 like 또는 view만 가능합니다."),
 
     //Like
     LIKE_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 좋아요가 존재합니다."),
     LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "좋아요를 찾을 수 없습니다."),
 
     // Comment
-    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다." ),
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
 
     // SearchHistory
     SEARCH_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "검색 기록이 존재하지 않습니다.");
