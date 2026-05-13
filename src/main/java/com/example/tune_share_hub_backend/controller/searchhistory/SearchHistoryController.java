@@ -10,12 +10,10 @@ import com.example.tune_share_hub_backend.service.searchhistory.SearchHistorySer
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Slf4j
 @RestController
 @RequestMapping("/api/search")
 @RequiredArgsConstructor

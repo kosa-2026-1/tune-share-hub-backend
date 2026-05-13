@@ -9,9 +9,7 @@ import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.like.Like;
-import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.validate.LikeValidator;
-import com.example.tune_share_hub_backend.validate.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,9 +52,6 @@ public class LikeService {
 
     @Transactional(readOnly = true)
     public List<PlaylistResponseDto> getLikedPlaylistList(Long userId) {
-        User user = userDao.getUserById(userId);
-        UserValidator.validateUserExists(user);
-
         return likeDao.getLikedPlaylistListByUserId(userId)
                 .stream()
                 .map(PlaylistConvert::toResponseDto)

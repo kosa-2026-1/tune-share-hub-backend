@@ -19,7 +19,6 @@ public class UserService {
 
     @Transactional
     public UserResponseDto getUserInfo(Long userId) {
-        UserValidator.validateUserId(userId);
         User user = userDao.getUserById(userId);
         UserValidator.validateUserExists(user);
         return UserConvert.toResponseDto(user);
