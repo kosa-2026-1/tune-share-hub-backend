@@ -58,7 +58,7 @@ public class PlaylistValidator {
     public static void validatePlaylistReadable(Playlist playlist, Long loginUserId) {
         if ("N".equals(playlist.getPublicYn())
                 && (loginUserId == null || !loginUserId.equals(playlist.getUserId()))) {
-            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
+            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
         }
     }
 
