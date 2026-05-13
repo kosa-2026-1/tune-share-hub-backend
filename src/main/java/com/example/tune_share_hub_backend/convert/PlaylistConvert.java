@@ -48,8 +48,8 @@ public class PlaylistConvert {
     }
 
     public static PlaylistDetailResponseDto toDetailResponseDto(Playlist p,
-                                                                List<PlaylistTrackResponseDto> tracks,
-                                                                List<CommentResponseDto> comments,
+                                                                List<PlaylistTrackResponseDto> trackResponseDtoList,
+                                                                List<CommentResponseDto> commentResponseDtoList,
                                                                 boolean liked) {
         return PlaylistDetailResponseDto.builder()
                 .playlistId(p.getPlaylistId())
@@ -61,8 +61,8 @@ public class PlaylistConvert {
                 .coverImageUrl(p.getCoverImageUrl())
                 .commentCount(p.getCommentCount())
                 .createdAt(p.getCreatedAt())
-                .tracks(tracks)
-                .comments(comments)
+                .tracks(trackResponseDtoList)
+                .comments(commentResponseDtoList)
                 .tags(p.getTags())
                 .liked(liked)
                 .trackCount(p.getTrackCount())

@@ -20,10 +20,10 @@ public class MusicService {
 
 	public List<MusicSearchResponseDto> searchMusic(String keyword) {
 		MusicValidator.validateKeyword(keyword);
-		List<MusicSearchResponseDto> musicSearchResponseDtos =  spotifyClient.searchTracks(keyword);
-		youtubeClient.addVideoUrl(musicSearchResponseDtos);
+		List<MusicSearchResponseDto> musicSearchResponseDtoList = spotifyClient.searchTracks(keyword);
+		youtubeClient.addVideoUrl(musicSearchResponseDtoList);
 
-		return musicSearchResponseDtos;
+		return musicSearchResponseDtoList;
 	}
 
 }

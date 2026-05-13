@@ -78,14 +78,14 @@ public class PlaylistController {
     })
     @PostMapping("/playlists/{id}/tracks")
     @AccessTokenCheck
-    public ApiResponseDto<PlaylistDetailResponseDto> addPlaylistTracks(
+    public ApiResponseDto<PlaylistDetailResponseDto> addPlaylistTrackList(
             @Parameter(description = "트랙을 추가할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
             @LoginUserId Long userId,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "추가할 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackCreateRequestDto.class)))) @RequestBody List<PlaylistTrackCreateRequestDto> requestListDto) {
-        PlaylistValidator.validateRequestList(requestListDto);
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "추가할 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackCreateRequestDto.class)))) @RequestBody List<PlaylistTrackCreateRequestDto> requestDtoList) {
+        PlaylistValidator.validateRequestList(requestDtoList);
 
         PlaylistDetailResponseDto result = playlistService.addTrackToPlaylist(
-                id, userId, PlaylistTrackConvert.toEntities(requestListDto, id));
+                id, userId, PlaylistTrackConvert.toEntityList(requestDtoList, id));
         return ApiResponseDto.success(result, "트랙이 플레이리스트에 추가되었습니다.");
     }
 
@@ -132,19 +132,19 @@ public class PlaylistController {
 
     @Operation(summary = "공개 목록 조회", description = "공개된 플레이리스트를 페이지 단위로 조회합니다.")
     @GetMapping("/playlists")
-    public ApiResponseDto<Map<String, Object>> getPublicPlaylists(
+    public ApiResponseDto<Map<String, Object>> getPublicPlaylistList(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size) {
-        Map<String, Object> result = playlistService.getPublicPlaylists(page, size);
+        Map<String, Object> result = playlistService.getPublicPlaylistList(page, size);
         return ApiResponseDto.success(result, "공개 플레이리스트 목록 조회 성공");
     }
 
     @Operation(summary = "내 플레이리스트 목록", description = "로그인한 사용자의 전체 플레이리스트를 조회합니다.")
     @GetMapping("/users/me/playlists")
     @AccessTokenCheck
-    public ApiResponseDto<List<PlaylistResponseDto>> getMyPlaylists(@LoginUserId Long userId) {
-        List<PlaylistResponseDto> result = playlistService.getMyPlaylists(userId);
-        return ApiResponseDto.success(result, "조회 성공");
+    public ApiResponseDto<List<PlaylistResponseDto>> getMyPlaylistList(@LoginUserId Long userId) {
+        List<PlaylistResponseDto> playlistResponseDtoList = playlistService.getMyPlaylistList(userId);
+        return ApiResponseDto.success(playlistResponseDtoList, "조회 성공");
     }
 
     @Operation(summary = "인기 플레이리스트 랭킹", description = "like(좋아요 수) 또는 view(조회수) 기준으로 랭킹을 조회합니다.")
@@ -152,8 +152,8 @@ public class PlaylistController {
     public ApiResponseDto<List<PlaylistResponseDto>> getPlaylistRanking(
             @RequestParam(defaultValue = "10") int limit,
             @RequestParam(defaultValue = "like") String type) {
-        List<PlaylistResponseDto> result = playlistService.getPlaylistRanking(limit, type);
-        return ApiResponseDto.success(result, "인기 플레이리스트 랭킹 조회 성공");
+        List<PlaylistResponseDto> playlistResponseDtoList = playlistService.getPlaylistRanking(limit, type);
+        return ApiResponseDto.success(playlistResponseDtoList, "인기 플레이리스트 랭킹 조회 성공");
     }
 
     @Operation(summary = "플레이리스트 상세 조회", description = "플레이리스트 ID로 상세 정보를 조회합니다.")
@@ -208,11 +208,11 @@ public class PlaylistController {
     public ApiResponseDto<PlaylistDetailResponseDto> updatePlaylistTrackOrder(
             @Parameter(description = "트랙 순서를 변경할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
             @LoginUserId Long userId,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "드래그앤드랍 후 새 순서대로 정렬된 플레이리스트 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackReorderRequestDto.class)))) @RequestBody List<PlaylistTrackReorderRequestDto> requestListDto) {
-        PlaylistValidator.validateRequestList(requestListDto);
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "드래그앤드랍 후 새 순서대로 정렬된 플레이리스트 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackReorderRequestDto.class)))) @RequestBody List<PlaylistTrackReorderRequestDto> requestDtoList) {
+        PlaylistValidator.validateRequestList(requestDtoList);
 
         PlaylistDetailResponseDto result = playlistService.reorderTrack(
-                id, userId, PlaylistTrackConvert.toReorderEntities(requestListDto));
+                id, userId, PlaylistTrackConvert.toReorderEntityList(requestDtoList));
         return ApiResponseDto.success(result, "트랙 순서가 변경되었습니다.");
     }
 

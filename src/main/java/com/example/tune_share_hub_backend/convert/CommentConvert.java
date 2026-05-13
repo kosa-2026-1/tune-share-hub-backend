@@ -23,8 +23,8 @@ public class CommentConvert {
 				.build();
 	}
 
-	public static List<CommentResponseDto> toCommentResponseDtoList(List<Comment> comments) {
-		return comments.stream()
+	public static List<CommentResponseDto> toCommentResponseDtoList(List<Comment> commentList) {
+		return commentList.stream()
 				.map(CommentConvert::toCommentResponseDto)
 				.toList();
 	}
@@ -36,4 +36,3 @@ public class CommentConvert {
 				.build();
 	}
 }
-

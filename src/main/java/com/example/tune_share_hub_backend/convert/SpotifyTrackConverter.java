@@ -11,27 +11,27 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SpotifyTrackConverter {
 
-	public static List<MusicSearchResponseDto> toMusicSearchResponseDtos(
+	public static List<MusicSearchResponseDto> toMusicSearchResponseDtoList(
 		SpotifyTrackSearchResponseDto response
 	) {
-		List<MusicSearchResponseDto> result = new ArrayList<>();
+		List<MusicSearchResponseDto> musicSearchResponseDtoList = new ArrayList<>();
 
 		if (response == null || response.getTracks() == null) {
-			return result;
+			return musicSearchResponseDtoList;
 		}
 
-		List<SpotifyTrackSearchResponseDto.TrackItem> items =
+		List<SpotifyTrackSearchResponseDto.TrackItem> trackItemList =
 			response.getTracks().getItems();
 
-		if (items == null || items.isEmpty()) {
-			return result;
+		if (trackItemList == null || trackItemList.isEmpty()) {
+			return musicSearchResponseDtoList;
 		}
 
-		for (SpotifyTrackSearchResponseDto.TrackItem item : items) {
-			result.add(toMusicSearchResponseDto(item));
+		for (SpotifyTrackSearchResponseDto.TrackItem item : trackItemList) {
+			musicSearchResponseDtoList.add(toMusicSearchResponseDto(item));
 		}
 
-		return result;
+		return musicSearchResponseDtoList;
 	}
 
 	private static MusicSearchResponseDto toMusicSearchResponseDto(

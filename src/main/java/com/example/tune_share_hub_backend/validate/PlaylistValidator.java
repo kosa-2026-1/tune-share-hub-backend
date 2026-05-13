@@ -100,25 +100,25 @@ public class PlaylistValidator {
         }
     }
 
-    public static void validateReorderTracks(List<PlaylistTrack> existingTracks, List<PlaylistTrack> requestTracks) {
-        validateRequestList(requestTracks);
+    public static void validateReorderTrackList(List<PlaylistTrack> existingTrackList, List<PlaylistTrack> requestTrackList) {
+        validateRequestList(requestTrackList);
 
-        if (existingTracks.size() != requestTracks.size()) {
+        if (existingTrackList.size() != requestTrackList.size()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        Set<Long> uniqueTrackIds = requestTracks.stream()
+        Set<Long> uniqueTrackIds = requestTrackList.stream()
                 .map(PlaylistTrack::getPlaylistTrackId)
                 .collect(Collectors.toSet());
-        if (uniqueTrackIds.size() != requestTracks.size()) {
+        if (uniqueTrackIds.size() != requestTrackList.size()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        Set<Long> existingTrackIds = existingTracks.stream()
+        Set<Long> existingTrackIds = existingTrackList.stream()
                 .map(PlaylistTrack::getPlaylistTrackId)
                 .collect(Collectors.toSet());
 
-        for (PlaylistTrack requestTrack : requestTracks) {
+        for (PlaylistTrack requestTrack : requestTrackList) {
             if (requestTrack.getPlaylistTrackId() == null) {
                 throw new CustomException(ErrorCode.INVALID_REQUEST);
             }

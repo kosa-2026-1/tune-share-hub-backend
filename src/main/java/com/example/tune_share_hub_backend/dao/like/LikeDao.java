@@ -11,7 +11,7 @@ import java.util.List;
 public interface LikeDao {
     int incrementLikeCount(Long playlistId);
     int decrementLikeCount(Long playlistId);
-    List<Playlist> getLikedPlaylistsByUserId(Long userId);
+    List<Playlist> getLikedPlaylistListByUserId(Long userId);
     Like getLikeByUserIdAndPlaylistId(@Param("playlistId") Long playlistId, @Param("userId") Long userId);
     int insertLike(@Param("playlistId") Long playlistId, @Param("userId") Long userId, @Param("status") String status);
     int updateLikeStatus(@Param("playlistId") Long playlistId, @Param("userId") Long userId, @Param("status") String status);

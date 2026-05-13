@@ -36,7 +36,7 @@
         WHERE PLAYLIST_ID = #{playlistId}
     </delete>
 
-    <select id="getLikedPlaylistsByUserId" parameterType="Long" resultType="Playlist">
+    <select id="getLikedPlaylistListByUserId" parameterType="Long" resultType="Playlist">
         SELECT P.*
         FROM PLAYLISTS P
                  JOIN PLAYLIST_LIKES L ON P.PLAYLIST_ID = L.PLAYLIST_ID

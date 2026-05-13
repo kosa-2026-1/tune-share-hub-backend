@@ -27,14 +27,14 @@ public interface PlaylistDao {
 
     void decreaseCommentCount(@Param("playlistId") Long playlistId);
 
-    List<Playlist> findPublicPlaylists(@Param("offset") int offset, @Param("size") int size);
+    List<Playlist> findPublicPlaylistList(@Param("offset") int offset, @Param("size") int size);
 
-    int countPublicPlaylists();
+    int countPublicPlaylistList();
 
     int deletePlaylist(@Param("playlistId") Long playlistId,
                        @Param("userId") Long userId);
 
-    List<Playlist> findTopPlaylists(@Param("limit") int limit, @Param("type") String type);
+    List<Playlist> findTopPlaylistList(@Param("limit") int limit, @Param("type") String type);
 
     void increaseViewCount(@Param("playlistId") Long playlistId);
 

@@ -53,11 +53,11 @@ public class LikeService {
     }
 
     @Transactional(readOnly = true)
-    public List<PlaylistResponseDto> getLikedPlaylists(Long userId) {
+    public List<PlaylistResponseDto> getLikedPlaylistList(Long userId) {
         User user = userDao.getUserById(userId);
         UserValidator.validateUserExists(user);
 
-        return likeDao.getLikedPlaylistsByUserId(userId)
+        return likeDao.getLikedPlaylistListByUserId(userId)
                 .stream()
                 .map(PlaylistConvert::toResponseDto)
                 .toList();
