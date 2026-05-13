@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -47,9 +48,15 @@ public class PlaylistController {
     public ApiResponseDto<PlaylistDetailResponseDto> updatePlaylist(
             @PathVariable("id") Long playlistId,
             @Valid @ModelAttribute PlaylistRequestDto request,
+            @Parameter(
+                    description = "플레이리스트 커버 이미지",
+                    content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                            schema = @Schema(type = "string", format = "binary"))
+            )
+            @RequestPart(required = false) MultipartFile coverImage,
             @LoginUserId Long userId) {
         PlaylistDetailResponseDto result = playlistService.updatePlaylist(
-                playlistId, userId, PlaylistConvert.toEntity(request), request.getCoverImage());
+                playlistId, userId, PlaylistConvert.toEntity(request), coverImage);
         return ApiResponseDto.success(result, "플레이리스트가 수정되었습니다.");
     }
 
@@ -70,9 +77,15 @@ public class PlaylistController {
     @AccessTokenCheck
     public ApiResponseDto<PlaylistDetailResponseDto> create(
             @Valid @ModelAttribute PlaylistRequestDto req,
+            @Parameter(
+                    description = "플레이리스트 커버 이미지",
+                    content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                            schema = @Schema(type = "string", format = "binary"))
+            )
+            @RequestPart(required = false) MultipartFile coverImage,
             @LoginUserId Long userId) {
         PlaylistDetailResponseDto result = playlistService.create(
-                userId, PlaylistConvert.toEntity(req, userId), req.getCoverImage());
+                userId, PlaylistConvert.toEntity(req, userId), coverImage);
         return ApiResponseDto.success(result, "플레이리스트 생성 성공");
     }
 
