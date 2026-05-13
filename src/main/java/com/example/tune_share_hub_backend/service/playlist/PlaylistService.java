@@ -57,11 +57,10 @@ public class PlaylistService {
     }
 
     @Transactional
-    public PlaylistDetailResponseDto updatePlaylistVisibility(Long playlistId, Long userId, Playlist playlist) {
+    public PlaylistDetailResponseDto updatePlaylistVisibility(Long playlistId, Long userId, String publicyn) {
         validatePlaylistId(playlistId);
-        validateVisibilityRequest(playlist);
 
-        int updatedCount = playlistDao.updatePlaylistVisibility(playlistId, userId, playlist.getPublicYn());
+        int updatedCount = playlistDao.updatePlaylistVisibility(playlistId, userId, publicyn);
         if (updatedCount == 0) {
             throw new CustomException(ErrorCode.PLAYLIST_VISIBILITY_UPDATE_FORBIDDEN);
         }
