@@ -51,7 +51,7 @@ public class SpotifyClient {
                 .retrieve()
                 .body(SpotifyTrackSearchResponseDto.class);
 
-        return SpotifyTrackConverter.toMusicSearchResponseDtos(response);
+        return SpotifyTrackConverter.toMusicSearchResponseDtoList(response);
     }
 
     private String getAccessToken() {

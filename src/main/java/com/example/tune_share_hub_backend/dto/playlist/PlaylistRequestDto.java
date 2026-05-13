@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -25,9 +24,6 @@ public class PlaylistRequestDto {
 
     @Schema(description = "플레이리스트 설명", example = "헬스할 때 듣기 좋은 노래 모음")
     private String description;
-
-    @Schema(description = "플레이리스트 커버 이미지", type = "string", format = "binary")
-    private MultipartFile coverImage;
 
     @Schema(description = "공개 여부", example = "Y")
     private String publicYn;

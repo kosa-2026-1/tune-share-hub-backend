@@ -33,33 +33,33 @@ public class PlaylistTrackConvert {
 			.build();
 	}
 
-	public static List<PlaylistTrack> toEntities(
-		List<PlaylistTrackCreateRequestDto> requests,
+	public static List<PlaylistTrack> toEntityList(
+		List<PlaylistTrackCreateRequestDto> requestDtoList,
 		Long playlistId
 	) {
-		List<PlaylistTrack> playlistTracks = new ArrayList<>();
+		List<PlaylistTrack> playlistTrackList = new ArrayList<>();
 
-		for (int i = 0; i < requests.size(); i++) {
+		for (int i = 0; i < requestDtoList.size(); i++) {
 			PlaylistTrack playlistTrack = toEntity(
-				requests.get(i),
+				requestDtoList.get(i),
 				playlistId,
 				i + 1
 			);
 
-			playlistTracks.add(playlistTrack);
+			playlistTrackList.add(playlistTrack);
 		}
 
-		return playlistTracks;
+		return playlistTrackList;
 	}
 
-	public static List<PlaylistTrack> toReorderEntities(List<PlaylistTrackReorderRequestDto> requests) {
-		List<PlaylistTrack> playlistTracks = new ArrayList<>();
+	public static List<PlaylistTrack> toReorderEntityList(List<PlaylistTrackReorderRequestDto> requestDtoList) {
+		List<PlaylistTrack> playlistTrackList = new ArrayList<>();
 
-		for (int i = 0; i < requests.size(); i++) {
-			playlistTracks.add(toPositionEntity(requests.get(i).getPlaylistTrackId(), i + 1));
+		for (int i = 0; i < requestDtoList.size(); i++) {
+			playlistTrackList.add(toPositionEntity(requestDtoList.get(i).getPlaylistTrackId(), i + 1));
 		}
 
-		return playlistTracks;
+		return playlistTrackList;
 	}
 
 	public static PlaylistTrackResponseDto toResponseDto(PlaylistTrack playlistTrack) {
@@ -85,14 +85,14 @@ public class PlaylistTrackConvert {
 	}
 
 	public static List<PlaylistTrackResponseDto> toResponseDtoList(
-		List<PlaylistTrack> playlistTracks
+		List<PlaylistTrack> playlistTrackList
 	) {
-		List<PlaylistTrackResponseDto> responseDtos = new ArrayList<>();
+		List<PlaylistTrackResponseDto> responseDtoList = new ArrayList<>();
 
-		for (PlaylistTrack playlistTrack : playlistTracks) {
-			responseDtos.add(toResponseDto(playlistTrack));
+		for (PlaylistTrack playlistTrack : playlistTrackList) {
+			responseDtoList.add(toResponseDto(playlistTrack));
 		}
 
-		return responseDtos;
+		return responseDtoList;
 	}
 }

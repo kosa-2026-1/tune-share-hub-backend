@@ -2,8 +2,7 @@ package com.example.tune_share_hub_backend.service.auth;
 
 import com.example.tune_share_hub_backend.dao.refresh.RefreshTokenDao;
 import com.example.tune_share_hub_backend.entity.refresh.Refresh;
-import com.example.tune_share_hub_backend.global.exception.CustomException;
-import com.example.tune_share_hub_backend.global.exception.ErrorCode;
+import com.example.tune_share_hub_backend.validate.AuthValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,14 +35,14 @@ public class RefreshTokenService {
         refreshTokenDao.insert(refresh);
     }
 
-    public void validateRefreshTokenExists(String token, Long userId) {
+    public void checkRefreshTokenExists(String token, Long userId) {
 
         boolean exists = refreshTokenDao.existsRefresh(token, userId) > 0;
 
         if (!exists) {
             log.warn("Refresh token reuse detected. userId={}", userId);
-            throw new CustomException(ErrorCode.REFRESH_TOKEN_REUSE_DETECTED);
         }
+        AuthValidator.validateRefreshTokenExists(exists);
     }
 
     @Transactional
@@ -54,17 +53,15 @@ public class RefreshTokenService {
             LocalDateTime expiresAt
     ) {
 
-        if (userId == null || oldToken == null || newToken == null) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        AuthValidator.validateRotateTokenRequest(userId, oldToken, newToken);
 
         // 기존 토큰 삭제
         int deletedCount = refreshTokenDao.deleteByUserIdAndTokenValue(userId, oldToken);
 
         if (deletedCount == 0) {
             log.warn("Refresh token reuse detected. userId={}", userId);
-            throw new CustomException(ErrorCode.REFRESH_TOKEN_REUSE_DETECTED);
         }
+        AuthValidator.validateRefreshTokenDeleted(deletedCount);
 
         // 새 토큰 저장
         saveRefreshToken(userId, newToken, expiresAt);
@@ -75,10 +72,7 @@ public class RefreshTokenService {
     public void revokeToken(Long userId, String token) {
 
         int revoked = refreshTokenDao.revokeTokensByUserIdAndTokenValue(userId, token);
-
-        if (revoked == 0) {
-            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
-        }
+        AuthValidator.validateRefreshTokenRevoked(revoked);
 
         log.info("Refresh token revoked. userId={}", userId);
     }

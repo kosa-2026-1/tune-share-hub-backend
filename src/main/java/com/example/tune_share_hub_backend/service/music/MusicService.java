@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.example.tune_share_hub_backend.client.SpotifyClient;
 import com.example.tune_share_hub_backend.client.YoutubeClient;
 import com.example.tune_share_hub_backend.dto.music.MusicSearchResponseDto;
+import com.example.tune_share_hub_backend.validate.MusicValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,16 +19,11 @@ public class MusicService {
 	private final YoutubeClient youtubeClient;
 
 	public List<MusicSearchResponseDto> searchMusic(String keyword) {
-		validateKeyword(keyword);
-		List<MusicSearchResponseDto> musicSearchResponseDtos =  spotifyClient.searchTracks(keyword);
-		youtubeClient.addVideoUrl(musicSearchResponseDtos);
+		MusicValidator.validateKeyword(keyword);
+		List<MusicSearchResponseDto> musicSearchResponseDtoList = spotifyClient.searchTracks(keyword);
+		youtubeClient.addVideoUrl(musicSearchResponseDtoList);
 
-		return musicSearchResponseDtos;
+		return musicSearchResponseDtoList;
 	}
 
-	private void validateKeyword(String keyword) {
-		if (keyword == null || keyword.trim().isEmpty()) {
-			throw new IllegalArgumentException("검색어는 필수입니다.");
-		}
-	}
 }

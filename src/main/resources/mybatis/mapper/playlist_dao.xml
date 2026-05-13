@@ -93,7 +93,7 @@
     </delete>
 
 
-    <select id="findPublicPlaylists" resultMap="PlaylistResultMap">
+    <select id="findPublicPlaylistList" resultMap="PlaylistResultMap">
         SELECT *
         FROM (SELECT ROWNUM AS RN, P.*
               FROM (SELECT *
@@ -105,13 +105,13 @@
     </select>
 
 
-    <select id="countPublicPlaylists" resultType="int">
+    <select id="countPublicPlaylistList" resultType="int">
         SELECT COUNT(*)
         FROM PLAYLISTS
         WHERE PUBLIC_YN = 'Y'
     </select>
 
-    <select id="findTopPlaylists" resultMap="PlaylistResultMap">
+    <select id="findTopPlaylistList" resultMap="PlaylistResultMap">
         SELECT *
         FROM (SELECT *
         FROM PLAYLISTS

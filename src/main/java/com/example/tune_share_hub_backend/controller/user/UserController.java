@@ -35,8 +35,8 @@ public class UserController {
     @Operation(summary = "내가 좋아요한 플레이리스트 조회", description = "로그인한 사용자가 좋아요한 플레이리스트를 조회합니다. Access Token이 필요합니다.")
     @AccessTokenCheck
     @GetMapping("/me/likes")
-    public ApiResponseDto<List<PlaylistResponseDto>> getLikedPlaylists(@LoginUserId Long userId) {
-        List<PlaylistResponseDto> likedPlaylists = likeService.getLikedPlaylists(userId);
-        return ApiResponseDto.success(likedPlaylists, "좋아요한 플레이리스트 조회 성공");
+    public ApiResponseDto<List<PlaylistResponseDto>> getLikedPlaylistList(@LoginUserId Long userId) {
+        List<PlaylistResponseDto> likedPlaylistList = likeService.getLikedPlaylistList(userId);
+        return ApiResponseDto.success(likedPlaylistList, "좋아요한 플레이리스트 조회 성공");
     }
 }

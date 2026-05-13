@@ -11,12 +11,11 @@ import com.example.tune_share_hub_backend.dto.playlist.CommentRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
-import com.example.tune_share_hub_backend.global.exception.CustomException;
-import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 import com.example.tune_share_hub_backend.global.interceptor.AccessTokenCheck;
 import com.example.tune_share_hub_backend.global.interceptor.LoginUserId;
 import com.example.tune_share_hub_backend.service.like.LikeService;
 import com.example.tune_share_hub_backend.service.playlist.PlaylistService;
+import com.example.tune_share_hub_backend.validate.PlaylistValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -29,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -42,48 +42,21 @@ public class PlaylistController {
     private final PlaylistService playlistService;
     private final LikeService likeService;
 
-    @Operation(summary = "플레이리스트 수정", description = "로그인한 사용자가 본인 소유 플레이리스트를 수정합니다.")
-    @AccessTokenCheck
-    @PutMapping(value = "/playlists/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponseDto<PlaylistDetailResponseDto> updatePlaylist(
-            @PathVariable("id") Long playlistId,
-            @Valid @ModelAttribute PlaylistRequestDto request,
-            @LoginUserId Long userId) {
-        PlaylistDetailResponseDto result = playlistService.updatePlaylist(
-                playlistId, userId, PlaylistConvert.toEntity(request), request.getCoverImage());
-        return ApiResponseDto.success(result, "플레이리스트가 수정되었습니다.");
-    }
-
-    @Operation(summary = "공개/비공개 설정", description = "로그인한 사용자가 본인 소유 플레이리스트의 공개 여부를 변경합니다.")
-    @PatchMapping("/playlists/{id}/visibility")
-    @AccessTokenCheck
-    public ApiResponseDto<PlaylistDetailResponseDto> updatePlaylistVisibility(
-            @PathVariable("id") Long playlistId,
-            @RequestParam String publicYn,
-            @Parameter(hidden = true) @LoginUserId Long userId) {
-        PlaylistDetailResponseDto result = playlistService.updatePlaylistVisibility(playlistId, userId, publicYn);
-        return ApiResponseDto.success(result, "플레이리스트 공개 여부가 변경되었습니다.");
-    }
-
     @Operation(summary = "플레이리스트 생성", description = "로그인한 사용자가 새 플레이리스트를 생성합니다.")
     @PostMapping(value = "/playlists", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @AccessTokenCheck
-    public ApiResponseDto<PlaylistDetailResponseDto> create(
-            @Valid @ModelAttribute PlaylistRequestDto req,
+    public ApiResponseDto<PlaylistDetailResponseDto> createPlaylist(
+            @Valid @ModelAttribute PlaylistRequestDto request,
+            @Parameter(
+                    description = "플레이리스트 커버 이미지",
+                    content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                            schema = @Schema(type = "string", format = "binary"))
+            )
+            @RequestPart(required = false) MultipartFile coverImage,
             @LoginUserId Long userId) {
         PlaylistDetailResponseDto result = playlistService.create(
-                userId, PlaylistConvert.toEntity(req, userId), req.getCoverImage());
+                userId, PlaylistConvert.toEntity(request, userId), coverImage);
         return ApiResponseDto.success(result, "플레이리스트 생성 성공");
-    }
-
-    @Operation(summary = "플레이리스트 삭제", description = "로그인한 사용자가 본인 소유 플레이리스트를 삭제합니다.")
-    @AccessTokenCheck
-    @DeleteMapping("/playlists/{id}")
-    public ApiResponseDto<Void> deletePlaylist(
-            @PathVariable("id") Long playlistId,
-            @LoginUserId Long userId) {
-        playlistService.deletePlaylist(playlistId, userId);
-        return ApiResponseDto.success(null, "플레이리스트가 삭제되었습니다.");
     }
 
     @Operation(summary = "플레이리스트 복사", description = "로그인한 사용자가 공개 플레이리스트를 복사합니다.")
@@ -96,33 +69,6 @@ public class PlaylistController {
         return ApiResponseDto.success(result, "플레이리스트가 복사되었습니다.");
     }
 
-    @Operation(summary = "공개 목록 조회", description = "공개된 플레이리스트를 페이지 단위로 조회합니다.")
-    @GetMapping("/playlists")
-    public ApiResponseDto<Map<String, Object>> getPublicPlaylists(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        Map<String, Object> result = playlistService.getPublicPlaylists(page, size);
-        return ApiResponseDto.success(result, "공개 플레이리스트 목록 조회 성공");
-    }
-
-    @Operation(summary = "내 플레이리스트 목록", description = "로그인한 사용자의 전체 플레이리스트를 조회합니다.")
-    @GetMapping("/users/me/playlists")
-    @AccessTokenCheck
-    public ApiResponseDto<List<PlaylistResponseDto>> getMyPlaylists(@LoginUserId Long userId) {
-        List<PlaylistResponseDto> result = playlistService.getMyPlaylists(userId);
-        return ApiResponseDto.success(result, "조회 성공");
-    }
-
-    @Operation(summary = "플레이리스트 상세 조회", description = "플레이리스트 ID로 상세 정보를 조회합니다.")
-    @GetMapping("/playlists/{id}")
-    @AccessTokenCheck
-    public ApiResponseDto<PlaylistDetailResponseDto> getPlaylistDetail(
-            @PathVariable Long id,
-            @LoginUserId Long userId) {
-        PlaylistDetailResponseDto result = playlistService.getPlaylist(id, userId);
-        return ApiResponseDto.success(result, "조회 성공");
-    }
-
     @Operation(summary = "플레이리스트에 트랙 추가", description = "로그인한 사용자가 본인 소유 플레이리스트에 하나 이상의 트랙을 추가합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "트랙 추가 성공"),
@@ -132,69 +78,16 @@ public class PlaylistController {
     })
     @PostMapping("/playlists/{id}/tracks")
     @AccessTokenCheck
-    public ApiResponseDto<PlaylistDetailResponseDto> addTrackToPlaylist(
+    public ApiResponseDto<PlaylistDetailResponseDto> addPlaylistTrackList(
             @Parameter(description = "트랙을 추가할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
             @LoginUserId Long userId,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "추가할 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackCreateRequestDto.class)))) @RequestBody List<PlaylistTrackCreateRequestDto> requestListDto) {
-        if (requestListDto == null || requestListDto.isEmpty() || requestListDto.contains(null)) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "추가할 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackCreateRequestDto.class)))) @RequestBody List<PlaylistTrackCreateRequestDto> requestDtoList) {
+        PlaylistValidator.validateRequestList(requestDtoList);
 
         PlaylistDetailResponseDto result = playlistService.addTrackToPlaylist(
-                id, userId, PlaylistTrackConvert.toEntities(requestListDto, id));
+                id, userId, PlaylistTrackConvert.toEntityList(requestDtoList, id));
         return ApiResponseDto.success(result, "트랙이 플레이리스트에 추가되었습니다.");
     }
-
-    @Operation(summary = "플레이리스트 트랙 삭제", description = "로그인한 사용자가 본인 소유 플레이리스트에서 특정 트랙을 제거합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "트랙 삭제 성공"),
-            @ApiResponse(responseCode = "400", description = "요청한 트랙 ID 형식이 올바르지 않습니다."),
-            @ApiResponse(responseCode = "403", description = "본인 소유가 아닌 플레이리스트의 트랙은 삭제할 수 없습니다."),
-            @ApiResponse(responseCode = "404", description = "플레이리스트 또는 트랙을 찾을 수 없습니다.")
-    })
-    @DeleteMapping("/playlists/{id}/tracks/{trackId}")
-    @AccessTokenCheck
-    public ApiResponseDto<PlaylistDetailResponseDto> removeTrackFromPlaylist(
-            @LoginUserId Long userId,
-            @Parameter(description = "트랙을 삭제할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
-            @Parameter(description = "삭제할 플레이리스트 트랙 ID", example = "10", required = true) @PathVariable Long trackId) {
-        PlaylistDetailResponseDto result = playlistService.removeTrackFromPlaylist(id, userId, trackId);
-        return ApiResponseDto.success(result, "트랙이 플레이리스트에서 제거되었습니다.");
-    }
-
-    @Operation(summary = "플레이리스트 트랙 순서 변경", description = "프론트에서 드래그앤드랍 후 전달한 트랙 목록의 배열 순서대로 POSITION_NO를 1부터 다시 저장합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "트랙 순서 변경 성공"),
-            @ApiResponse(responseCode = "400", description = "요청한 트랙 순서 목록이 올바르지 않습니다."),
-            @ApiResponse(responseCode = "403", description = "본인 소유가 아닌 플레이리스트의 트랙 순서는 변경할 수 없습니다."),
-            @ApiResponse(responseCode = "404", description = "플레이리스트 또는 트랙을 찾을 수 없습니다.")
-    })
-    @PatchMapping("/playlists/{id}/tracks/reorder")
-    @AccessTokenCheck
-    public ApiResponseDto<PlaylistDetailResponseDto> reorderPlaylistTracks(
-            @Parameter(description = "트랙 순서를 변경할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
-            @LoginUserId Long userId,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "드래그앤드랍 후 새 순서대로 정렬된 플레이리스트 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackReorderRequestDto.class)))) @RequestBody List<PlaylistTrackReorderRequestDto> requestListDto) {
-        if (requestListDto == null || requestListDto.isEmpty() || requestListDto.contains(null)) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
-
-        PlaylistDetailResponseDto result = playlistService.reorderTrack(
-                id, userId, PlaylistTrackConvert.toReorderEntities(requestListDto));
-        return ApiResponseDto.success(result, "트랙 순서가 변경되었습니다.");
-    }
-
-    @Operation(summary = "플레이리스트 좋아요/취소", description = "로그인한 사용자가 플레이리스트에 좋아요를 누르거나 취소합니다.")
-    @PostMapping("/playlists/{id}/likes")
-    @AccessTokenCheck
-    public ApiResponseDto<LikeResponseDto> like(
-            @PathVariable Long id,
-            @LoginUserId Long userId) {
-        LikeResponseDto likeResponseDto = likeService.like(id, userId);
-
-        return ApiResponseDto.success(likeResponseDto, "플레이리스트 좋아요 상태 변경 성공");
-    }
-
 
     @Operation(
             summary = "플레이리스트 댓글 작성",
@@ -208,7 +101,7 @@ public class PlaylistController {
     })
     @PostMapping("playlists/{id}/comments")
     @AccessTokenCheck
-    public ApiResponseDto<PlaylistDetailResponseDto> createCommentToPlaylist(
+    public ApiResponseDto<PlaylistDetailResponseDto> createPlaylistComment(
             @Parameter(description = "댓글을 작성할 플레이리스트 ID", example = "1", required = true)
             @PathVariable Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -220,12 +113,107 @@ public class PlaylistController {
             @Parameter(hidden = true)
             @LoginUserId Long userId
     ) {
-        if (requestDto == null) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        PlaylistValidator.validateCommentRequestDto(requestDto);
 
         PlaylistDetailResponseDto result = playlistService.createComment(id, userId, CommentConvert.toEntity(requestDto));
         return ApiResponseDto.success(result, "댓글이 추가되었습니다.");
+    }
+
+    @Operation(summary = "플레이리스트 좋아요/취소", description = "로그인한 사용자가 플레이리스트에 좋아요를 누르거나 취소합니다.")
+    @PostMapping("/playlists/{id}/likes")
+    @AccessTokenCheck
+    public ApiResponseDto<LikeResponseDto> togglePlaylistLike(
+            @PathVariable Long id,
+            @LoginUserId Long userId) {
+        LikeResponseDto likeResponseDto = likeService.like(id, userId);
+
+        return ApiResponseDto.success(likeResponseDto, "플레이리스트 좋아요 상태 변경 성공");
+    }
+
+    @Operation(summary = "공개 목록 조회", description = "공개된 플레이리스트를 페이지 단위로 조회합니다.")
+    @GetMapping("/playlists")
+    public ApiResponseDto<Map<String, Object>> getPublicPlaylistList(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Map<String, Object> result = playlistService.getPublicPlaylistList(page, size);
+        return ApiResponseDto.success(result, "공개 플레이리스트 목록 조회 성공");
+    }
+
+    @Operation(summary = "내 플레이리스트 목록", description = "로그인한 사용자의 전체 플레이리스트를 조회합니다.")
+    @GetMapping("/users/me/playlists")
+    @AccessTokenCheck
+    public ApiResponseDto<List<PlaylistResponseDto>> getMyPlaylistList(@LoginUserId Long userId) {
+        List<PlaylistResponseDto> playlistResponseDtoList = playlistService.getMyPlaylistList(userId);
+        return ApiResponseDto.success(playlistResponseDtoList, "조회 성공");
+    }
+
+    @Operation(summary = "인기 플레이리스트 랭킹", description = "like(좋아요 수) 또는 view(조회수) 기준으로 랭킹을 조회합니다.")
+    @GetMapping("/playlists/ranking")
+    public ApiResponseDto<List<PlaylistResponseDto>> getPlaylistRanking(
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "like") String type) {
+        List<PlaylistResponseDto> playlistResponseDtoList = playlistService.getPlaylistRanking(limit, type);
+        return ApiResponseDto.success(playlistResponseDtoList, "인기 플레이리스트 랭킹 조회 성공");
+    }
+
+    @Operation(summary = "플레이리스트 상세 조회", description = "플레이리스트 ID로 상세 정보를 조회합니다.")
+    @GetMapping("/playlists/{id}")
+    @AccessTokenCheck
+    public ApiResponseDto<PlaylistDetailResponseDto> getPlaylistDetail(
+            @PathVariable Long id,
+            @LoginUserId Long userId) {
+        PlaylistDetailResponseDto result = playlistService.getPlaylist(id, userId);
+        return ApiResponseDto.success(result, "조회 성공");
+    }
+
+    @Operation(summary = "플레이리스트 수정", description = "로그인한 사용자가 본인 소유 플레이리스트를 수정합니다.")
+    @AccessTokenCheck
+    @PutMapping(value = "/playlists/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponseDto<PlaylistDetailResponseDto> updatePlaylist(
+            @PathVariable("id") Long playlistId,
+            @Valid @ModelAttribute PlaylistRequestDto request,
+            @Parameter(
+                    description = "플레이리스트 커버 이미지",
+                    content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                            schema = @Schema(type = "string", format = "binary"))
+            )
+            @RequestPart(required = false) MultipartFile coverImage,
+            @LoginUserId Long userId) {
+        PlaylistDetailResponseDto result = playlistService.updatePlaylist(
+                playlistId, userId, PlaylistConvert.toEntity(request), coverImage);
+        return ApiResponseDto.success(result, "플레이리스트가 수정되었습니다.");
+    }
+
+    @Operation(summary = "공개/비공개 설정", description = "로그인한 사용자가 본인 소유 플레이리스트의 공개 여부를 변경합니다.")
+    @PatchMapping("/playlists/{id}/visibility")
+    @AccessTokenCheck
+    public ApiResponseDto<PlaylistDetailResponseDto> updatePlaylistVisibility(
+            @PathVariable("id") Long playlistId,
+            @RequestParam String publicYn,
+            @Parameter(hidden = true) @LoginUserId Long userId) {
+        PlaylistDetailResponseDto result = playlistService.updatePlaylistVisibility(
+                playlistId, userId, publicYn);
+        return ApiResponseDto.success(result, "플레이리스트 공개 여부가 변경되었습니다.");
+    }
+
+    @Operation(summary = "플레이리스트 트랙 순서 변경", description = "프론트에서 드래그앤드랍 후 전달한 트랙 목록의 배열 순서대로 POSITION_NO를 1부터 다시 저장합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "트랙 순서 변경 성공"),
+            @ApiResponse(responseCode = "400", description = "요청한 트랙 순서 목록이 올바르지 않습니다."),
+            @ApiResponse(responseCode = "403", description = "본인 소유가 아닌 플레이리스트의 트랙 순서는 변경할 수 없습니다."),
+            @ApiResponse(responseCode = "404", description = "플레이리스트 또는 트랙을 찾을 수 없습니다.")
+    })
+    @PatchMapping("/playlists/{id}/tracks/reorder")
+    @AccessTokenCheck
+    public ApiResponseDto<PlaylistDetailResponseDto> updatePlaylistTrackOrder(
+            @Parameter(description = "트랙 순서를 변경할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
+            @LoginUserId Long userId,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "드래그앤드랍 후 새 순서대로 정렬된 플레이리스트 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackReorderRequestDto.class)))) @RequestBody List<PlaylistTrackReorderRequestDto> requestDtoList) {
+        PlaylistValidator.validateRequestList(requestDtoList);
+
+        PlaylistDetailResponseDto result = playlistService.reorderTrack(
+                id, userId, PlaylistTrackConvert.toReorderEntityList(requestDtoList));
+        return ApiResponseDto.success(result, "트랙 순서가 변경되었습니다.");
     }
 
     @Operation(
@@ -240,7 +228,7 @@ public class PlaylistController {
     })
     @PutMapping("playlists/{id}/comments/{commentId}")
     @AccessTokenCheck
-    public ApiResponseDto<PlaylistDetailResponseDto> updateCommentToPlaylist(
+    public ApiResponseDto<PlaylistDetailResponseDto> updatePlaylistComment(
             @Parameter(description = "댓글이 속한 플레이리스트 ID", example = "1", required = true)
             @PathVariable Long id,
             @Parameter(description = "수정할 댓글 ID", example = "10", required = true)
@@ -252,13 +240,39 @@ public class PlaylistController {
             )
             @RequestBody CommentRequestDto requestDto,
             @Parameter(hidden = true)
-            @LoginUserId Long userId) {
-        if (requestDto == null) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+            @LoginUserId Long userId
+    ) {
+        PlaylistValidator.validateCommentRequestDto(requestDto);
 
         PlaylistDetailResponseDto result = playlistService.updateComment(id, commentId, userId, CommentConvert.toEntity(requestDto));
         return ApiResponseDto.success(result, "댓글이 수정되었습니다.");
+    }
+
+    @Operation(summary = "플레이리스트 삭제", description = "로그인한 사용자가 본인 소유 플레이리스트를 삭제합니다.")
+    @AccessTokenCheck
+    @DeleteMapping("/playlists/{id}")
+    public ApiResponseDto<Void> deletePlaylist(
+            @PathVariable("id") Long playlistId,
+            @LoginUserId Long userId) {
+        playlistService.deletePlaylist(playlistId, userId);
+        return ApiResponseDto.success(null, "플레이리스트가 삭제되었습니다.");
+    }
+
+    @Operation(summary = "플레이리스트 트랙 삭제", description = "로그인한 사용자가 본인 소유 플레이리스트에서 특정 트랙을 제거합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "트랙 삭제 성공"),
+            @ApiResponse(responseCode = "400", description = "요청한 트랙 ID 형식이 올바르지 않습니다."),
+            @ApiResponse(responseCode = "403", description = "본인 소유가 아닌 플레이리스트의 트랙은 삭제할 수 없습니다."),
+            @ApiResponse(responseCode = "404", description = "플레이리스트 또는 트랙을 찾을 수 없습니다.")
+    })
+    @DeleteMapping("/playlists/{id}/tracks/{trackId}")
+    @AccessTokenCheck
+    public ApiResponseDto<PlaylistDetailResponseDto> deletePlaylistTrack(
+            @LoginUserId Long userId,
+            @Parameter(description = "트랙을 삭제할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
+            @Parameter(description = "삭제할 플레이리스트 트랙 ID", example = "10", required = true) @PathVariable Long trackId) {
+        PlaylistDetailResponseDto result = playlistService.removeTrackFromPlaylist(id, userId, trackId);
+        return ApiResponseDto.success(result, "트랙이 플레이리스트에서 제거되었습니다.");
     }
 
     @Operation(
@@ -272,7 +286,7 @@ public class PlaylistController {
     })
     @DeleteMapping("playlists/{id}/comments/{commentId}")
     @AccessTokenCheck
-    public ApiResponseDto<PlaylistDetailResponseDto> deleteCommentToPlaylist(
+    public ApiResponseDto<PlaylistDetailResponseDto> deletePlaylistComment(
             @Parameter(description = "댓글이 속한 플레이리스트 ID", example = "1", required = true)
             @PathVariable Long id,
             @Parameter(description = "삭제할 댓글 ID", example = "10", required = true)
@@ -281,14 +295,5 @@ public class PlaylistController {
             @LoginUserId Long userId) {
         PlaylistDetailResponseDto result = playlistService.deleteComment(id, commentId, userId);
         return ApiResponseDto.success(result, "댓글이 삭제되었습니다.");
-    }
-
-    @Operation(summary = "인기 플레이리스트 랭킹", description = "like(좋아요 수) 또는 view(조회수) 기준으로 랭킹을 조회합니다.")
-    @GetMapping("/playlists/ranking")
-    public ApiResponseDto<List<PlaylistResponseDto>> getPlaylistRanking(
-            @RequestParam(defaultValue = "10") int limit,
-            @RequestParam(defaultValue = "like") String type) {
-        List<PlaylistResponseDto> result = playlistService.getPlaylistRanking(limit, type);
-        return ApiResponseDto.success(result, "인기 플레이리스트 랭킹 조회 성공");
     }
 }

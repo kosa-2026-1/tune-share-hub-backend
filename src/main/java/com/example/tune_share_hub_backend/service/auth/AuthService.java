@@ -8,9 +8,8 @@ import com.example.tune_share_hub_backend.dto.auth.LoginResponseDto;
 import com.example.tune_share_hub_backend.dto.user.UserResponseDto;
 import com.example.tune_share_hub_backend.entity.user.User;
 import com.example.tune_share_hub_backend.global.config.security.JwtProvider;
-import com.example.tune_share_hub_backend.global.exception.CustomException;
-import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 import com.example.tune_share_hub_backend.global.util.CookieUtil;
+import com.example.tune_share_hub_backend.validate.AuthValidator;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +38,7 @@ public class AuthService {
     @Transactional
     public LoginResponseDto login(LoginRequestDto loginRequestDto) {
         // 사용자 조회 및 검증
-        User user = findAndValidateUser(loginRequestDto);
+        User user = findLoginUser(loginRequestDto);
         
         // 토큰 생성
         UserResponseDto userResponseDto = UserConvert.toResponseDto(user);
@@ -62,11 +61,11 @@ public class AuthService {
     @Transactional
     public LoginResponseDto reissue(String refreshToken){
         // 토큰 유효성 체크
-        validateRefreshToken(refreshToken);
+        AuthValidator.validateRefreshToken(refreshToken, jwtProvider);
 
         Long userId = jwtProvider.getUserId(refreshToken);
 
-        refreshTokenService.validateRefreshTokenExists(refreshToken, userId);
+        refreshTokenService.checkRefreshTokenExists(refreshToken, userId);
 
         // 사용자 조회
         User user = userDao.getUserById(userId);
@@ -91,39 +90,27 @@ public class AuthService {
     @Transactional
     public void logout(String refreshToken, Long userId) {
 
-        if (refreshToken == null || refreshToken.isBlank() || userId == null) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        AuthValidator.validateLogoutRequest(refreshToken, userId);
 
         refreshTokenService.revokeToken(userId, refreshToken);
 
         log.info("User {} logged out", userId);
     }
 
-    //토큰 유효성 체크
-    private void validateRefreshToken(String refreshToken) {
-        jwtProvider.validateToken(refreshToken);
-
-        if (!jwtProvider.isRefreshToken(refreshToken)) {
-            log.warn("Not a refresh token category");
-            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
-        }
-    }
-
-
     // 사용자 존재 여부 및 비밀번호 검증
-    private User findAndValidateUser(LoginRequestDto loginRequestDto) {
+    private User findLoginUser(LoginRequestDto loginRequestDto) {
         User user = userDao.getUserByEmail(loginRequestDto.getEmail());
 
         if (user == null) {
             log.warn("Login attempt for non-existent user: {}", loginRequestDto.getEmail());
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
+        AuthValidator.validateLoginUser(user);
 
-        if (!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPasswordHash())) {
+        boolean invalidPassword = !passwordEncoder.matches(loginRequestDto.getPassword(), user.getPasswordHash());
+        if (invalidPassword) {
             log.warn("Failed login attempt for user: {} - invalid password", loginRequestDto.getEmail());
-            throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
+        AuthValidator.validatePassword(loginRequestDto, user, passwordEncoder);
 
         return user;
     }

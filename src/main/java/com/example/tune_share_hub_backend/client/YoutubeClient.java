@@ -53,8 +53,8 @@ public class YoutubeClient {
 		return response;
 	}
 
-	public void addVideoUrl(List<MusicSearchResponseDto> musicSearchResponseDtos) {
-		for (MusicSearchResponseDto dto : musicSearchResponseDtos) {
+	public void addVideoUrl(List<MusicSearchResponseDto> musicSearchResponseDtoList) {
+		for (MusicSearchResponseDto dto : musicSearchResponseDtoList) {
 			String keyword = dto.getTitle() + " " + dto.getArtistName() + " 뮤직비디오";
 
 			YoutubeSearchResponseDto youtubeResponse = searchMusicVideo(keyword);
