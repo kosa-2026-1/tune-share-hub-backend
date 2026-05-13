@@ -45,6 +45,8 @@ public enum ErrorCode {
 
     // Comment
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
+    COMMENT_FORBIDDEN(HttpStatus.FORBIDDEN, "댓글 작성자가 아닙니다."),
+
 
     // SearchHistory
     SEARCH_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "검색 기록이 존재하지 않습니다.");
