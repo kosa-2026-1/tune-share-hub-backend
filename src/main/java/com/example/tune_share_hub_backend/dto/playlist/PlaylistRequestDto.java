@@ -35,7 +35,7 @@ public class PlaylistRequestDto {
     @Schema(description = "태그 목록", example = "[\"운동\", \"힙합\"]")
     private List<
             @NotBlank(message = "태그는 비어 있을 수 없습니다.")
-            @Size(max = 20, message = "PlaylistRequestDto태그는 20자 이내여야 합니다.")
+            @Size(max = 20, message = "태그는 20자 이내여야 합니다.")
             @Pattern(regexp = "^[^,\\\\s]+$", message = "태그에는 공백이나 콤마(,)를 포함할 수 없습니다.")
                     String
             > tags;
