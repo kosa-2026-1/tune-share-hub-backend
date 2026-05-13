@@ -38,7 +38,7 @@ public interface PlaylistDao {
 
     void increaseViewCount(@Param("playlistId") Long playlistId);
 
-    void increaseTrackCount(@Param("playlistId") Long playlistId, int size);
+    void increaseTrackCount(@Param("playlistId") Long playlistId, @Param("size") int size);
 
     void decreaseTrackCount(@Param("playlistId") Long playlistId);
 

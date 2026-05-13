@@ -143,9 +143,9 @@
         WHERE PLAYLIST_ID = #{playlistId}
     </update>
 
-    <update id="increaseTrackCount" parameterType="long">
+    <update id="increaseTrackCount">
         UPDATE PLAYLISTS
-        SET TRACK_COUNT = NVL(TRACK_COUNT, 0) + 1,
+        SET TRACK_COUNT = NVL(TRACK_COUNT, 0) + #{size},
             UPDATED_AT  = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
     </update>

@@ -33,7 +33,7 @@ public class YoutubeClient {
 			.queryParam("part", "snippet")
 			.queryParam("q", keyword)
 			.queryParam("type", "video")
-			.queryParam("maxResults", 5)
+			.queryParam("maxResults", 1)
 			.queryParam("regionCode", "KR")
 			.queryParam("key", apiKey)
 			.build()
