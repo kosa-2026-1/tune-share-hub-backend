@@ -8,7 +8,7 @@ import com.example.tune_share_hub_backend.dao.playlist.CommentDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
-import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
+import com.example.tune_share_hub_backend.dto.playlist.CommentResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;

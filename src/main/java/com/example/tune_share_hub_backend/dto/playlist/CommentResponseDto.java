@@ -1,4 +1,4 @@
-package com.example.tune_share_hub_backend.dto.music;
+package com.example.tune_share_hub_backend.dto.playlist;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

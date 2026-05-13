@@ -1,6 +1,6 @@
 package com.example.tune_share_hub_backend.convert;
 
-import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
+import com.example.tune_share_hub_backend.dto.playlist.CommentResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;

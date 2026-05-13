@@ -1,6 +1,5 @@
 package com.example.tune_share_hub_backend.dto.playlist;
 
-import com.example.tune_share_hub_backend.dto.music.CommentResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
