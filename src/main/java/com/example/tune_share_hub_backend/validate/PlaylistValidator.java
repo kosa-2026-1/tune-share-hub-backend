@@ -141,7 +141,7 @@ public class PlaylistValidator {
 
     public static void validateCommentOwner(Comment comment, Long userId) {
         if (!comment.getUserId().equals(userId)) {
-            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
+            throw new CustomException(ErrorCode.COMMENT_FORBIDDEN);
         }
     }
 
