@@ -4,7 +4,6 @@ import com.example.tune_share_hub_backend.convert.LikeConvert;
 import com.example.tune_share_hub_backend.convert.PlaylistConvert;
 import com.example.tune_share_hub_backend.dao.like.LikeDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistDao;
-import com.example.tune_share_hub_backend.dao.user.UserDao;
 import com.example.tune_share_hub_backend.dto.like.LikeResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Playlist;
@@ -22,7 +21,6 @@ public class LikeService {
 
     private final LikeDao likeDao;
     private final PlaylistDao playlistMapper;
-    private final UserDao userDao;
 
     @Transactional
     public LikeResponseDto like(Long playlistId, Long userId) {
