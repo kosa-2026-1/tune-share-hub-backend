@@ -9,6 +9,7 @@ import com.example.tune_share_hub_backend.dto.music.PlaylistTrackCreateRequestDt
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackReorderRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.CommentRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
+import com.example.tune_share_hub_backend.dto.playlist.PlaylistMultipartRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.global.interceptor.AccessTokenCheck;
@@ -42,7 +43,16 @@ public class PlaylistController {
     private final PlaylistService playlistService;
     private final LikeService likeService;
 
-    @Operation(summary = "플레이리스트 생성", description = "로그인한 사용자가 새 플레이리스트를 생성합니다.")
+    @Operation(
+            summary = "플레이리스트 생성",
+            description = "로그인한 사용자가 새 플레이리스트를 생성합니다.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(implementation = PlaylistMultipartRequestDto.class)
+                    )
+            )
+    )
     @PostMapping(value = "/playlists", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @AccessTokenCheck
     public ApiResponseDto<PlaylistDetailResponseDto> createPlaylist(
@@ -52,7 +62,7 @@ public class PlaylistController {
                     content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
                             schema = @Schema(type = "string", format = "binary"))
             )
-            @RequestPart(required = false) MultipartFile coverImage,
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
             @LoginUserId Long userId) {
         PlaylistDetailResponseDto result = playlistService.create(
                 userId, PlaylistConvert.toEntity(request, userId), coverImage);
@@ -99,7 +109,7 @@ public class PlaylistController {
             @ApiResponse(responseCode = "401", description = "액세스 토큰이 유효하지 않습니다."),
             @ApiResponse(responseCode = "404", description = "플레이리스트 또는 사용자를 찾을 수 없습니다.")
     })
-    @PostMapping("playlists/{id}/comments")
+    @PostMapping("/playlists/{id}/comments")
     @AccessTokenCheck
     public ApiResponseDto<PlaylistDetailResponseDto> createPlaylistComment(
             @Parameter(description = "댓글을 작성할 플레이리스트 ID", example = "1", required = true)
@@ -166,7 +176,16 @@ public class PlaylistController {
         return ApiResponseDto.success(result, "조회 성공");
     }
 
-    @Operation(summary = "플레이리스트 수정", description = "로그인한 사용자가 본인 소유 플레이리스트를 수정합니다.")
+    @Operation(
+            summary = "플레이리스트 수정",
+            description = "로그인한 사용자가 본인 소유 플레이리스트를 수정합니다.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(implementation = PlaylistMultipartRequestDto.class)
+                    )
+            )
+    )
     @AccessTokenCheck
     @PutMapping(value = "/playlists/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponseDto<PlaylistDetailResponseDto> updatePlaylist(
@@ -177,7 +196,7 @@ public class PlaylistController {
                     content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
                             schema = @Schema(type = "string", format = "binary"))
             )
-            @RequestPart(required = false) MultipartFile coverImage,
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
             @LoginUserId Long userId) {
         PlaylistDetailResponseDto result = playlistService.updatePlaylist(
                 playlistId, userId, PlaylistConvert.toEntity(request), coverImage);
@@ -226,7 +245,7 @@ public class PlaylistController {
             @ApiResponse(responseCode = "401", description = "액세스 토큰이 유효하지 않습니다."),
             @ApiResponse(responseCode = "404", description = "댓글을 찾을 수 없습니다.")
     })
-    @PutMapping("playlists/{id}/comments/{commentId}")
+    @PutMapping("/playlists/{id}/comments/{commentId}")
     @AccessTokenCheck
     public ApiResponseDto<PlaylistDetailResponseDto> updatePlaylistComment(
             @Parameter(description = "댓글이 속한 플레이리스트 ID", example = "1", required = true)
@@ -284,7 +303,7 @@ public class PlaylistController {
             @ApiResponse(responseCode = "401", description = "액세스 토큰이 유효하지 않습니다."),
             @ApiResponse(responseCode = "404", description = "댓글을 찾을 수 없습니다.")
     })
-    @DeleteMapping("playlists/{id}/comments/{commentId}")
+    @DeleteMapping("/playlists/{id}/comments/{commentId}")
     @AccessTokenCheck
     public ApiResponseDto<PlaylistDetailResponseDto> deletePlaylistComment(
             @Parameter(description = "댓글이 속한 플레이리스트 ID", example = "1", required = true)
