@@ -65,7 +65,7 @@ public class YoutubeClient {
 				continue;
 			}
 
-			dto.setYoutubeUrl("https://www.youtube.com/embed/" + videoId);
+			dto.setYoutubeUrl(videoId);
 		}
 	}
 
