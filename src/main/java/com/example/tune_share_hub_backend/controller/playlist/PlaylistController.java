@@ -11,12 +11,11 @@ import com.example.tune_share_hub_backend.dto.playlist.CommentRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistRequestDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
-import com.example.tune_share_hub_backend.global.exception.CustomException;
-import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 import com.example.tune_share_hub_backend.global.interceptor.AccessTokenCheck;
 import com.example.tune_share_hub_backend.global.interceptor.LoginUserId;
 import com.example.tune_share_hub_backend.service.like.LikeService;
 import com.example.tune_share_hub_backend.service.playlist.PlaylistService;
+import com.example.tune_share_hub_backend.validate.PlaylistValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -137,9 +136,7 @@ public class PlaylistController {
             @Parameter(description = "트랙을 추가할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
             @LoginUserId Long userId,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "추가할 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackCreateRequestDto.class)))) @RequestBody List<PlaylistTrackCreateRequestDto> requestListDto) {
-        if (requestListDto == null || requestListDto.isEmpty() || requestListDto.contains(null)) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        PlaylistValidator.validateRequestList(requestListDto);
 
         PlaylistDetailResponseDto result = playlistService.addTrackToPlaylist(
                 id, userId, PlaylistTrackConvert.toEntities(requestListDto, id));
@@ -176,9 +173,7 @@ public class PlaylistController {
             @Parameter(description = "트랙 순서를 변경할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
             @LoginUserId Long userId,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "드래그앤드랍 후 새 순서대로 정렬된 플레이리스트 트랙 목록", required = true, content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistTrackReorderRequestDto.class)))) @RequestBody List<PlaylistTrackReorderRequestDto> requestListDto) {
-        if (requestListDto == null || requestListDto.isEmpty() || requestListDto.contains(null)) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        PlaylistValidator.validateRequestList(requestListDto);
 
         PlaylistDetailResponseDto result = playlistService.reorderTrack(
                 id, userId, PlaylistTrackConvert.toReorderEntities(requestListDto));
@@ -221,9 +216,7 @@ public class PlaylistController {
             @Parameter(hidden = true)
             @LoginUserId Long userId
     ) {
-        if (requestDto == null) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        PlaylistValidator.validateCommentRequestDto(requestDto);
 
         PlaylistDetailResponseDto result = playlistService.createComment(id, userId, CommentConvert.toEntity(requestDto));
         return ApiResponseDto.success(result, "댓글이 추가되었습니다.");
@@ -254,9 +247,7 @@ public class PlaylistController {
             @RequestBody CommentRequestDto requestDto,
             @Parameter(hidden = true)
             @LoginUserId Long userId) {
-        if (requestDto == null) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        PlaylistValidator.validateCommentRequestDto(requestDto);
 
         PlaylistDetailResponseDto result = playlistService.updateComment(id, commentId, userId, CommentConvert.toEntity(requestDto));
         return ApiResponseDto.success(result, "댓글이 수정되었습니다.");

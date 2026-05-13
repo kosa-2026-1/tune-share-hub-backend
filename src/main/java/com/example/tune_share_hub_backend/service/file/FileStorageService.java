@@ -7,8 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
-import com.example.tune_share_hub_backend.global.exception.CustomException;
-import com.example.tune_share_hub_backend.global.exception.ErrorCode;
+import com.example.tune_share_hub_backend.validate.FileValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,7 +17,7 @@ public class FileStorageService {
 	private final Path uploadPath = Path.of("uploads/images");
 
 	public String saveFile(MultipartFile file) {
-		validateFile(file);
+		FileValidator.validateImageFile(file);
 
 		try {
 			Files.createDirectories(uploadPath);
@@ -34,7 +33,8 @@ public class FileStorageService {
 			return "/uploads/images/" + savedFileName;
 
 		} catch (IOException e) {
-			throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
+			FileValidator.failFileUpload();
+			return null;
 		}
 	}
 
@@ -49,18 +49,6 @@ public class FileStorageService {
 			while ((bytesRead = inputStream.read(buffer)) != -1) {
 				outputStream.write(buffer, 0, bytesRead);
 			}
-		}
-	}
-
-	private void validateFile(MultipartFile file) {
-		if (file == null || file.isEmpty()) {
-			throw new CustomException(ErrorCode.INVALID_IMAGE_FILE);
-		}
-
-		String contentType = file.getContentType();
-
-		if (contentType == null || !contentType.startsWith("image/")) {
-			throw new CustomException(ErrorCode.INVALID_IMAGE_FILE);
 		}
 	}
 

@@ -10,8 +10,8 @@ import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.like.Like;
 import com.example.tune_share_hub_backend.entity.user.User;
-import com.example.tune_share_hub_backend.global.exception.CustomException;
-import com.example.tune_share_hub_backend.global.exception.ErrorCode;
+import com.example.tune_share_hub_backend.validate.LikeValidator;
+import com.example.tune_share_hub_backend.validate.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,12 +29,7 @@ public class LikeService {
     @Transactional
     public LikeResponseDto like(Long playlistId, Long userId) {
         Playlist playlist = playlistMapper.findById(playlistId);
-        if (playlist == null) {
-            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
-        }
-        if ("N".equals(playlist.getPublicYn())) {
-            throw new CustomException(ErrorCode.PRIVATE_PLAYLIST_CANNOT_BE_LIKED);
-        }
+        LikeValidator.validateLikablePlaylist(playlist);
 
         Like existingLike = likeDao.getLikeByUserIdAndPlaylistId(playlistId, userId);
         boolean isActionLike = existingLike == null || "N".equals(existingLike.getStatus());
@@ -60,9 +55,7 @@ public class LikeService {
     @Transactional(readOnly = true)
     public List<PlaylistResponseDto> getLikedPlaylists(Long userId) {
         User user = userDao.getUserById(userId);
-        if (user == null) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
+        UserValidator.validateUserExists(user);
 
         return likeDao.getLikedPlaylistsByUserId(userId)
                 .stream()

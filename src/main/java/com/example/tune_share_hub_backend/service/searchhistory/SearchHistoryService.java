@@ -4,8 +4,7 @@ import com.example.tune_share_hub_backend.convert.SearchHistoryConvert;
 import com.example.tune_share_hub_backend.dao.searchhistory.SearchHistoryDao;
 import com.example.tune_share_hub_backend.dto.searchhistory.SearchHistoryResponseDto;
 import com.example.tune_share_hub_backend.entity.searchhistory.SearchHistory;
-import com.example.tune_share_hub_backend.global.exception.CustomException;
-import com.example.tune_share_hub_backend.global.exception.ErrorCode;
+import com.example.tune_share_hub_backend.validate.SearchHistoryValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,10 +26,7 @@ public class SearchHistoryService {
 
     @Transactional
     public void saveHistory(SearchHistory searchHistory) {
-        if (searchHistory == null || searchHistory.getUserId() == null
-                || searchHistory.getKeyword() == null || searchHistory.getKeyword().trim().isEmpty()) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        SearchHistoryValidator.validateSaveRequest(searchHistory);
 
         String keyword = searchHistory.getKeyword().trim();
         Long userId = searchHistory.getUserId();
@@ -61,10 +57,7 @@ public class SearchHistoryService {
     @Transactional
     public void deleteHistory(Long userId, Long historyId) {
         SearchHistory searchHistory = searchHistoryDao.findByHistoryId(historyId);
-
-        if(searchHistory == null){
-            throw new CustomException(ErrorCode.SEARCH_HISTORY_NOT_FOUND);
-        }
+        SearchHistoryValidator.validateSearchHistoryExists(searchHistory);
 
         // 검색 기록 삭제
         searchHistoryDao.deleteByUserIdAndHistoryId(userId, historyId);

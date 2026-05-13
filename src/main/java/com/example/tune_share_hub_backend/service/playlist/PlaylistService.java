@@ -17,9 +17,10 @@ import com.example.tune_share_hub_backend.entity.Playlist;
 import com.example.tune_share_hub_backend.entity.PlaylistTrack;
 import com.example.tune_share_hub_backend.entity.like.Like;
 import com.example.tune_share_hub_backend.entity.user.User;
-import com.example.tune_share_hub_backend.global.exception.CustomException;
 import com.example.tune_share_hub_backend.global.exception.ErrorCode;
 import com.example.tune_share_hub_backend.service.file.FileStorageService;
+import com.example.tune_share_hub_backend.validate.PlaylistValidator;
+import com.example.tune_share_hub_backend.validate.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,30 +42,26 @@ public class PlaylistService {
 
     @Transactional
     public PlaylistDetailResponseDto updatePlaylist(Long playlistId, Long userId, Playlist playlist, MultipartFile coverImage) {
-        validatePlaylistId(playlistId);
-        validatePlaylist(playlist);
+        PlaylistValidator.validatePlaylistId(playlistId);
+        PlaylistValidator.validatePlaylist(playlist);
 
         if (hasFile(coverImage)) {
             playlist.setCoverImageUrl(fileStorageService.saveFile(coverImage));
         }
 
         int updatedCount = playlistDao.updatePlaylist(playlistId, userId, playlist);
-        if (updatedCount == 0) {
-            throw new CustomException(ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
-        }
+        PlaylistValidator.validateUpdateCount(updatedCount, ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
 
         return getPlaylist(playlistId, userId);
     }
 
     @Transactional
     public PlaylistDetailResponseDto updatePlaylistVisibility(Long playlistId, Long userId, Playlist playlist) {
-        validatePlaylistId(playlistId);
-        validateVisibilityRequest(playlist);
+        PlaylistValidator.validatePlaylistId(playlistId);
+        PlaylistValidator.validateVisibilityRequest(playlist);
 
         int updatedCount = playlistDao.updatePlaylistVisibility(playlistId, userId, playlist.getPublicYn());
-        if (updatedCount == 0) {
-            throw new CustomException(ErrorCode.PLAYLIST_VISIBILITY_UPDATE_FORBIDDEN);
-        }
+        PlaylistValidator.validateUpdateCount(updatedCount, ErrorCode.PLAYLIST_VISIBILITY_UPDATE_FORBIDDEN);
 
         return getPlaylist(playlistId, userId);
     }
@@ -74,7 +71,7 @@ public class PlaylistService {
         if (playlist != null && playlist.getPublicYn() == null) {
             playlist.setPublicYn("Y");
         }
-        validatePlaylist(playlist);
+        PlaylistValidator.validatePlaylist(playlist);
 
         playlist.setUserId(userId);
         if (hasFile(coverImage)) {
@@ -104,38 +101,26 @@ public class PlaylistService {
 
     @Transactional
     public void deletePlaylist(Long playlistId, Long userId) {
-        validatePlaylistId(playlistId);
+        PlaylistValidator.validatePlaylistId(playlistId);
 
         Playlist playlist = playlistDao.findById(playlistId);
-        if (playlist == null) {
-            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
-        }
-        if (!playlist.getUserId().equals(userId)) {
-            throw new CustomException(ErrorCode.PLAYLIST_DELETE_FORBIDDEN);
-        }
+        PlaylistValidator.validatePlaylistExists(playlist);
+        PlaylistValidator.validatePlaylistOwner(playlist, userId, ErrorCode.PLAYLIST_DELETE_FORBIDDEN);
 
         playlistTrackDao.deleteByPlaylistId(playlistId);
         commentDao.deleteByPlaylistId(playlistId);
         likeDao.deleteByPlaylistId(playlistId);
         int deletedCount = playlistDao.deletePlaylist(playlistId, userId);
-
-        if (deletedCount == 0) {
-            throw new CustomException(ErrorCode.PLAYLIST_DELETE_FORBIDDEN);
-        }
+        PlaylistValidator.validateUpdateCount(deletedCount, ErrorCode.PLAYLIST_DELETE_FORBIDDEN);
     }
 
     @Transactional
     public PlaylistDetailResponseDto copyPlaylist(Long playlistId, Long userId) {
-        validatePlaylistId(playlistId);
+        PlaylistValidator.validatePlaylistId(playlistId);
 
         Playlist original = playlistDao.findById(playlistId);
-        if (original == null) {
-            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
-        }
-
-        if (!"Y".equals(original.getPublicYn())) {
-            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
-        }
+        PlaylistValidator.validatePlaylistExists(original);
+        PlaylistValidator.validatePublicPlaylist(original);
 
         Playlist copied = PlaylistConvert.toCopiedEntity(original, userId);
 
@@ -161,16 +146,8 @@ public class PlaylistService {
 
     public PlaylistDetailResponseDto getPlaylist(Long playlistId, Long loginUserId) {
         Playlist playlist = playlistDao.findById(playlistId);
-
-        if (playlist == null) {
-            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
-        }
-
-        if ("N".equals(playlist.getPublicYn())) {
-            if (loginUserId == null || !loginUserId.equals(playlist.getUserId())) {
-                throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
-            }
-        }
+        PlaylistValidator.validatePlaylistExists(playlist);
+        PlaylistValidator.validatePlaylistReadable(playlist, loginUserId);
 
         playlistDao.increaseViewCount(playlistId);
 
@@ -188,38 +165,6 @@ public class PlaylistService {
         return PlaylistConvert.toDetailResponseDto(playlist, tracks, comments, likeStatus);
     }
 
-    private void validatePlaylistId(Long playlistId) {
-        if (playlistId == null || playlistId <= 0) {
-            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
-        }
-    }
-
-    private void validatePlaylist(Playlist playlist) {
-        if (playlist == null) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
-
-        if (playlist.getTitle() == null || playlist.getTitle().trim().isEmpty()) {
-            throw new CustomException(ErrorCode.INVALID_PLAYLIST_TITLE);
-        }
-
-        validatePublicYn(playlist.getPublicYn());
-    }
-
-    private void validateVisibilityRequest(Playlist playlist) {
-        if (playlist == null) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
-
-        validatePublicYn(playlist.getPublicYn());
-    }
-
-    private void validatePublicYn(String publicYn) {
-        if (!"Y".equals(publicYn) && !"N".equals(publicYn)) {
-            throw new CustomException(ErrorCode.INVALID_PUBLIC_YN);
-        }
-    }
-
     private boolean hasFile(MultipartFile file) {
         return file != null && !file.isEmpty();
     }
@@ -227,18 +172,9 @@ public class PlaylistService {
     @Transactional
     public PlaylistDetailResponseDto addTrackToPlaylist(Long id, Long currentUserId, List<PlaylistTrack> playlistTracksList) {
         Playlist playlist = playlistDao.findById(id);
-
-        if (playlist == null) {
-            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
-        }
-
-        if (!playlist.getUserId().equals(currentUserId)) {
-            throw new CustomException(ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
-        }
-
-        if (playlistTracksList == null || playlistTracksList.isEmpty()) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        PlaylistValidator.validatePlaylistExists(playlist);
+        PlaylistValidator.validatePlaylistOwner(playlist, currentUserId, ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
+        PlaylistValidator.validateRequestList(playlistTracksList);
 
         List<PlaylistTrack> playlistTracks = playlistTrackDao.findByPlaylistId(id);
 
@@ -272,27 +208,16 @@ public class PlaylistService {
 
     @Transactional
     public PlaylistDetailResponseDto removeTrackFromPlaylist(Long id, Long currentUserId, Long trackId) {
-        if (trackId == null || trackId <= 0) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        PlaylistValidator.validateTrackId(trackId);
 
         Playlist playlist = playlistDao.findById(id);
+        PlaylistValidator.validatePlaylistExists(playlist);
+        PlaylistValidator.validatePlaylistOwner(playlist, currentUserId, ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
 
-        if (playlist == null) {
-            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
-        }
-        if (!playlist.getUserId().equals(currentUserId)) {
-            throw new CustomException(ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
-        }
-
-        if (playlistTrackDao.existsByPlaylistIdAndTrackId(id, trackId) == 0) {
-            throw new CustomException(ErrorCode.PLAYLIST_TRACK_NOT_FOUND);
-        }
+        PlaylistValidator.validateTrackExists(playlistTrackDao.existsByPlaylistIdAndTrackId(id, trackId));
 
         int deletedCount = playlistTrackDao.deletePlaylistTrack(trackId);
-        if (deletedCount == 0) {
-            throw new CustomException(ErrorCode.PLAYLIST_TRACK_NOT_FOUND);
-        }
+        PlaylistValidator.validateTrackDeleteCount(deletedCount);
 
         playlistDao.decreaseTrackCount(id);
 
@@ -323,43 +248,11 @@ public class PlaylistService {
     @Transactional
     public PlaylistDetailResponseDto reorderTrack(Long id, Long currentUserId, List<PlaylistTrack> requestTracks) {
         Playlist playlist = playlistDao.findById(id);
-
-        if (playlist == null) {
-            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
-        }
-        if (!playlist.getUserId().equals(currentUserId)) {
-            throw new CustomException(ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
-        }
-
-        if (requestTracks == null || requestTracks.isEmpty() || requestTracks.contains(null)) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        PlaylistValidator.validatePlaylistExists(playlist);
+        PlaylistValidator.validatePlaylistOwner(playlist, currentUserId, ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
 
         List<PlaylistTrack> existingTracks = playlistTrackDao.findByPlaylistId(id);
-        if (existingTracks.size() != requestTracks.size()) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
-
-        Set<Long> uniqueTrackIds = requestTracks.stream()
-                .map(PlaylistTrack::getPlaylistTrackId)
-                .collect(Collectors.toSet());
-        if (uniqueTrackIds.size() != requestTracks.size()) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
-
-        Set<Long> existingTrackIds = existingTracks.stream()
-                .map(PlaylistTrack::getPlaylistTrackId)
-                .collect(Collectors.toSet());
-
-        for (PlaylistTrack requestTrack : requestTracks) {
-            if (requestTrack.getPlaylistTrackId() == null) {
-                throw new CustomException(ErrorCode.INVALID_REQUEST);
-            }
-
-            if (!existingTrackIds.contains(requestTrack.getPlaylistTrackId())) {
-                throw new CustomException(ErrorCode.PLAYLIST_TRACK_NOT_FOUND);
-            }
-        }
+        PlaylistValidator.validateReorderTracks(existingTracks, requestTracks);
 
         int maxPositionNo = existingTracks.stream()
                 .map(PlaylistTrack::getPositionNo)
@@ -387,23 +280,14 @@ public class PlaylistService {
 
     @Transactional
     public PlaylistDetailResponseDto createComment(Long id, Long userId, Comment comment) {
-        if (comment == null || comment.getContent() == null || comment.getContent().trim().isEmpty()) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        PlaylistValidator.validateCommentRequest(comment);
 
         Playlist playlist = playlistDao.findById(id);
-        if (playlist == null) {
-            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
-        }
-
-        if ("N".equals(playlist.getPublicYn()) && !playlist.getUserId().equals(userId)) {
-            throw new CustomException(ErrorCode.PLAYLIST_NOT_FOUND);
-        }
+        PlaylistValidator.validatePlaylistExists(playlist);
+        PlaylistValidator.validateCommentWritable(playlist, userId);
 
         User user = userDao.getUserById(userId);
-        if (user == null) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
+        UserValidator.validateUserExists(user);
 
         comment.setPlaylistId(id);
         comment.setUserId(userId);
@@ -417,18 +301,11 @@ public class PlaylistService {
 
     @Transactional
     public PlaylistDetailResponseDto updateComment(Long id, Long commentId, Long userId, Comment comment) {
-        if (comment == null || comment.getContent() == null || comment.getContent().trim().isEmpty()) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
+        PlaylistValidator.validateCommentRequest(comment);
 
         Comment existingComment = commentDao.findById(commentId);
-        if (existingComment == null || !existingComment.getPlaylistId().equals(id)) {
-            throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
-        }
-
-        if (!existingComment.getUserId().equals(userId)) {
-            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
-        }
+        PlaylistValidator.validateCommentExists(existingComment, id);
+        PlaylistValidator.validateCommentOwner(existingComment, userId);
 
         existingComment.setContent(comment.getContent());
         commentDao.updateComment(existingComment);
@@ -439,13 +316,8 @@ public class PlaylistService {
     @Transactional
     public PlaylistDetailResponseDto deleteComment(Long id, Long commentId, Long userId) {
         Comment existingComment = commentDao.findById(commentId);
-        if (existingComment == null || !existingComment.getPlaylistId().equals(id)) {
-            throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
-        }
-
-        if (!existingComment.getUserId().equals(userId)) {
-            throw new CustomException(ErrorCode.INVALID_PLAYLIST_ID);
-        }
+        PlaylistValidator.validateCommentExists(existingComment, id);
+        PlaylistValidator.validateCommentOwner(existingComment, userId);
 
         commentDao.deleteComment(commentId);
         playlistDao.decreaseCommentCount(id);
@@ -454,9 +326,7 @@ public class PlaylistService {
     }
 
     public List<PlaylistResponseDto> getPlaylistRanking(int limit, String type) {
-        if (!"like".equals(type) && !"view".equals(type)) {
-            throw new CustomException(ErrorCode.INVALID_RANKING_TYPE);
-        }
+        PlaylistValidator.validateRankingType(type);
         return playlistDao.findTopPlaylists(limit, type)
                 .stream()
                 .map(PlaylistConvert::toResponseDto)
