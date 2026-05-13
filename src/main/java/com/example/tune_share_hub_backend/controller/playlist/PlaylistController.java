@@ -189,10 +189,10 @@ public class PlaylistController {
     @AccessTokenCheck
     public ApiResponseDto<PlaylistDetailResponseDto> updatePlaylistVisibility(
             @PathVariable("id") Long playlistId,
-            @RequestBody PlaylistRequestDto request,
-            @LoginUserId Long userId) {
+            @RequestParam String publicYn,
+            @Parameter(hidden = true) @LoginUserId Long userId) {
         PlaylistDetailResponseDto result = playlistService.updatePlaylistVisibility(
-                playlistId, userId, PlaylistConvert.toEntity(request));
+                playlistId, userId, publicYn);
         return ApiResponseDto.success(result, "플레이리스트 공개 여부가 변경되었습니다.");
     }
 

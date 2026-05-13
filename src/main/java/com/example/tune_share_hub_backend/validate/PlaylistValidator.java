@@ -31,14 +31,6 @@ public class PlaylistValidator {
         validatePublicYn(playlist.getPublicYn());
     }
 
-    public static void validateVisibilityRequest(Playlist playlist) {
-        if (playlist == null) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
-
-        validatePublicYn(playlist.getPublicYn());
-    }
-
     public static void validatePublicYn(String publicYn) {
         if (!"Y".equals(publicYn) && !"N".equals(publicYn)) {
             throw new CustomException(ErrorCode.INVALID_PUBLIC_YN);
