@@ -9,6 +9,12 @@ import com.example.tune_share_hub_backend.global.interceptor.LoginUserId;
 import com.example.tune_share_hub_backend.global.util.CookieUtil;
 import com.example.tune_share_hub_backend.service.auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -23,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Auth", description = "인증 API")
 public class AuthController {
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
     private static final String AUTHORIZATION_HEADER = "Authorization";
@@ -30,10 +37,16 @@ public class AuthController {
     private final AuthService authService;
     private final CookieUtil cookieUtil;
 
-    @Operation(summary = "로그인", description = "사용자가 이메일과 비밀번호를 입력하여 로그인합니다. 성공 시 Access Token과 Refresh Token이 발급됩니다.")
+    @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다. 성공 시 Access Token은 응답 헤더에, Refresh Token은 쿠키에 담깁니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "요청값 검증 실패"),
+            @ApiResponse(responseCode = "401", description = "이메일 또는 비밀번호 불일치")
+    })
     @PostMapping("/login")
     public ApiResponseDto<UserResponseDto> login(
-            @Valid  @RequestBody LoginRequestDto request,
+            @Valid @RequestBody LoginRequestDto request,
+            @Parameter(hidden = true)
             HttpServletResponse response){
         LoginResponseDto loginResponse = authService.login(request);
         setTokenResponse(response, loginResponse);
@@ -41,10 +54,16 @@ public class AuthController {
         return ApiResponseDto.success(loginResponse.getUserResponseDto(), "로그인 성공");
     }
 
-    @Operation(summary = "토큰 재발급", description = "Access Token이 만료되었을 때, Refresh Token을 사용하여 새로운 Access Token을 발급받습니다.")
+    @Operation(summary = "토큰 재발급", description = "Refresh Token 쿠키를 사용해 새로운 Access Token과 Refresh Token을 발급받습니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "토큰 재발급 성공"),
+            @ApiResponse(responseCode = "401", description = "Refresh Token이 없거나 유효하지 않습니다.")
+    })
     @PostMapping("/reissue")
     public ApiResponseDto<Void> reissue(
+            @Parameter(hidden = true)
             HttpServletRequest request,
+            @Parameter(hidden = true)
             HttpServletResponse response
     ){
         String refresh = cookieUtil.getCookieValue(request, REFRESH_TOKEN_COOKIE_NAME);
@@ -54,12 +73,19 @@ public class AuthController {
         return ApiResponseDto.success(null, "토큰 재발급 성공");
     }
 
-    @Operation(summary = "로그아웃", description = "사용자가 로그아웃할 때, Access Token과 Refresh Token을 모두 무효화합니다.")
+    @Operation(summary = "로그아웃", description = "로그인한 사용자의 Refresh Token을 무효화하고 쿠키를 삭제합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+            @ApiResponse(responseCode = "401", description = "Access Token이 유효하지 않습니다.")
+    })
     @PostMapping("/logout")
     @AccessTokenCheck
     public ApiResponseDto<Void> logout(
+            @Parameter(hidden = true)
             @LoginUserId Long userId,
+            @Parameter(hidden = true)
             HttpServletRequest request,
+            @Parameter(hidden = true)
             HttpServletResponse response
     ){
         String refresh = cookieUtil.getCookieValue(request, REFRESH_TOKEN_COOKIE_NAME);

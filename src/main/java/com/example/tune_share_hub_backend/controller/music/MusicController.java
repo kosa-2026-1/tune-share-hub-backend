@@ -13,13 +13,18 @@ import com.example.tune_share_hub_backend.service.music.MusicService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/spotify")
 @RequiredArgsConstructor
+@Tag(name = "Music", description = "음악 검색 API")
 public class MusicController {
 
 	private final MusicService musicService;
@@ -31,7 +36,8 @@ public class MusicController {
 	@ApiResponses({
 		@ApiResponse(
 			responseCode = "200",
-			description = "곡 검색 성공"
+			description = "곡 검색 성공",
+			content = @Content(array = @ArraySchema(schema = @Schema(implementation = MusicSearchResponseDto.class)))
 		),
 		@ApiResponse(
 			responseCode = "400",
