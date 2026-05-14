@@ -73,7 +73,7 @@ public class PlaylistController {
             @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
             @Parameter(hidden = true)
             @LoginUserId Long userId) {
-        PlaylistDetailResponseDto result = playlistService.create(
+        PlaylistDetailResponseDto result = playlistService.createPlaylist(
                 userId, PlaylistConvert.toEntity(request, userId), coverImage);
         return ApiResponseDto.success(result, "플레이리스트 생성 성공");
     }
@@ -137,7 +137,7 @@ public class PlaylistController {
             @RequestBody List<PlaylistTrackCreateRequestDto> requestDtoList) {
         PlaylistValidator.validateRequestList(requestDtoList);
 
-        PlaylistDetailResponseDto result = playlistService.addTrackToPlaylist(
+        PlaylistDetailResponseDto result = playlistService.addPlaylistTrackList(
                 id, userId, PlaylistTrackConvert.toEntityList(requestDtoList, id));
         return ApiResponseDto.success(result, "트랙이 플레이리스트에 추가되었습니다.");
     }
@@ -168,7 +168,7 @@ public class PlaylistController {
     ) {
         PlaylistValidator.validateCommentRequestDto(requestDto);
 
-        PlaylistDetailResponseDto result = playlistService.createComment(id, userId, CommentConvert.toEntity(requestDto));
+        PlaylistDetailResponseDto result = playlistService.createPlaylistComment(id, userId, CommentConvert.toEntity(requestDto));
         return ApiResponseDto.success(result, "댓글이 추가되었습니다.");
     }
 
@@ -185,7 +185,7 @@ public class PlaylistController {
             @PathVariable Long id,
             @Parameter(hidden = true)
             @LoginUserId Long userId) {
-        LikeResponseDto likeResponseDto = likeService.like(id, userId);
+        LikeResponseDto likeResponseDto = likeService.togglePlaylistLike(id, userId);
 
         return ApiResponseDto.success(likeResponseDto, "플레이리스트 좋아요 상태 변경 성공");
     }
@@ -246,7 +246,7 @@ public class PlaylistController {
             @PathVariable Long id,
             @Parameter(hidden = true)
             @LoginUserId Long userId) {
-        PlaylistDetailResponseDto result = playlistService.getPlaylist(id, userId);
+        PlaylistDetailResponseDto result = playlistService.getPlaylistDetail(id, userId);
         return ApiResponseDto.success(result, "조회 성공");
     }
 
@@ -347,7 +347,7 @@ public class PlaylistController {
             @RequestBody List<PlaylistTrackReorderRequestDto> requestDtoList) {
         PlaylistValidator.validateRequestList(requestDtoList);
 
-        PlaylistDetailResponseDto result = playlistService.reorderTrack(
+        PlaylistDetailResponseDto result = playlistService.updatePlaylistTrackOrder(
                 id, userId, PlaylistTrackConvert.toReorderEntityList(requestDtoList));
         return ApiResponseDto.success(result, "트랙 순서가 변경되었습니다.");
     }
@@ -380,7 +380,7 @@ public class PlaylistController {
     ) {
         PlaylistValidator.validateCommentRequestDto(requestDto);
 
-        PlaylistDetailResponseDto result = playlistService.updateComment(id, commentId, userId, CommentConvert.toEntity(requestDto));
+        PlaylistDetailResponseDto result = playlistService.updatePlaylistComment(id, commentId, userId, CommentConvert.toEntity(requestDto));
         return ApiResponseDto.success(result, "댓글이 수정되었습니다.");
     }
 
@@ -417,7 +417,7 @@ public class PlaylistController {
             @LoginUserId Long userId,
             @Parameter(description = "트랙을 삭제할 플레이리스트 ID", example = "1", required = true) @PathVariable Long id,
             @Parameter(description = "삭제할 플레이리스트 트랙 ID", example = "10", required = true) @PathVariable Long trackId) {
-        PlaylistDetailResponseDto result = playlistService.removeTrackFromPlaylist(id, userId, trackId);
+        PlaylistDetailResponseDto result = playlistService.deletePlaylistTrack(id, userId, trackId);
         return ApiResponseDto.success(result, "트랙이 플레이리스트에서 제거되었습니다.");
     }
 
@@ -439,7 +439,7 @@ public class PlaylistController {
             @PathVariable Long commentId,
             @Parameter(hidden = true)
             @LoginUserId Long userId) {
-        PlaylistDetailResponseDto result = playlistService.deleteComment(id, commentId, userId);
+        PlaylistDetailResponseDto result = playlistService.deletePlaylistComment(id, commentId, userId);
         return ApiResponseDto.success(result, "댓글이 삭제되었습니다.");
     }
 }
