@@ -4,6 +4,7 @@ import com.example.tune_share_hub_backend.convert.SearchHistoryConvert;
 import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
 import com.example.tune_share_hub_backend.dto.searchhistory.SearchHistoryRequestDto;
 import com.example.tune_share_hub_backend.dto.searchhistory.SearchHistoryResponseDto;
+import com.example.tune_share_hub_backend.global.exception.dto.ApiError;
 import com.example.tune_share_hub_backend.global.interceptor.AccessTokenCheck;
 import com.example.tune_share_hub_backend.global.interceptor.LoginUserId;
 import com.example.tune_share_hub_backend.service.searchhistory.SearchHistoryService;
@@ -31,8 +32,8 @@ public class SearchHistoryController {
     @Operation(summary = "검색어 히스토리 저장", description = "로그인한 사용자의 검색어 히스토리를 저장합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "검색어 히스토리 저장 성공"),
-            @ApiResponse(responseCode = "400", description = "검색어가 비어 있거나 100자를 초과했습니다."),
-            @ApiResponse(responseCode = "401", description = "Access Token이 유효하지 않습니다.")
+            @ApiResponse(responseCode = "400", description = "검색어가 비어 있거나 100자를 초과했습니다.", content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "401", description = "Access Token이 유효하지 않습니다.", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     @PostMapping("/history")
     @AccessTokenCheck
@@ -46,7 +47,7 @@ public class SearchHistoryController {
     @Operation(summary = "검색어 히스토리 조회", description = "로그인한 사용자의 검색어 히스토리를 최신순으로 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "검색어 히스토리 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = SearchHistoryResponseDto.class)))),
-            @ApiResponse(responseCode = "401", description = "Access Token이 유효하지 않습니다.")
+            @ApiResponse(responseCode = "401", description = "Access Token이 유효하지 않습니다.", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     @GetMapping("/history")
     @AccessTokenCheck
@@ -59,8 +60,8 @@ public class SearchHistoryController {
     @Operation(summary = "검색어 히스토리 삭제", description = "로그인한 사용자의 특정 검색어 히스토리를 삭제합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "검색어 히스토리 삭제 성공"),
-            @ApiResponse(responseCode = "401", description = "Access Token이 유효하지 않습니다."),
-            @ApiResponse(responseCode = "404", description = "검색어 히스토리를 찾을 수 없습니다.")
+            @ApiResponse(responseCode = "401", description = "Access Token이 유효하지 않습니다.", content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "404", description = "검색어 히스토리를 찾을 수 없습니다.", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     @DeleteMapping("/history")
     @AccessTokenCheck

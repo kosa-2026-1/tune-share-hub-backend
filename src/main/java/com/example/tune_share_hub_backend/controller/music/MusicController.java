@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
 import com.example.tune_share_hub_backend.dto.music.MusicSearchResponseDto;
+import com.example.tune_share_hub_backend.global.exception.dto.ApiError;
 import com.example.tune_share_hub_backend.service.music.MusicService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,11 +42,13 @@ public class MusicController {
 		),
 		@ApiResponse(
 			responseCode = "400",
-			description = "검색어가 비어 있거나 잘못된 요청입니다."
+			description = "검색어가 비어 있거나 잘못된 요청입니다.",
+			content = @Content(schema = @Schema(implementation = ApiError.class))
 		),
 		@ApiResponse(
 			responseCode = "500",
-			description = "Spotify API 호출 중 서버 오류가 발생했습니다."
+			description = "Spotify API 호출 중 서버 오류가 발생했습니다.",
+			content = @Content(schema = @Schema(implementation = ApiError.class))
 		)
 	})
 	@GetMapping("/search")

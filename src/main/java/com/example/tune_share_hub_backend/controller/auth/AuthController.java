@@ -4,6 +4,7 @@ import com.example.tune_share_hub_backend.dto.auth.LoginRequestDto;
 import com.example.tune_share_hub_backend.dto.auth.LoginResponseDto;
 import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
 import com.example.tune_share_hub_backend.dto.user.UserResponseDto;
+import com.example.tune_share_hub_backend.global.exception.dto.ApiError;
 import com.example.tune_share_hub_backend.global.interceptor.AccessTokenCheck;
 import com.example.tune_share_hub_backend.global.interceptor.LoginUserId;
 import com.example.tune_share_hub_backend.global.util.CookieUtil;
@@ -40,8 +41,8 @@ public class AuthController {
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다. 성공 시 Access Token은 응답 헤더에, Refresh Token은 쿠키에 담깁니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "요청값 검증 실패"),
-            @ApiResponse(responseCode = "401", description = "이메일 또는 비밀번호 불일치")
+            @ApiResponse(responseCode = "400", description = "요청값 검증 실패", content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "401", description = "이메일 또는 비밀번호 불일치", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     @PostMapping("/login")
     public ApiResponseDto<UserResponseDto> login(
@@ -57,7 +58,7 @@ public class AuthController {
     @Operation(summary = "토큰 재발급", description = "Refresh Token 쿠키를 사용해 새로운 Access Token과 Refresh Token을 발급받습니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "토큰 재발급 성공"),
-            @ApiResponse(responseCode = "401", description = "Refresh Token이 없거나 유효하지 않습니다.")
+            @ApiResponse(responseCode = "401", description = "Refresh Token이 없거나 유효하지 않습니다.", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     @PostMapping("/reissue")
     public ApiResponseDto<Void> reissue(
@@ -76,7 +77,7 @@ public class AuthController {
     @Operation(summary = "로그아웃", description = "로그인한 사용자의 Refresh Token을 무효화하고 쿠키를 삭제합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
-            @ApiResponse(responseCode = "401", description = "Access Token이 유효하지 않습니다.")
+            @ApiResponse(responseCode = "401", description = "Access Token이 유효하지 않습니다.", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     @PostMapping("/logout")
     @AccessTokenCheck

@@ -3,6 +3,7 @@ package com.example.tune_share_hub_backend.controller.user;
 import com.example.tune_share_hub_backend.dto.common.ApiResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.dto.user.UserResponseDto;
+import com.example.tune_share_hub_backend.global.exception.dto.ApiError;
 import com.example.tune_share_hub_backend.global.interceptor.AccessTokenCheck;
 import com.example.tune_share_hub_backend.global.interceptor.LoginUserId;
 import com.example.tune_share_hub_backend.service.like.LikeService;
@@ -33,7 +34,7 @@ public class UserController {
     @Operation(summary = "내 정보 조회", description = "로그인한 사용자의 정보를 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "내 정보 조회 성공", content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
-            @ApiResponse(responseCode = "401", description = "Access Token이 유효하지 않습니다.")
+            @ApiResponse(responseCode = "401", description = "Access Token이 유효하지 않습니다.", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     @AccessTokenCheck
     @GetMapping("/me")
@@ -46,7 +47,7 @@ public class UserController {
     @Operation(summary = "내가 좋아요한 플레이리스트 조회", description = "로그인한 사용자가 좋아요한 플레이리스트 목록을 조회합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "좋아요한 플레이리스트 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistResponseDto.class)))),
-            @ApiResponse(responseCode = "401", description = "Access Token이 유효하지 않습니다.")
+            @ApiResponse(responseCode = "401", description = "Access Token이 유효하지 않습니다.", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     @AccessTokenCheck
     @GetMapping("/me/likes")
