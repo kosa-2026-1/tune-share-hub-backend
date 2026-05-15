@@ -42,5 +42,5 @@ public interface PlaylistDao {
 
     void decreaseTrackCount(@Param("playlistId") Long playlistId);
 
-
+    List<Playlist> findByKeywordPlaylist(String keyword);
 }

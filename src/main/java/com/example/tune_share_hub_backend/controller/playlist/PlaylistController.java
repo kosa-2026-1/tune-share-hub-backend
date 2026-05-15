@@ -443,4 +443,16 @@ public class PlaylistController {
         PlaylistDetailResponseDto result = playlistService.deletePlaylistComment(id, commentId, userId);
         return ApiResponseDto.success(result, "댓글이 삭제되었습니다.");
     }
+
+    @GetMapping("/playlists/search")
+    @Operation(summary = "플레이리스트 검색", description = "제목 또는 설명에 검색어가 포함된 공개 플레이리스트를 검색합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "플레이리스트 검색 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = PlaylistResponseDto.class)))),
+            @ApiResponse(responseCode = "400", description = "검색어가 비어 있거나 형식이 올바르지 않습니다.", content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    public ApiResponseDto<List<PlaylistResponseDto>> searchPlaylists(
+            @Parameter(description = "검색어", example = "로맨틱") @RequestParam String keyword) {
+        List<PlaylistResponseDto> result = playlistService.searchPlaylists(keyword);
+        return ApiResponseDto.success(result, "플레이리스트 검색 성공");
+    }
 }
