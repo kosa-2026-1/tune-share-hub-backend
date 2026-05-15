@@ -156,4 +156,10 @@ public class PlaylistValidator {
             throw new CustomException(ErrorCode.INVALID_RANKING_TYPE);
         }
     }
+
+    public static void validateSearchKeyword(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+    }
 }

@@ -157,4 +157,13 @@
         WHERE PLAYLIST_ID = #{playlistId}
     </update>
 
+    <select id="findByKeywordPlaylist" resultMap="PlaylistResultMap">
+        SELECT *
+        FROM PLAYLISTS
+        WHERE PUBLIC_YN = 'Y'
+          AND (LOWER(TITLE) LIKE '%' || LOWER(#{keyword}) || '%'
+               OR LOWER(DESCRIPTION) LIKE '%' || LOWER(#{keyword}) || '%'
+               OR LOWER(TAGS) LIKE '%' || LOWER(#{keyword}) || '%')
+        ORDER BY CREATED_AT DESC
+    </select>
 </mapper>
