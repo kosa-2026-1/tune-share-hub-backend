@@ -99,6 +99,13 @@
               FROM (SELECT *
                     FROM PLAYLISTS
                     WHERE PUBLIC_YN = 'Y'
+                <if test="keyword != null and keyword != ''">
+                    AND (
+                    LOWER(TITLE) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(DESCRIPTION) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(TAGS) LIKE '%' || LOWER(#{keyword}) || '%'
+                    )
+                </if>
                     ORDER BY CREATED_AT DESC) P
               WHERE ROWNUM &lt;= #{offset} + #{size})
         WHERE RN > #{offset}
@@ -156,14 +163,4 @@
             UPDATED_AT  = SYSTIMESTAMP
         WHERE PLAYLIST_ID = #{playlistId}
     </update>
-
-    <select id="findByKeywordPlaylist" resultMap="PlaylistResultMap">
-        SELECT *
-        FROM PLAYLISTS
-        WHERE PUBLIC_YN = 'Y'
-          AND (LOWER(TITLE) LIKE '%' || LOWER(#{keyword}) || '%'
-               OR LOWER(DESCRIPTION) LIKE '%' || LOWER(#{keyword}) || '%'
-               OR LOWER(TAGS) LIKE '%' || LOWER(#{keyword}) || '%')
-        ORDER BY CREATED_AT DESC
-    </select>
 </mapper>

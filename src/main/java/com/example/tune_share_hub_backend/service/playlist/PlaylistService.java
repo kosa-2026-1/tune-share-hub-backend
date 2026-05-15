@@ -123,9 +123,9 @@ public class PlaylistService {
         return getPlaylistDetail(id, userId);
     }
 
-    public Map<String, Object> getPublicPlaylistList(int page, int size) {
+    public Map<String, Object> getPublicPlaylistList(int page, int size, String keyword) {
         int offset = (page - 1) * size;
-        List<PlaylistResponseDto> playlistResponseDtoList = playlistDao.findPublicPlaylistList(offset, size)
+        List<PlaylistResponseDto> playlistResponseDtoList = playlistDao.findPublicPlaylistList(offset, size, keyword)
                 .stream()
                 .map(PlaylistConvert::toResponseDto)
                 .collect(Collectors.toList());
@@ -327,14 +327,5 @@ public class PlaylistService {
         if (!playlistTrackUpdateList.isEmpty()) {
             playlistTrackDao.updatePlaylistTrackPositions(playlistTrackUpdateList);
         }
-    }
-
-    public List<PlaylistResponseDto> searchPlaylists(String keyword) {
-        PlaylistValidator.validateSearchKeyword(keyword);
-        String trimmedKeyword = keyword.trim();
-
-        return playlistDao.findByKeywordPlaylist(trimmedKeyword).stream()
-                .map(PlaylistConvert::toResponseDto)
-                .collect(Collectors.toList());
     }
 }

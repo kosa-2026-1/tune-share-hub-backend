@@ -27,7 +27,7 @@ public interface PlaylistDao {
 
     void decreaseCommentCount(@Param("playlistId") Long playlistId);
 
-    List<Playlist> findPublicPlaylistList(@Param("offset") int offset, @Param("size") int size);
+    List<Playlist> findPublicPlaylistList(@Param("offset") int offset, @Param("size") int size, @Param("keyword") String keyword);
 
     int countPublicPlaylistList();
 
@@ -41,6 +41,4 @@ public interface PlaylistDao {
     void increaseTrackCount(@Param("playlistId") Long playlistId, @Param("size") int size);
 
     void decreaseTrackCount(@Param("playlistId") Long playlistId);
-
-    List<Playlist> findByKeywordPlaylist(String keyword);
 }
