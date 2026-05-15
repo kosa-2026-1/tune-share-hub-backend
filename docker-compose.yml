@@ -13,8 +13,5 @@ services:
     ports:
       - "${APP_PORT:-8080}:8080"
     volumes:
-      - app-uploads:/app/uploads
+      - ./uploads:/app/uploads
     restart: unless-stopped
-
-volumes:
-  app-uploads:
