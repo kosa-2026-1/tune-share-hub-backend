@@ -11,7 +11,7 @@ import java.util.List;
 
 public class PlaylistConvert {
 
-    private static final String DEFAULT_PUBLIC_YN = "Y";
+    private static final String DEFAULT_PUBLIC_YN = "N";
 
     public static Playlist toEntity(PlaylistRequestDto request) {
         return toEntity(request, null, null);
@@ -44,6 +44,7 @@ public class PlaylistConvert {
         copied.setCoverImageUrl(original.getCoverImageUrl());
         copied.setPublicYn(DEFAULT_PUBLIC_YN);
         copied.setTags(original.getTags());
+        copied.setTrackCount(original.getTrackCount());
         return copied;
     }
 

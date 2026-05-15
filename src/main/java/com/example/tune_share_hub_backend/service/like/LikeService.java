@@ -23,7 +23,7 @@ public class LikeService {
     private final PlaylistDao playlistMapper;
 
     @Transactional
-    public LikeResponseDto like(Long playlistId, Long userId) {
+    public LikeResponseDto togglePlaylistLike(Long playlistId, Long userId) {
         Playlist playlist = playlistMapper.findById(playlistId);
         LikeValidator.validateLikablePlaylist(playlist);
 

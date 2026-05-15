@@ -8,8 +8,8 @@ import com.example.tune_share_hub_backend.dao.playlist.CommentDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistDao;
 import com.example.tune_share_hub_backend.dao.playlist.PlaylistTrackDao;
 import com.example.tune_share_hub_backend.dao.user.UserDao;
-import com.example.tune_share_hub_backend.dto.playlist.CommentResponseDto;
 import com.example.tune_share_hub_backend.dto.music.PlaylistTrackResponseDto;
+import com.example.tune_share_hub_backend.dto.playlist.CommentResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistDetailResponseDto;
 import com.example.tune_share_hub_backend.dto.playlist.PlaylistResponseDto;
 import com.example.tune_share_hub_backend.entity.Comment;
@@ -41,32 +41,7 @@ public class PlaylistService {
     private final LikeDao likeDao;
 
     @Transactional
-    public PlaylistDetailResponseDto updatePlaylist(Long playlistId, Long userId, Playlist playlist, MultipartFile coverImage) {
-        PlaylistValidator.validatePlaylistId(playlistId);
-        PlaylistValidator.validatePlaylist(playlist);
-
-        if (hasFile(coverImage)) {
-            playlist.setCoverImageUrl(fileStorageService.saveFile(coverImage));
-        }
-
-        int updatedCount = playlistDao.updatePlaylist(playlistId, userId, playlist);
-        PlaylistValidator.validateUpdateCount(updatedCount, ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
-
-        return getPlaylist(playlistId, userId);
-    }
-
-    @Transactional
-    public PlaylistDetailResponseDto updatePlaylistVisibility(Long playlistId, Long userId, String publicYn) {
-        PlaylistValidator.validatePlaylistId(playlistId);
-
-        int updatedCount = playlistDao.updatePlaylistVisibility(playlistId, userId, publicYn);
-        PlaylistValidator.validateUpdateCount(updatedCount, ErrorCode.PLAYLIST_VISIBILITY_UPDATE_FORBIDDEN);
-
-        return getPlaylist(playlistId, userId);
-    }
-
-    @Transactional
-    public PlaylistDetailResponseDto create(Long userId, Playlist playlist, MultipartFile coverImage) {
+    public PlaylistDetailResponseDto createPlaylist(Long userId, Playlist playlist, MultipartFile coverImage) {
         if (playlist != null && playlist.getPublicYn() == null) {
             playlist.setPublicYn("Y");
         }
@@ -79,97 +54,30 @@ public class PlaylistService {
 
         playlistDao.insert(playlist);
 
-        return getPlaylist(playlist.getPlaylistId(), userId);
+        return getPlaylistDetail(playlist.getPlaylistId(), userId);
     }
 
-    public Map<String, Object> getPublicPlaylistList(int page, int size) {
-        int offset = (page - 1) * size;
-        List<PlaylistResponseDto> playlistResponseDtoList = playlistDao.findPublicPlaylistList(offset, size)
-                .stream()
-                .map(PlaylistConvert::toResponseDto)
-                .collect(Collectors.toList());
-        int total = playlistDao.countPublicPlaylistList();
+  @Transactional
+public PlaylistDetailResponseDto copyPlaylist(Long playlistId, Long userId) {
+    PlaylistValidator.validatePlaylistId(playlistId);
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("content", playlistResponseDtoList);
-        result.put("totalCount", total);
-        result.put("currentPage", page);
-        result.put("totalPages", (int) Math.ceil((double) total / size));
-        return result;
+    Playlist original = playlistDao.findById(playlistId);
+    PlaylistValidator.validatePlaylistExists(original);
+    PlaylistValidator.validatePublicPlaylist(original);
+
+    Playlist copied = PlaylistConvert.toCopiedEntity(original, userId);
+    playlistDao.insert(copied);
+
+    List<PlaylistTrack> playlistTrackList = playlistTrackDao.findByPlaylistId(playlistId);
+    if (!playlistTrackList.isEmpty()) {
+        playlistTrackDao.copyPlaylistTracks(playlistId, copied.getPlaylistId());
+    
     }
+    return getPlaylistDetail(copied.getPlaylistId(), userId);
+}
 
     @Transactional
-    public void deletePlaylist(Long playlistId, Long userId) {
-        PlaylistValidator.validatePlaylistId(playlistId);
-
-        Playlist playlist = playlistDao.findById(playlistId);
-        PlaylistValidator.validatePlaylistExists(playlist);
-        PlaylistValidator.validatePlaylistOwner(playlist, userId, ErrorCode.PLAYLIST_DELETE_FORBIDDEN);
-
-        playlistTrackDao.deleteByPlaylistId(playlistId);
-        commentDao.deleteByPlaylistId(playlistId);
-        likeDao.deleteByPlaylistId(playlistId);
-        int deletedCount = playlistDao.deletePlaylist(playlistId, userId);
-        PlaylistValidator.validateUpdateCount(deletedCount, ErrorCode.PLAYLIST_DELETE_FORBIDDEN);
-    }
-
-    @Transactional
-    public PlaylistDetailResponseDto copyPlaylist(Long playlistId, Long userId) {
-        PlaylistValidator.validatePlaylistId(playlistId);
-
-        Playlist original = playlistDao.findById(playlistId);
-        PlaylistValidator.validatePlaylistExists(original);
-        PlaylistValidator.validatePublicPlaylist(original);
-
-        Playlist copied = PlaylistConvert.toCopiedEntity(original, userId);
-
-        playlistDao.insert(copied);
-
-        List<PlaylistTrack> playlistTrackList = playlistTrackDao.findByPlaylistId(playlistId);
-        for (PlaylistTrack playlistTrack : playlistTrackList) {
-            playlistTrack.setPlaylistId(copied.getPlaylistId());
-        }
-        if (!playlistTrackList.isEmpty()) {
-            playlistTrackDao.insertPlaylistTracks(playlistTrackList);
-        }
-
-        return getPlaylist(copied.getPlaylistId(), userId);
-    }
-
-    public List<PlaylistResponseDto> getMyPlaylistList(Long userId) {
-        return playlistDao.findByUserId(userId)
-                .stream()
-                .map(PlaylistConvert::toResponseDto)
-                .collect(Collectors.toList());
-    }
-
-    public PlaylistDetailResponseDto getPlaylist(Long playlistId, Long loginUserId) {
-        Playlist playlist = playlistDao.findById(playlistId);
-        PlaylistValidator.validatePlaylistExists(playlist);
-        PlaylistValidator.validatePlaylistReadable(playlist, loginUserId);
-
-        playlistDao.increaseViewCount(playlistId);
-
-        List<PlaylistTrackResponseDto> trackResponseDtoList = PlaylistTrackConvert.toResponseDtoList(
-                playlistTrackDao.findByPlaylistId(playlistId));
-        List<CommentResponseDto> commentResponseDtoList = CommentConvert.toCommentResponseDtoList(
-                commentDao.findByPlaylistId(playlistId));
-
-        boolean likeStatus = false;
-        if (loginUserId != null) {
-            Like like = likeDao.getLikeByUserIdAndPlaylistId(loginUserId, playlistId);
-            likeStatus = (like != null && "Y".equals(like.getStatus()));
-        }
-
-        return PlaylistConvert.toDetailResponseDto(playlist, trackResponseDtoList, commentResponseDtoList, likeStatus);
-    }
-
-    private boolean hasFile(MultipartFile file) {
-        return file != null && !file.isEmpty();
-    }
-
-    @Transactional
-    public PlaylistDetailResponseDto addTrackToPlaylist(Long id, Long currentUserId, List<PlaylistTrack> requestPlaylistTrackList) {
+    public PlaylistDetailResponseDto addPlaylistTrackList(Long id, Long currentUserId, List<PlaylistTrack> requestPlaylistTrackList) {
         Playlist playlist = playlistDao.findById(id);
         PlaylistValidator.validatePlaylistExists(playlist);
         PlaylistValidator.validatePlaylistOwner(playlist, currentUserId, ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
@@ -190,62 +98,109 @@ public class PlaylistService {
         playlistDao.increaseTrackCount(id, requestPlaylistTrackList.size());
 
 
-        return getPlaylist(id, currentUserId);
-    }
-
-    private int getNextPositionNo(List<PlaylistTrack> playlistTrackList) {
-        if (playlistTrackList == null || playlistTrackList.isEmpty()) {
-            return 1;
-        }
-
-        return playlistTrackList.stream()
-                .map(PlaylistTrack::getPositionNo)
-                .filter(Objects::nonNull)
-                .max(Integer::compareTo)
-                .orElse(0) + 1;
+        return getPlaylistDetail(id, currentUserId);
     }
 
     @Transactional
-    public PlaylistDetailResponseDto removeTrackFromPlaylist(Long id, Long currentUserId, Long trackId) {
-        PlaylistValidator.validateTrackId(trackId);
+    public PlaylistDetailResponseDto createPlaylistComment(Long id, Long userId, Comment comment) {
+        PlaylistValidator.validateCommentRequest(comment);
 
         Playlist playlist = playlistDao.findById(id);
         PlaylistValidator.validatePlaylistExists(playlist);
-        PlaylistValidator.validatePlaylistOwner(playlist, currentUserId, ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
+        PlaylistValidator.validateCommentWritable(playlist, userId);
 
-        PlaylistValidator.validateTrackExists(playlistTrackDao.existsByPlaylistIdAndTrackId(id, trackId));
+        User user = userDao.getUserById(userId);
+        UserValidator.validateUserExists(user);
 
-        int deletedCount = playlistTrackDao.deletePlaylistTrack(trackId);
-        PlaylistValidator.validateTrackDeleteCount(deletedCount);
+        comment.setPlaylistId(id);
+        comment.setUserId(userId);
+        comment.setUserNickname(user.getNickname());
 
-        playlistDao.decreaseTrackCount(id);
+        commentDao.insertComment(comment);
+        playlistDao.increaseCommentCount(id);
 
-        compactPlaylistTrackPositions(id);
-
-        return getPlaylist(id, currentUserId);
+        return getPlaylistDetail(id, userId);
     }
 
-    private void compactPlaylistTrackPositions(Long playlistId) {
-        List<PlaylistTrack> playlistTrackList = playlistTrackDao.findByPlaylistId(playlistId);
-        List<PlaylistTrack> playlistTrackUpdateList = new ArrayList<>();
+    public Map<String, Object> getPublicPlaylistList(int page, int size) {
+        int offset = (page - 1) * size;
+        List<PlaylistResponseDto> playlistResponseDtoList = playlistDao.findPublicPlaylistList(offset, size)
+                .stream()
+                .map(PlaylistConvert::toResponseDto)
+                .collect(Collectors.toList());
+        int total = playlistDao.countPublicPlaylistList();
 
-        for (int i = 0; i < playlistTrackList.size(); i++) {
-            PlaylistTrack playlistTrack = playlistTrackList.get(i);
-            int positionNo = i + 1;
+        Map<String, Object> result = new HashMap<>();
+        result.put("content", playlistResponseDtoList);
+        result.put("totalCount", total);
+        result.put("currentPage", page);
+        result.put("totalPages", (int) Math.ceil((double) total / size));
+        return result;
+    }
 
-            if (playlistTrack.getPositionNo() == null || playlistTrack.getPositionNo() != positionNo) {
-                playlistTrack.setPositionNo(positionNo);
-                playlistTrackUpdateList.add(playlistTrack);
-            }
+    public List<PlaylistResponseDto> getMyPlaylistList(Long userId) {
+        return playlistDao.findByUserId(userId)
+                .stream()
+                .map(PlaylistConvert::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<PlaylistResponseDto> getPlaylistRanking(int limit, String type) {
+        PlaylistValidator.validateRankingType(type);
+        return playlistDao.findTopPlaylistList(limit, type)
+                .stream()
+                .map(PlaylistConvert::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    public PlaylistDetailResponseDto getPlaylistDetail(Long playlistId, Long loginUserId) {
+        Playlist playlist = playlistDao.findById(playlistId);
+        PlaylistValidator.validatePlaylistExists(playlist);
+        PlaylistValidator.validatePlaylistReadable(playlist, loginUserId);
+
+        playlistDao.increaseViewCount(playlistId);
+
+        List<PlaylistTrackResponseDto> trackResponseDtoList = PlaylistTrackConvert.toResponseDtoList(
+                playlistTrackDao.findByPlaylistId(playlistId));
+        List<CommentResponseDto> commentResponseDtoList = CommentConvert.toCommentResponseDtoList(
+                commentDao.findByPlaylistId(playlistId));
+
+        boolean likeStatus = false;
+        if (loginUserId != null) {
+            Like like = likeDao.getLikeByUserIdAndPlaylistId(loginUserId, playlistId);
+            likeStatus = (like != null && "Y".equals(like.getStatus()));
         }
 
-        if (!playlistTrackUpdateList.isEmpty()) {
-            playlistTrackDao.updatePlaylistTrackPositions(playlistTrackUpdateList);
-        }
+        return PlaylistConvert.toDetailResponseDto(playlist, trackResponseDtoList, commentResponseDtoList, likeStatus);
     }
 
     @Transactional
-    public PlaylistDetailResponseDto reorderTrack(Long id, Long currentUserId, List<PlaylistTrack> requestTrackList) {
+    public PlaylistDetailResponseDto updatePlaylist(Long playlistId, Long userId, Playlist playlist, MultipartFile coverImage) {
+        PlaylistValidator.validatePlaylistId(playlistId);
+        PlaylistValidator.validatePlaylist(playlist);
+
+        if (hasFile(coverImage)) {
+            playlist.setCoverImageUrl(fileStorageService.saveFile(coverImage));
+        }
+
+        int updatedCount = playlistDao.updatePlaylist(playlistId, userId, playlist);
+        PlaylistValidator.validateUpdateCount(updatedCount, ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
+
+        return getPlaylistDetail(playlistId, userId);
+    }
+
+    @Transactional
+    public PlaylistDetailResponseDto updatePlaylistVisibility(Long playlistId, Long userId, String publicYn) {
+        PlaylistValidator.validatePlaylistId(playlistId);
+
+        int updatedCount = playlistDao.updatePlaylistVisibility(playlistId, userId, publicYn);
+        PlaylistValidator.validateUpdateCount(updatedCount, ErrorCode.PLAYLIST_VISIBILITY_UPDATE_FORBIDDEN);
+
+        return getPlaylistDetail(playlistId, userId);
+    }
+
+    @Transactional
+    public PlaylistDetailResponseDto updatePlaylistTrackOrder(Long id, Long currentUserId, List<PlaylistTrack> requestTrackList) {
         Playlist playlist = playlistDao.findById(id);
         PlaylistValidator.validatePlaylistExists(playlist);
         PlaylistValidator.validatePlaylistOwner(playlist, currentUserId, ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
@@ -274,32 +229,11 @@ public class PlaylistService {
         }
         playlistTrackDao.updatePlaylistTrackPositions(finalPositionList);
 
-        return getPlaylist(id, currentUserId);
+        return getPlaylistDetail(id, currentUserId);
     }
 
     @Transactional
-    public PlaylistDetailResponseDto createComment(Long id, Long userId, Comment comment) {
-        PlaylistValidator.validateCommentRequest(comment);
-
-        Playlist playlist = playlistDao.findById(id);
-        PlaylistValidator.validatePlaylistExists(playlist);
-        PlaylistValidator.validateCommentWritable(playlist, userId);
-
-        User user = userDao.getUserById(userId);
-        UserValidator.validateUserExists(user);
-
-        comment.setPlaylistId(id);
-        comment.setUserId(userId);
-        comment.setUserNickname(user.getNickname());
-
-        commentDao.insertComment(comment);
-        playlistDao.increaseCommentCount(id);
-
-        return getPlaylist(id, userId);
-    }
-
-    @Transactional
-    public PlaylistDetailResponseDto updateComment(Long id, Long commentId, Long userId, Comment comment) {
+    public PlaylistDetailResponseDto updatePlaylistComment(Long id, Long commentId, Long userId, Comment comment) {
         PlaylistValidator.validateCommentRequest(comment);
 
         Comment existingComment = commentDao.findById(commentId);
@@ -309,11 +243,46 @@ public class PlaylistService {
         existingComment.setContent(comment.getContent());
         commentDao.updateComment(existingComment);
 
-        return getPlaylist(id, userId);
+        return getPlaylistDetail(id, userId);
     }
 
     @Transactional
-    public PlaylistDetailResponseDto deleteComment(Long id, Long commentId, Long userId) {
+    public void deletePlaylist(Long playlistId, Long userId) {
+        PlaylistValidator.validatePlaylistId(playlistId);
+
+        Playlist playlist = playlistDao.findById(playlistId);
+        PlaylistValidator.validatePlaylistExists(playlist);
+        PlaylistValidator.validatePlaylistOwner(playlist, userId, ErrorCode.PLAYLIST_DELETE_FORBIDDEN);
+
+        playlistTrackDao.deleteByPlaylistId(playlistId);
+        commentDao.deleteByPlaylistId(playlistId);
+        likeDao.deleteByPlaylistId(playlistId);
+        int deletedCount = playlistDao.deletePlaylist(playlistId, userId);
+        PlaylistValidator.validateUpdateCount(deletedCount, ErrorCode.PLAYLIST_DELETE_FORBIDDEN);
+    }
+
+    @Transactional
+    public PlaylistDetailResponseDto deletePlaylistTrack(Long id, Long currentUserId, Long trackId) {
+        PlaylistValidator.validateTrackId(trackId);
+
+        Playlist playlist = playlistDao.findById(id);
+        PlaylistValidator.validatePlaylistExists(playlist);
+        PlaylistValidator.validatePlaylistOwner(playlist, currentUserId, ErrorCode.PLAYLIST_UPDATE_FORBIDDEN);
+
+        PlaylistValidator.validateTrackExists(playlistTrackDao.existsByPlaylistIdAndTrackId(id, trackId));
+
+        int deletedCount = playlistTrackDao.deletePlaylistTrack(trackId);
+        PlaylistValidator.validateTrackDeleteCount(deletedCount);
+
+        playlistDao.decreaseTrackCount(id);
+
+        compactPlaylistTrackPositions(id);
+
+        return getPlaylistDetail(id, currentUserId);
+    }
+
+    @Transactional
+    public PlaylistDetailResponseDto deletePlaylistComment(Long id, Long commentId, Long userId) {
         Comment existingComment = commentDao.findById(commentId);
         PlaylistValidator.validateCommentExists(existingComment, id);
         PlaylistValidator.validateCommentOwner(existingComment, userId);
@@ -321,14 +290,41 @@ public class PlaylistService {
         commentDao.deleteComment(commentId);
         playlistDao.decreaseCommentCount(id);
 
-        return getPlaylist(id, userId);
+        return getPlaylistDetail(id, userId);
     }
 
-    public List<PlaylistResponseDto> getPlaylistRanking(int limit, String type) {
-        PlaylistValidator.validateRankingType(type);
-        return playlistDao.findTopPlaylistList(limit, type)
-                .stream()
-                .map(PlaylistConvert::toResponseDto)
-                .collect(Collectors.toList());
+    private boolean hasFile(MultipartFile file) {
+        return file != null && !file.isEmpty();
+    }
+
+    private int getNextPositionNo(List<PlaylistTrack> playlistTrackList) {
+        if (playlistTrackList == null || playlistTrackList.isEmpty()) {
+            return 1;
+        }
+
+        return playlistTrackList.stream()
+                .map(PlaylistTrack::getPositionNo)
+                .filter(Objects::nonNull)
+                .max(Integer::compareTo)
+                .orElse(0) + 1;
+    }
+
+    private void compactPlaylistTrackPositions(Long playlistId) {
+        List<PlaylistTrack> playlistTrackList = playlistTrackDao.findByPlaylistId(playlistId);
+        List<PlaylistTrack> playlistTrackUpdateList = new ArrayList<>();
+
+        for (int i = 0; i < playlistTrackList.size(); i++) {
+            PlaylistTrack playlistTrack = playlistTrackList.get(i);
+            int positionNo = i + 1;
+
+            if (playlistTrack.getPositionNo() == null || playlistTrack.getPositionNo() != positionNo) {
+                playlistTrack.setPositionNo(positionNo);
+                playlistTrackUpdateList.add(playlistTrack);
+            }
+        }
+
+        if (!playlistTrackUpdateList.isEmpty()) {
+            playlistTrackDao.updatePlaylistTrackPositions(playlistTrackUpdateList);
+        }
     }
 }

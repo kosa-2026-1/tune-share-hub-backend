@@ -25,10 +25,10 @@
         </selectKey>
         INSERT INTO PLAYLISTS (
         PLAYLIST_ID, USER_ID, TITLE, DESCRIPTION,
-        COVER_IMAGE_URL, PUBLIC_YN, TAGS
+        COVER_IMAGE_URL, PUBLIC_YN, TAGS, TRACK_COUNT
         ) VALUES (
         #{playlistId}, #{userId}, #{title}, #{description},
-        #{coverImageUrl}, #{publicYn}, #{tags,typeHandler=ListStringTypeHandler}
+        #{coverImageUrl}, #{publicYn}, #{tags,typeHandler=ListStringTypeHandler}, #{trackCount}
         )
     </insert>
 
