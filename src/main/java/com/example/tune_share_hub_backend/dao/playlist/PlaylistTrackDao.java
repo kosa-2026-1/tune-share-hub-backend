@@ -23,4 +23,7 @@ public interface PlaylistTrackDao {
     int updatePlaylistTrackPosition(@Param("trackId") Long trackId, @Param("positionNo") int positionNo);
 
     void updatePlaylistTrackPositions(@Param("tracks") List<PlaylistTrack> tracks);
+
+    void copyPlaylistTracks(@Param("originalPlaylistId") Long originalPlaylistId, @Param("newPlaylistId") Long newPlaylistId);
+
 }

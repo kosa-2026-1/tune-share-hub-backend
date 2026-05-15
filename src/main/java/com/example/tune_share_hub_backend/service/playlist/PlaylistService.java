@@ -57,28 +57,24 @@ public class PlaylistService {
         return getPlaylistDetail(playlist.getPlaylistId(), userId);
     }
 
-    @Transactional
-    public PlaylistDetailResponseDto copyPlaylist(Long playlistId, Long userId) {
-        PlaylistValidator.validatePlaylistId(playlistId);
+  @Transactional
+public PlaylistDetailResponseDto copyPlaylist(Long playlistId, Long userId) {
+    PlaylistValidator.validatePlaylistId(playlistId);
 
-        Playlist original = playlistDao.findById(playlistId);
-        PlaylistValidator.validatePlaylistExists(original);
-        PlaylistValidator.validatePublicPlaylist(original);
+    Playlist original = playlistDao.findById(playlistId);
+    PlaylistValidator.validatePlaylistExists(original);
+    PlaylistValidator.validatePublicPlaylist(original);
 
-        Playlist copied = PlaylistConvert.toCopiedEntity(original, userId);
+    Playlist copied = PlaylistConvert.toCopiedEntity(original, userId);
+    playlistDao.insert(copied);
 
-        playlistDao.insert(copied);
-
-        List<PlaylistTrack> playlistTrackList = playlistTrackDao.findByPlaylistId(playlistId);
-        for (PlaylistTrack playlistTrack : playlistTrackList) {
-            playlistTrack.setPlaylistId(copied.getPlaylistId());
-        }
-        if (!playlistTrackList.isEmpty()) {
-            playlistTrackDao.insertPlaylistTracks(playlistTrackList);
-        }
-
-        return getPlaylistDetail(copied.getPlaylistId(), userId);
+    List<PlaylistTrack> playlistTrackList = playlistTrackDao.findByPlaylistId(playlistId);
+    if (!playlistTrackList.isEmpty()) {
+        playlistTrackDao.copyPlaylistTracks(playlistId, copied.getPlaylistId());
+    
     }
+    return getPlaylistDetail(copied.getPlaylistId(), userId);
+}
 
     @Transactional
     public PlaylistDetailResponseDto addPlaylistTrackList(Long id, Long currentUserId, List<PlaylistTrack> requestPlaylistTrackList) {

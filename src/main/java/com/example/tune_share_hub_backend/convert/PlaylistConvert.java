@@ -44,6 +44,7 @@ public class PlaylistConvert {
         copied.setCoverImageUrl(original.getCoverImageUrl());
         copied.setPublicYn(DEFAULT_PUBLIC_YN);
         copied.setTags(original.getTags());
+        copied.setTrackCount(original.getTrackCount());
         return copied;
     }
 
